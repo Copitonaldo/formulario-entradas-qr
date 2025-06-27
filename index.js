@@ -1,6 +1,6 @@
 // Importar Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js ";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js ";
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js ";
 
 // Tu configuración de Firebase
 const firebaseConfig = {
@@ -16,15 +16,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-// Referencia a la tabla de formularios
+// Referencias
 const formulariosRef = ref(database, 'formularios');
-
-// Contraseña simple
 const PASSWORD = 'admin123';
 const loginSection = document.getElementById('loginSection');
 const adminPanel = document.getElementById('adminPanel');
-const loginBtn = document.getElementById('loginBtn');
 const passwordInput = document.getElementById('password');
+const loginBtn = document.getElementById('loginBtn');
 const loginError = document.getElementById('loginError');
 const logoutBtn = document.getElementById('logoutBtn');
 const createForm = document.getElementById('createForm');
@@ -34,7 +32,7 @@ const formulariosTableBody = document.querySelector('#formulariosTable tbody');
 
 let formularios = [];
 
-// Escuchar cambios en tiempo real
+// Cargar formularios desde Firebase
 onValue(formulariosRef, (snapshot) => {
   const data = snapshot.val() || {};
   formularios = Object.values(data);
@@ -45,7 +43,7 @@ function generarCodigoFormulario() {
   return 'FORM' + Math.random().toString(36).substr(2, 5).toUpperCase();
 }
 
-function leerArchivoBase64(file) {
+async function leerArchivoBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = e => resolve(e.target.result);
@@ -72,11 +70,11 @@ function renderFormularios() {
   });
 }
 
-createForm.addEventListener('submit', async e => {
+createForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const nombre = formNameInput.value.trim();
   if (!nombre) return alert('Ingrese un nombre para el formulario');
-  
+
   let imagenBase64 = '';
   if (formBgInput.files.length > 0) {
     imagenBase64 = await leerArchivoBase64(formBgInput.files[0]);
