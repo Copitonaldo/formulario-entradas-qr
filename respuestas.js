@@ -2,7 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js ";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js ";
 
-// Tu configuración de Firebase
+// Configuración de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyAnjDU-BWTGTmbOrxjFsdNkvp8pNnXJba4",
   authDomain: "entradas-qr-07.firebaseapp.com",
@@ -19,13 +19,12 @@ const database = getDatabase(app);
 // Variables
 const urlParams = new URLSearchParams(window.location.search);
 const formId = urlParams.get('id');
-const formTitle = document.getElementById('formTitle');
-const searchInput = document.getElementById('searchInput');
-const printBtn = document.getElementById('printBtn');
-const excelBtn = document.getElementById('excelBtn');
 const dashboardCount = document.getElementById('dashboardCount');
 const respuestasTableBody = document.querySelector('#respuestasTable tbody');
+const searchInput = document.getElementById('searchInput');
 const paginationDiv = document.getElementById('pagination');
+const excelBtn = document.getElementById('excelBtn');
+const printBtn = document.getElementById('printBtn');
 
 let respuestas = [];
 let filteredRespuestas = [];
@@ -33,8 +32,7 @@ let currentPage = 1;
 const PAGE_SIZE = 50;
 
 function formatCedula(cedula) {
-  if (!cedula || cedula.length !== 8) return '';
-  return cedula.replace(/(\d{3})(\d{3})(\d{2})/, "$1.$2.$3");
+  return cedula.replace(/\D/g, '').replace(/(\d{2})(\d{3})(\d{3})/, '$1.$2.$3');
 }
 
 function escapeHtml(text) {
