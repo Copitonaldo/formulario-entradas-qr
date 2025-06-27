@@ -16,8 +16,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-// Referencias al DOM
+// Referencia a la tabla de formularios
 const formulariosRef = ref(database, 'formularios');
+
+// Contraseña simple
+const PASSWORD = 'admin123';
 const loginSection = document.getElementById('loginSection');
 const adminPanel = document.getElementById('adminPanel');
 const passwordInput = document.getElementById('password');
@@ -31,10 +34,7 @@ const formulariosTableBody = document.querySelector('#formulariosTable tbody');
 
 let formularios = [];
 
-// Contraseña simple
-const PASSWORD = 'admin123';
-
-// Cargar formularios desde Firebase
+// Escuchar cambios en tiempo real
 onValue(formulariosRef, (snapshot) => {
   const data = snapshot.val() || {};
   formularios = Object.values(data);
@@ -84,7 +84,7 @@ createForm.addEventListener('submit', async (e) => {
 
   const codigo = generarCodigoFormulario();
   const nuevoFormulario = { codigo, nombre, imagen: imagenBase64 };
-  push(formulariosRef, nuevoFormulario);
+  push(ref(database, 'formularios'), nuevoFormulario);
   createForm.reset();
   alert(`Formulario creado con código ${codigo}`);
 });
