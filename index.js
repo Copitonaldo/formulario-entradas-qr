@@ -1,6 +1,6 @@
 // Importar Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js ";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js ";
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js ";
 
 // Tu configuración de Firebase
 const firebaseConfig = {
@@ -16,11 +16,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-// Referencia a la tabla de formularios
+// Referencias al DOM
 const formulariosRef = ref(database, 'formularios');
-
-// Contraseña simple
-const PASSWORD = 'admin123';
 const loginSection = document.getElementById('loginSection');
 const adminPanel = document.getElementById('adminPanel');
 const passwordInput = document.getElementById('password');
@@ -34,7 +31,10 @@ const formulariosTableBody = document.querySelector('#formulariosTable tbody');
 
 let formularios = [];
 
-// Escuchar cambios en tiempo real
+// Contraseña simple
+const PASSWORD = 'admin123';
+
+// Cargar formularios desde Firebase
 onValue(formulariosRef, (snapshot) => {
   const data = snapshot.val() || {};
   formularios = Object.values(data);
@@ -84,7 +84,7 @@ createForm.addEventListener('submit', async (e) => {
 
   const codigo = generarCodigoFormulario();
   const nuevoFormulario = { codigo, nombre, imagen: imagenBase64 };
-  push(ref(database, 'formularios'), nuevoFormulario);
+  push(formulariosRef, nuevoFormulario);
   createForm.reset();
   alert(`Formulario creado con código ${codigo}`);
 });
