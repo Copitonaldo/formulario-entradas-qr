@@ -2,7 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js ";
 import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js ";
 
-// Tu configuración de Firebase
+// Configuración de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyAnjDU-BWTGTmbOrxjFsdNkvp8pNnXJba4",
   authDomain: "entradas-qr-07.firebaseapp.com",
@@ -16,22 +16,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-// Utilidad para capitalizar cada palabra del nombre
-function toTitleCase(str) {
-  return str.toLowerCase().replace(/(^|\s)\S/g, l => l.toUpperCase());
-}
-
-// Utilidad para formatear la cédula en puntos tipo 32.015.800
-function formatCedula(cedula) {
-  return cedula.replace(/\D/g, '').replace(/(\d{2})(\d{3})(\d{3})/, '$1.$2.$3');
-}
-
-// - DOM -
+// Variables del DOM
 const urlParams = new URLSearchParams(window.location.search);
 const formId = urlParams.get('id');
-let formulario = null;
-
-// Referencias al DOM
 const inputNombre = document.getElementById('nombre');
 const inputCedula = document.getElementById('cedula');
 const inputEdad = document.getElementById('edad');
@@ -39,7 +26,8 @@ const errorMsg = document.getElementById('errorMsg');
 const btnGuardar = document.getElementById('btnGuardar');
 const confirmacionDatos = document.getElementById('confirmacionDatos');
 const confNombre = document.getElementById('confNombre');
-const confCedula = document.getElementById('confEdad');
+const confCedula = document.getElementById('confCedula');
+const confEdad = document.getElementById('confEdad');
 const btnConfirmar = document.getElementById('btnConfirmar');
 const outNombre = document.getElementById('outNombre');
 const outCedula = document.getElementById('outCedula');
@@ -48,11 +36,17 @@ const outCodigo = document.getElementById('outCodigo');
 const codigoQR = document.getElementById('codigoQR');
 const qrCanvas = document.getElementById('qrCanvas');
 const guardarBtn = document.getElementById('guardarBtn');
-const ticket = document.getElementById('ticket');
 const entradaGenerada = document.getElementById('entradaGenerada');
 
-let ultimoCodigo = '';
-let ultimoNombre = '';
+// Función para capitalizar nombres
+function toTitleCase(str) {
+  return str.toLowerCase().replace(/(^|\s)\S/g, l => l.toUpperCase());
+}
+
+// Validación de cédula
+function formatCedula(cedula) {
+  return cedula.replace(/\D/g, '').replace(/(\d{2})(\d{3})(\d{3})/, '$1.$2.$3');
+}
 
 btnGuardar.addEventListener('click', () => {
   const nombre = inputNombre.value.trim();
@@ -78,7 +72,7 @@ btnGuardar.addEventListener('click', () => {
     return;
   }
 
-  // Mostrar confirmación con nombre capitalizado y cédula formateada
+  // Mostrar confirmación
   confNombre.textContent = toTitleCase(nombre);
   confCedula.textContent = formatCedula(cedulaRaw);
   confEdad.textContent = `${edad} años`;
@@ -89,10 +83,8 @@ btnGuardar.addEventListener('click', () => {
   window.datosParaConfirmar = { nombre, cedula: cedulaRaw, edad };
 });
 
-// Botón "Sí" en confirmación: genera QR, guarda y muestra entrada
 btnConfirmar.addEventListener('click', function () {
   const { nombre, cedula, edad } = window.datosParaConfirmar;
-
   const nuevaRespuesta = {
     codigo: Date.now().toString().slice(-5),
     nombre,
@@ -101,7 +93,6 @@ btnConfirmar.addEventListener('click', function () {
     fecha: new Date().toISOString()
   };
 
-  // Guardar en Firebase
   const respuestasRef = ref(database, `respuestas/${formId}`);
   push(respuestasRef, nuevaRespuesta);
 
@@ -114,60 +105,10 @@ btnConfirmar.addEventListener('click', function () {
 
   // Generar QR
   const datosQR = `Nombre: ${nombre}\nCédula: ${cedula}\nEdad: ${edad}`;
-  QRCode.toCanvas(qrCanvas, datosQR, { width: 80 }, function (error) {
+  QRCode.toCanvas(qrCanvas, datosQR, { width: 80 }, error => {
     if (error) alert("Error generando QR");
   });
 
   confirmacionDatos.style.display = 'none';
   entradaGenerada.style.display = 'block';
-});
-
-guardarBtn.addEventListener('click', () => {
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  const qrBoxWidth = 240;
-  const qrBoxHeight = 130;
-  const qrBoxX = 20;
-  const qrBoxY = 20;
-  const radius = 10;
-
-  canvas.width = qrBoxWidth + 40;
-  canvas.height = qrBoxHeight + 60;
-
-  // Fondo blanco
-  ctx.fillStyle = "#fff";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Bordes redondeados
-  ctx.beginPath();
-  ctx.moveTo(qrBoxX + radius, qrBoxY);
-  ctx.arcTo(qrBoxX + qrBoxWidth, qrBoxY, qrBoxX + qrBoxWidth, qrBoxY + qrBoxHeight, radius);
-  ctx.arcTo(qrBoxX + qrBoxWidth, qrBoxY + qrBoxHeight, qrBoxX, qrBoxY + qrBoxHeight, radius);
-  ctx.arcTo(qrBoxX, qrBoxY + qrBoxHeight, qrBoxX, qrBoxY, radius);
-  ctx.arcTo(qrBoxX, qrBoxY, qrBoxX + qrBoxWidth, qrBoxY, radius);
-  ctx.closePath();
-  ctx.fillStyle = "#fff";
-  ctx.fill();
-
-  // Dibujar QR
-  const qrSize = 80;
-  const qrX = qrBoxX + (qrBoxWidth - qrSize) / 2;
-  const qrY = qrBoxY + 4;
-  ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
-
-  // Texto debajo del QR
-  ctx.font = "bold 14px Arial";
-  ctx.fillStyle = "#222";
-  ctx.textAlign = "center";
-  ctx.fillText("Código: " + outCodigo.textContent, qrBoxX + qrBoxWidth / 2, qrY + qrSize + 18);
-
-  // Descargar imagen
-  canvas.toBlob(function(blob) {
-    const enlace = document.createElement('a');
-    enlace.href = URL.createObjectURL(blob);
-    enlace.download = `Entrada_${outCodigo.textContent}.jpg`;
-    document.body.appendChild(enlace);
-    enlace.click();
-    document.body.removeChild(enlace);
-  }, 'image/jpeg', 0.92);
 });
