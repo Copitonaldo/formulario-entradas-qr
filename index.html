@@ -15,14 +15,15 @@
 
 <main>
   <!-- Login simple -->
-  <div id="loginSection" class="login-form">
-    <h2>Acceso para el creador</h2>
-    <label for="password">Contraseña:</label>
-    <input type="password" id="password" placeholder="Ingresa tu contraseña" />
-    <button id="loginBtn" type="button">Entrar</button>
-    <p id="loginError">Contraseña incorrecta</p>
-  </div>
-
+<div id="loginSection">
+  <h2>Iniciar sesión</h2>
+  <label for="password">Contraseña:</label>
+  <input type="password" id="password" placeholder="Ingresa tu contraseña">
+  <button id="loginBtn" type="button">Entrar</button>
+  <p id="loginError" style="color: red; display: none;">Contraseña incorrecta</p>
+</div>
+<div id="adminPanel" style="display: none;">
+</div>
   <!-- Panel administrador -->
   <div id="adminPanel" class="admin-panel" style="display:none;">
     <h2>Crear Nuevo Formulario</h2>
