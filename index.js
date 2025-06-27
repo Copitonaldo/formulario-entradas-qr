@@ -1,6 +1,6 @@
 // Importar Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js ";
-import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js ";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js ";
 
 // Tu configuración de Firebase
 const firebaseConfig = {
@@ -36,11 +36,9 @@ let formularios = [];
 
 // Escuchar cambios en tiempo real
 onValue(formulariosRef, (snapshot) => {
-  const data = snapshot.val();
-  if (data) {
-    formularios = Object.values(data);
-    renderFormularios();
-  }
+  const data = snapshot.val() || {};
+  formularios = Object.values(data);
+  renderFormularios();
 });
 
 function generarCodigoFormulario() {
@@ -93,11 +91,8 @@ createForm.addEventListener('submit', async e => {
 
 window.borrarFormulario = function(codigo) {
   if (!confirm('¿Seguro que quieres borrar este formulario y sus datos?')) return;
-  const index = formularios.findIndex(f => f.codigo === codigo);
-  if (index !== -1) {
-    const key = Object.keys(formularios).find(k => formularios[k].codigo === codigo);
-    if (key) remove(ref(database, `formularios/${key}`));
-  }
+  const key = Object.keys(formularios).find(k => formularios[k].codigo === codigo);
+  if (key) remove(ref(database, `formularios/${key}`));
 };
 
 loginBtn.addEventListener('click', () => {
