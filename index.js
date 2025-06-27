@@ -16,9 +16,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-// Referencias
+// Referencias al DOM
 const formulariosRef = ref(database, 'formularios');
-const PASSWORD = 'admin123';
 const loginSection = document.getElementById('loginSection');
 const adminPanel = document.getElementById('adminPanel');
 const passwordInput = document.getElementById('password');
@@ -31,6 +30,9 @@ const formBgInput = document.getElementById('formBgInput');
 const formulariosTableBody = document.querySelector('#formulariosTable tbody');
 
 let formularios = [];
+
+// Contraseña simple
+const PASSWORD = 'admin123';
 
 // Cargar formularios desde Firebase
 onValue(formulariosRef, (snapshot) => {
@@ -89,7 +91,7 @@ createForm.addEventListener('submit', async (e) => {
 
 window.borrarFormulario = function(codigo) {
   if (!confirm('¿Seguro que quieres borrar este formulario y sus datos?')) return;
-  const key = Object.keys(formularios).find(k => formularios[k].codigo === codigo);
+  const key = Object.keys(formularios).find(k => formularios[k]?.codigo === codigo);
   if (key) remove(ref(database, `formularios/${key}`));
 };
 
