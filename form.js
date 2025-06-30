@@ -19,6 +19,7 @@ const database = getDatabase(app);
 // Variables del DOM
 const urlParams = new URLSearchParams(window.location.search);
 const formId = urlParams.get('id');
+const formTitleElement = document.getElementById('formTitle'); // Referencia al H2 del título
 const formData = document.getElementById('formData');
 const inputNombre = document.getElementById('nombre');
 const inputCedula = document.getElementById('cedula');
@@ -37,8 +38,32 @@ const outCodigo = document.getElementById('outCodigo');
 const codigoQR = document.getElementById('codigoQR');
 const qrCanvas = document.getElementById('qrCanvas');
 const entradaGenerada = document.getElementById('entradaGenerada');
-// El formTitle no se usa dinámicamente en este script, pero podría añadirse si se desea.
-// const formTitle = document.getElementById('formTitle'); 
+
+// --- INICIO: Validación de formId ---
+// Verificar si formId es null, undefined, una cadena vacía, o solo espacios en blanco.
+if (!formId || formId.trim() === "") {
+  if (formTitleElement) {
+    formTitleElement.textContent = 'Error: Formulario no especificado';
+  }
+  if (errorMsg) {
+    errorMsg.innerHTML = '<b>Error Crítico:</b> No se ha especificado un ID de formulario en la URL (parámetro `?id=`).<br>Por favor, contacte al administrador o verifique el enlace.';
+    errorMsg.style.display = 'block';
+  }
+  if (formData) {
+    formData.style.display = 'none'; // Ocultar el formulario
+  }
+  // Detener la ejecución adicional del script si el formId es inválido.
+  // Esto previene que se añadan listeners a botones que no deberían funcionar.
+  console.error("formId es nulo, está vacío o solo contiene espacios. La aplicación no puede continuar.");
+  throw new Error("formId es nulo, está vacío o solo contiene espacios. La aplicación no puede continuar.");
+} else {
+  if (formTitleElement && formTitleElement.textContent.includes('Cargando formulario...')) {
+    // Opcional: Actualizar título para confirmar el formulario que se está viendo,
+    // solo si aún muestra "Cargando..." para no sobrescribir un título ya establecido por otra lógica.
+    // formTitleElement.textContent = `Formulario: ${formId}`;
+  }
+}
+// --- FIN: Validación de formId ---
 
 // Función para capitalizar nombres
 function toTitleCase(str) {
@@ -94,6 +119,20 @@ if (formData) {
 
 if (btnConfirmar) {
   btnConfirmar.addEventListener('click', function () {
+    // --- INICIO: Doble verificación de formId antes de enviar a Firebase ---
+    if (!formId || formId.trim() === "") {
+      console.error("Error crítico: formId es nulo o vacío al intentar guardar la respuesta.");
+      if (errorMsg) {
+        errorMsg.innerHTML = "<b>Error Crítico:</b> No se puede identificar el formulario para guardar la respuesta. Por favor, recargue la página con un ID de formulario válido o contacte al administrador.";
+        errorMsg.style.display = 'block';
+      }
+      if (confirmacionDatos) confirmacionDatos.style.display = 'none'; // Ocultar confirmación
+      // No mostramos el formulario aquí, ya que la validación inicial debería haberlo manejado.
+      // Si se llega a este punto, es una condición de error inesperada.
+      return; 
+    }
+    // --- FIN: Doble verificación de formId ---
+
     const { nombre, cedula, edad } = window.datosParaConfirmar; // Cedula aquí es cedulaRaw
     const nuevaRespuesta = {
       codigo: Date.now().toString().slice(-5),
@@ -138,7 +177,15 @@ if (btnCorregir) {
   btnCorregir.addEventListener('click', () => {
     confirmacionDatos.style.display = 'none';
     if (formData) {
-      formData.style.display = 'block';
+      // Solo mostrar el formulario si no está ya oculto por una falla de formId
+      if (formData.style.display === 'none' && (formId && formId.trim() !== "")) {
+         formData.style.display = 'block';
+      } else if (!formId || formId.trim() === "") {
+        // Si el formId es inválido, el formulario debe permanecer oculto.
+        // El mensaje de error de formId ya debería estar visible.
+      } else {
+        formData.style.display = 'block'; // Caso normal
+      }
     }
     errorMsg.style.display = 'none';
     // Los campos del formulario conservarán sus valores para que el usuario pueda corregirlos.
