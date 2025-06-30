@@ -1,6 +1,6 @@
 // Importar Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getDatabase, ref, push, runTransaction, increment } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+import { getDatabase, ref, push, runTransaction, increment, get } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -19,7 +19,7 @@ const database = getDatabase(app);
 // Variables del DOM
 const urlParams = new URLSearchParams(window.location.search);
 const formId = urlParams.get('id');
-const formTitleElement = document.getElementById('formTitle'); // Referencia al H2 del título
+const formTitleElement = document.getElementById('formTitle');
 const formData = document.getElementById('formData');
 const inputNombre = document.getElementById('nombre');
 const inputCedula = document.getElementById('cedula');
@@ -39,26 +39,20 @@ const codigoQR = document.getElementById('codigoQR');
 const qrCanvas = document.getElementById('qrCanvas');
 const entradaGenerada = document.getElementById('entradaGenerada');
 
-// --- INICIO: Validación de formId ---
 if (!formId || formId.trim() === "") {
-  if (formTitleElement) {
-    formTitleElement.textContent = 'Error: Formulario no especificado';
-  }
+  if (formTitleElement) formTitleElement.textContent = 'Error: Formulario no especificado';
   if (errorMsg) {
     errorMsg.innerHTML = '<b>Error Crítico:</b> No se ha especificado un ID de formulario en la URL (parámetro `?id=`).<br>Por favor, contacte al administrador o verifique el enlace.';
     errorMsg.style.display = 'block';
   }
-  if (formData) {
-    formData.style.display = 'none';
-  }
-  console.error("formId es nulo, está vacío o solo contiene espacios. La aplicación no puede continuar.");
-  throw new Error("formId es nulo, está vacío o solo contiene espacios. La aplicación no puede continuar.");
+  if (formData) formData.style.display = 'none';
+  console.error("formId es nulo o vacío. La aplicación no puede continuar.");
+  throw new Error("formId es nulo o vacío. La aplicación no puede continuar.");
 } else {
   if (formTitleElement && formTitleElement.textContent.includes('Cargando formulario...')) {
-    // formTitleElement.textContent = `Formulario: ${formId}`; // Opcional
+    // Opcional: formTitleElement.textContent = `Formulario: ${formId}`;
   }
 }
-// --- FIN: Validación de formId ---
 
 function toTitleCase(str) {
   return str.toLowerCase().replace(/(^|\s)\S/g, l => l.toUpperCase());
@@ -68,7 +62,6 @@ function formatCedula(cedula) {
   return cedula.replace(/\D/g, '').replace(/(\d{2})(\d{3})(\d{3})/, '$1.$2.$3');
 }
 
-// Función para formatear el número de secuencia a una cadena con ceros a la izquierda
 function formatSequentialCode(number) {
   return number.toString().padStart(3, '0');
 }
@@ -81,18 +74,10 @@ if (formData) {
     const cedulaRaw = inputCedula.value.replace(/\D/g, '');
     const edad = inputEdad.value.trim();
 
-    if (!nombre) {
-      errorMsg.textContent = 'Debe ingresar un nombre.';
-      errorMsg.style.display = 'block';
-      return;
-    }
-    if (!/^\d{8}$/.test(cedulaRaw)) {
-      errorMsg.textContent = 'La cédula debe tener exactamente 8 dígitos.';
-      errorMsg.style.display = 'block';
-      return;
-    }
-    if (!edad || isNaN(parseInt(edad)) || parseInt(edad) < 0) {
-      errorMsg.textContent = 'Edad inválida.';
+    if (!nombre || !/^\d{8}$/.test(cedulaRaw) || !edad || isNaN(parseInt(edad)) || parseInt(edad) < 0) {
+      if (!nombre) errorMsg.textContent = 'Debe ingresar un nombre.';
+      else if (!/^\d{8}$/.test(cedulaRaw)) errorMsg.textContent = 'La cédula debe tener exactamente 8 dígitos.';
+      else errorMsg.textContent = 'Edad inválida.';
       errorMsg.style.display = 'block';
       return;
     }
@@ -109,40 +94,50 @@ if (formData) {
 }
 
 if (btnConfirmar) {
-  btnConfirmar.addEventListener('click', async function () { // Convertido a async para await
+  btnConfirmar.addEventListener('click', async function () {
     if (!formId || formId.trim() === "") {
-      console.error("Error crítico: formId es nulo o vacío al intentar guardar la respuesta.");
-      if (errorMsg) {
-        errorMsg.innerHTML = "<b>Error Crítico:</b> No se puede identificar el formulario para guardar la respuesta...";
-        errorMsg.style.display = 'block';
-      }
-      if (confirmacionDatos) confirmacionDatos.style.display = 'none';
+      // Esta validación ya debería haber detenido el script antes, pero es una salvaguarda.
+      errorMsg.innerHTML = "<b>Error Crítico:</b> ID de formulario ausente.";
+      errorMsg.style.display = 'block';
       return;
     }
 
     const { nombre, cedula, edad } = window.datosParaConfirmar;
-    
-    // --- INICIO: Generación de Código Secuencial con Transacción ---
     const contadorRef = ref(database, `contadores/${formId}/ultimoCodigo`);
     let nuevoCodigoSecuencialFormateado;
 
     try {
-      const transactionResult = await runTransaction(contadorRef, (currentData) => {
+      // La función de transacción ahora es async para permitir `await` dentro.
+      const transactionResult = await runTransaction(contadorRef, async (currentData) => {
         if (currentData === null) {
-          return 1; // Si no existe, el primer código es 1
+          // Es la primera vez que se usa el contador para este formId O el contador fue eliminado.
+          // Contar las respuestas existentes para inicializar el contador.
+          const respuestasExistentesRef = ref(database, `respuestas/${formId}`);
+          try {
+            const snapshot = await get(respuestasExistentesRef);
+            const numChildren = snapshot.exists() ? snapshot.numChildren() : 0;
+            return numChildren + 1; // El nuevo código será el siguiente después de las existentes.
+          } catch (error) {
+            console.error("Error al leer respuestas existentes para inicializar contador:", error);
+            // Si no podemos leer, abortamos la transacción devolviendo undefined.
+            // Esto podría pasar por permisos o problemas de red.
+            return; // Aborta la transacción.
+          }
         }
-        return currentData + 1; // Incrementar el contador actual
+        // Si el contador ya existe, simplemente lo incrementamos.
+        return currentData + 1;
       });
 
-      if (transactionResult.committed) {
+      if (transactionResult.committed && transactionResult.snapshot.exists()) {
         const nuevoContador = transactionResult.snapshot.val();
         nuevoCodigoSecuencialFormateado = formatSequentialCode(nuevoContador);
       } else {
-        console.error("Transacción para el contador no fue committed.");
-        errorMsg.textContent = "Error al generar el código secuencial. Intente de nuevo.";
+        console.error("Transacción para el contador no fue committed o el snapshot no existe.");
+        // Esto puede pasar si la función de transacción retornó undefined (ej. por error en get())
+        errorMsg.textContent = "Error al generar el código secuencial (transacción fallida). Intente de nuevo.";
         errorMsg.style.display = 'block';
         confirmacionDatos.style.display = 'none';
-        formData.style.display = 'block'; // Volver a mostrar el formulario
+        if (formData) formData.style.display = 'block';
         return;
       }
     } catch (e) {
@@ -150,13 +145,12 @@ if (btnConfirmar) {
       errorMsg.textContent = "Error crítico al generar el código. Contacte al administrador.";
       errorMsg.style.display = 'block';
       confirmacionDatos.style.display = 'none';
-      formData.style.display = 'block'; // Volver a mostrar el formulario
+      if (formData) formData.style.display = 'block';
       return;
     }
-    // --- FIN: Generación de Código Secuencial con Transacción ---
 
     const nuevaRespuesta = {
-      codigo: nuevoCodigoSecuencialFormateado, // Usar el código secuencial formateado
+      codigo: nuevoCodigoSecuencialFormateado,
       nombre: toTitleCase(nombre),
       cedula,
       edad,
@@ -164,31 +158,31 @@ if (btnConfirmar) {
     };
 
     const respuestasRef = ref(database, `respuestas/${formId}`);
-    push(respuestasRef, nuevaRespuesta)
-      .then(() => {
-        outNombre.textContent = toTitleCase(nombre);
-        outCedula.textContent = formatCedula(cedula);
-        outEdad.textContent = `${edad} años`;
-        outCodigo.textContent = nuevaRespuesta.codigo; // Mostrar el nuevo código
-        codigoQR.textContent = "Código: " + nuevaRespuesta.codigo;
+    try {
+      await push(respuestasRef, nuevaRespuesta);
+      outNombre.textContent = toTitleCase(nombre);
+      outCedula.textContent = formatCedula(cedula);
+      outEdad.textContent = `${edad} años`;
+      outCodigo.textContent = nuevaRespuesta.codigo;
+      codigoQR.textContent = "Código: " + nuevaRespuesta.codigo;
 
-        const datosQR = `Nombre: ${toTitleCase(nombre)}\nCédula: ${cedula}\nEdad: ${edad}\nCódigo: ${nuevaRespuesta.codigo}`;
-        QRCode.toCanvas(qrCanvas, datosQR, { width: 80 }, error => {
-          if (error) console.error("Error generando QR:", error);
-        });
-
-        confirmacionDatos.style.display = 'none';
-        entradaGenerada.style.display = 'block';
-      })
-      .catch(err => {
-        console.error("Error guardando en Firebase:", err);
-        errorMsg.textContent = "Error al guardar los datos. Intente de nuevo.";
-        errorMsg.style.display = 'block';
-        // Considerar si se debe revertir el contador si el push falla, aunque es complejo.
-        // Por ahora, el contador avanzó.
-        confirmacionDatos.style.display = 'none';
-        formData.style.display = 'block'; // Volver a mostrar el formulario
+      const datosQR = `Nombre: ${toTitleCase(nombre)}\nCédula: ${cedula}\nEdad: ${edad}\nCódigo: ${nuevaRespuesta.codigo}`;
+      QRCode.toCanvas(qrCanvas, datosQR, { width: 80 }, error => {
+        if (error) console.error("Error generando QR:", error);
       });
+
+      confirmacionDatos.style.display = 'none';
+      entradaGenerada.style.display = 'block';
+    } catch (err) {
+      console.error("Error guardando en Firebase:", err);
+      errorMsg.textContent = "Error al guardar los datos. Intente de nuevo.";
+      errorMsg.style.display = 'block';
+      confirmacionDatos.style.display = 'none';
+      if (formData) formData.style.display = 'block';
+      // Consideración: Si push falla, el contador ya se incrementó.
+      // Revertir el contador es complejo y podría llevar a sus propios problemas de concurrencia.
+      // Por ahora, se asume que el fallo de push es menos frecuente que el éxito.
+    }
   });
 }
 
@@ -199,7 +193,7 @@ if (btnCorregir) {
       if (formData.style.display === 'none' && (formId && formId.trim() !== "")) {
          formData.style.display = 'block';
       } else if (!formId || formId.trim() === "") {
-        // No hacer nada, el error de formId ya está visible
+        // El error de formId inválido ya debería estar visible.
       } else {
         formData.style.display = 'block';
       }
@@ -207,4 +201,3 @@ if (btnCorregir) {
     errorMsg.style.display = 'none';
   });
 }
-// El botón guardarBtn no tiene listener asignado aquí.
