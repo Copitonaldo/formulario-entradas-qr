@@ -10,6 +10,9 @@ html, body {
   flex-direction: column;
   align-items: center;
   margin-top: 40px;
+  padding-left: 10px; /* Added padding for small screens */
+  padding-right: 10px; /* Added padding for small screens */
+  box-sizing: border-box; /* Ensure padding is included in width */
 }
 
 form#formData {
@@ -18,6 +21,7 @@ form#formData {
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
   width: 350px;
+  max-width: 100%; /* Ensure form does not overflow */
   box-sizing: border-box;
 }
 
@@ -36,6 +40,7 @@ form#formData input[type="number"] {
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+  box-sizing: border-box; /* Ensure padding and border are included in width */
 }
 
 form#formData button {
@@ -58,6 +63,9 @@ form#formData button:hover {
   font-weight: bold;
   margin-bottom: 16px;
   display: none;
+  width: 350px; /* Match form width */
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 #confirmacionDatos {
@@ -66,6 +74,7 @@ form#formData button:hover {
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
   width: 350px;
+  max-width: 100%; /* Ensure it does not overflow */
   box-sizing: border-box;
   margin-top: 20px;
 }
@@ -76,8 +85,9 @@ form#formData button:hover {
   border-radius: 10px;
   box-shadow: 0 2px 12px #0002;
   margin-top: 40px;
-  max-width: 600px;
-  width: 100%;
+  max-width: 550px; /* Adjusted for better display */
+  width: 100%; /* Responsive width */
+  box-sizing: border-box;
 }
 
 #entradaGenerada h3 {
@@ -87,35 +97,35 @@ form#formData button:hover {
 
 .ticket-img-wrap {
   position: relative;
-  display: block;
-  width: 500px;
-  height: 170px;
+  display: block; 
+  width: 100%; 
+  max-width: 500px; 
+  aspect-ratio: 500 / 170; 
   margin: 0 auto 10px auto;
-  background: white;
+  background: #f0f0f0; 
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-  padding: 10px;
   box-sizing: border-box;
+  overflow: hidden; 
 }
 
 .ticket-bg {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  border-radius: 8px;
-  display: block;
-  background: #eee;
+  object-fit: cover; 
+  border-radius: 0; /* Image itself should not have border radius if wrap has overflow:hidden */
+  display: block; 
 }
 
 .qr-absolute {
   position: absolute;
   top: 50%;
-  left: 50px;
+  left: 30px; 
   transform: translateY(-50%);
-  background: #fff;
-  padding: 4px;
+  background: rgba(255, 255, 255, 0.9); 
+  padding: 6px; 
   border-radius: 8px;
-  box-shadow: 0 2px 8px #0002;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -123,39 +133,43 @@ form#formData button:hover {
 }
 
 #qrCanvas {
-  background: #fff;
   border-radius: 4px;
-  width: 80px;
-  height: 80px;
+  width: 70px; 
+  height: 70px; 
   display: block;
 }
 
 .qr-code-label {
-  font-size: 0.95rem;
-  margin-top: 2px;
-  color: #222;
+  font-size: 0.85rem; 
+  margin-top: 3px;
+  color: #333;
   text-align: center;
+  font-weight: bold;
 }
 
 .datos {
-  margin-top: 10px;
-  font-size: 1.15rem;
+  margin-top: 15px; 
+  font-size: 1.1rem; 
+  padding: 0 10px; 
+  box-sizing: border-box;
 }
 
 .datos b {
   display: inline-block;
-  width: 85px;
+  width: 75px; 
+  font-weight: bold;
 }
 
 .datos div {
-  margin-bottom: 6px;
+  margin-bottom: 5px; 
+  line-height: 1.4;
 }
 
 #guardarBtn {
-  margin-top: 18px;
+  margin-top: 25px; 
   padding: 12px 28px;
-  font-size: 1rem;
-  background: #111;
+  font-size: 1.05rem; 
+  background: #28a745; 
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -163,34 +177,92 @@ form#formData button:hover {
   display: block;
   margin-left: auto;
   margin-right: auto;
+  transition: background-color 0.3s ease;
 }
 
 #guardarBtn:hover {
-  background-color: #444;
+  background-color: #218838; 
 }
 
+
+/* Responsive adjustments for Android and smaller screens */
 @media (max-width: 600px) {
-  form#formData, #confirmacionDatos {
-    width: 98vw;
-    padding: 16px 4vw;
-    min-width: 0;
+  .center {
+    margin-top: 20px; 
+    padding-left: 5px;
+    padding-right: 5px;
   }
+
+  form#formData, #confirmacionDatos, #errorMsg {
+    width: 95%; 
+    padding: 20px 5%; 
+  }
+
   #entradaGenerada {
-    max-width: 100vw;
-    padding: 10px 2vw 20px 2vw;
+    padding: 15px 3% 25px 3%; 
+    max-width: 95%;
   }
+
   .ticket-img-wrap {
-    width: 98vw;
-    min-width: 0;
-    height: 120px;
-    padding: 2vw;
+     max-width: 95%; 
+     padding: 0; 
   }
+
   .qr-absolute {
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
+    left: 15px; /* Adjust QR position for smaller screens */
+    padding: 4px;
+  }
+
+  #qrCanvas {
+    width: 60px; /* Smaller QR for mobile */
+    height: 60px; /* Smaller QR for mobile */
+  }
+  .qr-code-label {
+    font-size: 0.75rem;
+  }
+
+  .datos {
+    font-size: 1rem;
+    padding: 0 5px;
   }
   .datos b {
-    width: 60px;
+    width: 65px; /* Adjust label width */
+  }
+  .datos div {
+    margin-bottom: 4px;
+  }
+
+  #guardarBtn {
+    font-size: 1rem;
+    padding: 10px 20px;
+  }
+}
+
+@media (max-width: 400px) {
+  .center {
+    margin-top: 10px;
+  }
+  form#formData, #confirmacionDatos, #errorMsg {
+    padding: 15px 4%;
+  }
+   #entradaGenerada {
+    padding: 10px 2% 20px 2%;
+  }
+  .qr-absolute {
+    left: 10px; /* QR further to the left on very small screens */
+    padding: 3px;
+  }
+  #qrCanvas {
+    width: 50px; /* Even smaller QR */
+    height: 50px; /* Even smaller QR */
+  }
+   .qr-code-label {
+    font-size: 0.7rem;
+   }
+  .datos {
+    font-size: 0.9rem;
+  }
+  .datos b {
+    width: 55px; /* Adjust label width */
   }
 }
