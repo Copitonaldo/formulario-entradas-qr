@@ -316,3 +316,4 @@ if (guardarBtn) {
       alert("No se pudo cargar la funcionalidad para guardar la imagen. Verifique su conexión o intente más tarde.");
     }
   });
+}
