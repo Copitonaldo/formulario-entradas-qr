@@ -1,6 +1,6 @@
 // Importar Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js ";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js ";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -110,12 +110,17 @@ printBtn.onclick = function () {
 };
 
 excelBtn.onclick = function () {
-  const XLSX = require('xlsx');
+  // XLSX ya está disponible globalmente gracias al script cargado en respuestas.html
+  if (!window.XLSX) {
+    console.error("La librería XLSX no está cargada.");
+    alert("Error: La funcionalidad de exportar a Excel no está disponible.");
+    return;
+  }
   const dataToExport = filteredRespuestas.map(r => ({
-    Código: r.codigo,
-    Nombre: r.nombre,
-    Cédula: formatCedula(r.cedula),
-    Edad: r.edad
+    'Código': r.codigo, // Usar comillas para llaves con caracteres especiales o espacios si es necesario
+    'Nombre': r.nombre,
+    'Cédula': formatCedula(r.cedula),
+    'Edad': r.edad
   }));
   const ws = XLSX.utils.json_to_sheet(dataToExport);
   const wb = XLSX.utils.book_new();
