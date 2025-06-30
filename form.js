@@ -316,4 +316,3 @@ if (guardarBtn) {
       alert("No se pudo cargar la funcionalidad para guardar la imagen. Verifique su conexión o intente más tarde.");
     }
   });
-}Tool output for `overwrite_file_with_block`:
