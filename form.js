@@ -38,46 +38,34 @@ const outCodigo = document.getElementById('outCodigo');
 const codigoQR = document.getElementById('codigoQR');
 const qrCanvas = document.getElementById('qrCanvas'); // El canvas original para mostrar QR
 const entradaGenerada = document.getElementById('entradaGenerada');
-const ticketBg = document.getElementById('ticketBg'); 
+const ticketBg = document.getElementById('ticketBg');
 const guardarBtn = document.getElementById('guardarBtn');
 
 // --- Carga de datos del formulario (incluida imagen de fondo) ---
 async function cargarDatosFormulario() {
   if (!formId) return;
 
-  // Usamos ref() directamente ya que conocemos la estructura de 'formularios' 
-  // y no necesitamos consultarla por 'codigo' como si fuera una lista grande.
-  // Asumimos que los formularios se guardan con su 'codigo' como clave o que hay otra forma de acceder.
-  // Si los formularios se guardan con push IDs y 'codigo' es un campo interno, 
-  // entonces sí se necesita query, orderByChild, equalTo.
-  // Por ahora, simplificamos asumiendo que podemos construir la ruta si 'formId' es la clave.
-  // Si 'formId' es un valor de campo 'codigo', la consulta original era correcta.
-  // Vamos a mantener la consulta original por si acaso.
   const formQuery = query(ref(database, 'formularios'), orderByChild('codigo'), equalTo(formId));
-  
+
   onValue(formQuery, (snapshot) => {
     if (snapshot.exists()) {
       const formEntries = snapshot.val();
-      // snapshot.val() devuelve un objeto donde las claves son los push IDs
-      const formKey = Object.keys(formEntries)[0]; 
+      const formKey = Object.keys(formEntries)[0];
       const specificFormData = formEntries[formKey];
-      
+
       if (formTitleElement) {
         formTitleElement.textContent = `Formulario: ${specificFormData.nombre || formId}`;
       }
       if (ticketBg && specificFormData.imagen) {
         ticketBg.src = specificFormData.imagen;
-        ticketBg.style.display = 'block'; 
+        ticketBg.style.display = 'block';
       } else if (ticketBg) {
-        ticketBg.style.display = 'none'; 
-        // Opcional: Poner un color de fondo por defecto si no hay imagen
-        // ticketBg.parentElement.style.backgroundColor = '#eee'; 
+        ticketBg.style.display = 'none';
       }
     } else {
       if (formTitleElement) formTitleElement.textContent = 'Formulario no encontrado';
       if (ticketBg) ticketBg.style.display = 'none';
       console.warn(`Formulario con ID ${formId} no encontrado.`);
-      // Ocultar el formulario si el ID no es válido o no se encuentra
       if(formData) formData.style.display = 'none';
       errorMsg.innerHTML = '<b>Error:</b> El formulario especificado no existe. Verifique el enlace o contacte al administrador.';
       errorMsg.style.display = 'block';
@@ -102,9 +90,8 @@ if (!formId || formId.trim() === "") {
   if (formData) formData.style.display = 'none';
   if (ticketBg) ticketBg.style.display = 'none';
   console.error("formId es nulo o vacío. La aplicación no puede continuar.");
-  // No lanzar error aquí para permitir que el mensaje de error se muestre en la página
 } else {
-  cargarDatosFormulario(); 
+  cargarDatosFormulario();
 }
 
 function toTitleCase(str) {
@@ -124,7 +111,7 @@ if (formData) {
     event.preventDefault();
     errorMsg.style.display = 'none';
     const nombre = inputNombre.value.trim();
-    const cedulaRaw = inputCedula.value.replace(/\D/g, ''); 
+    const cedulaRaw = inputCedula.value.replace(/\D/g, '');
     const edad = inputEdad.value.trim();
 
     if (!nombre || !/^\d{7,8}$/.test(cedulaRaw) || !edad || isNaN(parseInt(edad)) || parseInt(edad) < 0) {
@@ -138,7 +125,7 @@ if (formData) {
     confNombre.textContent = toTitleCase(nombre);
     confCedula.textContent = formatCedula(cedulaRaw);
     confEdad.textContent = `${edad} años`;
-    
+
     formData.style.display = 'none';
     entradaGenerada.style.display = 'none';
     confirmacionDatos.style.display = 'block';
@@ -155,24 +142,34 @@ if (btnConfirmar) {
     }
 
     const { nombre, cedula, edad } = window.datosParaConfirmar;
+
+    // Verificar Cédula duplicada
+    const respuestasQuery = query(ref(database, `respuestas/${formId}`), orderByChild('cedula'), equalTo(cedula));
+    try {
+      const snapshot = await get(respuestasQuery);
+      if (snapshot.exists()) {
+        errorMsg.textContent = "Esta cédula ya ha sido registrada para este formulario.";
+        errorMsg.style.display = 'block';
+        confirmacionDatos.style.display = 'none';
+        if (formData) formData.style.display = 'block'; // Mostrar formulario para corregir
+        return;
+      }
+    } catch (e) {
+      console.error("Error verificando cédula duplicada:", e);
+      errorMsg.textContent = "Error al verificar la cédula. Intente de nuevo.";
+      errorMsg.style.display = 'block';
+      confirmacionDatos.style.display = 'none';
+      if (formData) formData.style.display = 'block'; // Mostrar formulario para corregir
+      return;
+    }
+
     const contadorRef = ref(database, `contadores/${formId}/ultimoCodigo`);
     let nuevoCodigoSecuencialFormateado;
 
     try {
       const transactionResult = await runTransaction(contadorRef, (currentData) => {
         if (currentData === null) {
-          // No se puede hacer await get() dentro de la transacción síncrona de Firebase RTDB.
-          // Se debe manejar la inicialización del contador de forma diferente o aceptar que
-          // el primer código podría no ser 1 si hay un error aquí y se reintenta.
-          // Una solución es leer el número de hijos ANTES de la transacción si es la primera vez.
-          // Sin embargo, la lógica actual con numChildren + 1 ya está en un callback async,
-          // lo que es un problema. La función de transacción NO DEBE SER ASYNC.
-          // Se debe reestructurar para que la lectura de hijos (si es necesaria) ocurra fuera
-          // o se acepte una inicialización más simple.
-          // Para simplificar y corregir: si es null, empezamos en 1.
-          // La lógica de contar hijos para inicializar es propensa a race conditions si no está bien manejada.
-          // El plan original es que el contador inicie en 1 y se incremente.
-          return 1; 
+          return 1;
         }
         return currentData + 1;
       });
@@ -214,10 +211,9 @@ if (btnConfirmar) {
       outCodigo.textContent = nuevaRespuesta.codigo;
       codigoQR.textContent = "Código: " + nuevaRespuesta.codigo; // Etiqueta debajo del QR visible
 
-      const qrCanvasElement = document.getElementById('qrCanvas'); // El canvas visible en la página
+      const qrCanvasElement = document.getElementById('qrCanvas');
       const datosQR = `Nombre: ${toTitleCase(nombre)}\nCédula: ${cedula}\nEdad: ${edad}\nCódigo: ${nuevaRespuesta.codigo}`;
-      
-      // Generar QR en el canvas visible
+
       QRCode.toCanvas(qrCanvasElement, datosQR, { width: parseInt(qrCanvasElement.style.width) || 70, height: parseInt(qrCanvasElement.style.height) || 70, margin: 1 }, error => {
         if (error) console.error("Error generando QR para visualización:", error);
       });
@@ -238,42 +234,40 @@ if (btnCorregir) {
   btnCorregir.addEventListener('click', () => {
     confirmacionDatos.style.display = 'none';
     if (formData) {
-      // Solo mostrar el formulario si formId es válido (ya que cargarDatosFormulario lo oculta si no lo es)
       if (formId && formId.trim() !== "" && formData.style.display === 'none') {
          formData.style.display = 'block';
       }
     }
-    errorMsg.style.display = 'none'; // Ocultar cualquier mensaje de error previo
+    errorMsg.style.display = 'none';
   });
 }
 
-// Funcionalidad para el botón "Guardar entrada"
 if (guardarBtn) {
   guardarBtn.addEventListener('click', async () => {
-    // Intentar cargar html2canvas dinámicamente
     try {
       const html2canvas = (await import('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.esm.min.js')).default;
-      
-      const elementToCapture = document.getElementById('entradaGenerada'); // El div que contiene todo el ticket
+
+      const elementToCapture = document.querySelector('#entradaGenerada .ticket-img-wrap');
       if (!elementToCapture) {
-        console.error("Elemento 'entradaGenerada' no encontrado para captura.");
+        console.error("Elemento '.ticket-img-wrap' no encontrado para captura.");
         alert("Error: No se pudo encontrar el contenido del ticket para guardar.");
         return;
       }
 
       // Clonar el elemento para modificarlo antes de la captura sin afectar la visualización
       const clone = elementToCapture.cloneNode(true);
-      clone.style.maxWidth = '500px'; // Ancho fijo para la imagen
-      clone.style.boxShadow = 'none'; // Quitar sombra para la imagen
-      clone.style.padding = '20px'; // Ajustar padding si es necesario
-      clone.style.marginTop = '0';
-      clone.style.marginBottom = '0';
-      
-      // Asegurar que el fondo del clon sea blanco si no hay imagen
+      // Aplicar estilos directamente al clon para asegurar la captura deseada
+      clone.style.width = '300px'; // Ancho fijo para la imagen de salida, ajustar según diseño
+      clone.style.height = '400px'; // Alto fijo para la imagen de salida, ajustar según diseño
+      clone.style.boxShadow = 'none';
+      clone.style.position = 'relative'; // Asegurar que los elementos internos se posicionen correctamente
+
+      // Asegurar que el fondo del clon sea blanco si no hay imagen de fondo visible
       const clonedTicketBg = clone.querySelector('#ticketBg');
-      if (clonedTicketBg && (!clonedTicketBg.src || clonedTicketBg.style.display === 'none')) {
-          const ticketImgWrap = clone.querySelector('.ticket-img-wrap');
-          if (ticketImgWrap) ticketImgWrap.style.backgroundColor = '#ffffff'; // Fondo blanco para la captura
+      if (clonedTicketBg && (!clonedTicketBg.src || clonedTicketBg.style.display === 'none' || getComputedStyle(clonedTicketBg).display === 'none')) {
+          clone.style.backgroundColor = '#ffffff'; // Fondo blanco para la captura si no hay imagen
+      } else if (clonedTicketBg && clonedTicketBg.src) {
+          clone.style.backgroundColor = 'transparent'; // Si hay imagen, el fondo del div debe ser transparente
       }
 
 
@@ -283,32 +277,33 @@ if (guardarBtn) {
       document.body.appendChild(clone);
 
 
-      html2canvas(clone, { 
-        useCORS: true, // Para imágenes de fondo de otros dominios si las hubiera
-        scale: 2, // Aumentar la escala para mejor resolución
-        backgroundColor: '#ffffff', // Fondo blanco por defecto
+      html2canvas(clone, {
+        useCORS: true,
+        scale: 2,
+        backgroundColor: null, // Permitir que el fondo del elemento clonado (blanco o imagen) prevalezca
         onclone: (documentCloned) => {
-          // Asegurar que el canvas del QR se renderice correctamente en el clon
-          const originalCanvas = document.getElementById('qrCanvas');
-          const clonedCanvas = documentCloned.getElementById('qrCanvas');
-          if (originalCanvas && clonedCanvas) {
-            // Re-dibujar el QR en el canvas clonado con datos actuales
+          const clonedCanvas = documentCloned.querySelector('#qrCanvas'); // Usar querySelector en el documento clonado
+          if (clonedCanvas) { // No necesitamos el originalCanvas aquí
             const datosQR = `Nombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}`;
-            QRCode.toCanvas(clonedCanvas, datosQR, { width: 70, height: 70, margin:1 }, function (error) {
+            // Asegurarse que el tamaño del QR en el clon sea el deseado para la imagen final.
+            // Puede ser necesario ajustar estos valores si el QR se ve muy pequeño o grande en la imagen guardada.
+            QRCode.toCanvas(clonedCanvas, datosQR, { width: 80, height: 80, margin:1 }, function (error) { // Aumentado tamaño QR para mejor visibilidad
               if (error) console.error('Error re-dibujando QR en clon:', error);
             });
           }
         }
       }).then(canvas => {
         const link = document.createElement('a');
-        link.download = `entrada-${outCodigo.textContent || 'ticket'}.png`;
+        link.download = `ticket-${outCodigo.textContent || 'entrada'}.png`; // Nombre de archivo más específico
         link.href = canvas.toDataURL('image/png');
         link.click();
-        document.body.removeChild(clone); // Limpiar el clon del DOM
+        document.body.removeChild(clone);
       }).catch(err => {
         console.error("Error al generar la imagen con html2canvas:", err);
         alert("Error al generar la imagen. Intente de nuevo.");
-        document.body.removeChild(clone); // Limpiar el clon del DOM en caso de error
+        if (document.body.contains(clone)) { // Solo remover si aún está en el body
+            document.body.removeChild(clone);
+        }
       });
 
     } catch (error) {
