@@ -156,7 +156,7 @@ if (btnConfirmar) {
       }
     } catch (e) {
       console.error("Error verificando cédula duplicada:", e);
-      errorMsg.textContent = "Error esta cedula ya esta registrada. Intente de nuevo.";
+      errorMsg.textContent = "Error al verificar la cédula. Intente de nuevo.";
       errorMsg.style.display = 'block';
       confirmacionDatos.style.display = 'none';
       if (formData) formData.style.display = 'block'; // Mostrar formulario para corregir
@@ -247,54 +247,63 @@ if (guardarBtn) {
     try {
       const html2canvas = (await import('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.esm.min.js')).default;
       
-      const elementToCapture = document.getElementById('entradaGenerada'); 
+      const elementToCapture = document.querySelector('#entradaGenerada .ticket-img-wrap'); 
       if (!elementToCapture) {
-        console.error("Elemento 'entradaGenerada' no encontrado para captura.");
+        console.error("Elemento '.ticket-img-wrap' no encontrado para captura.");
         alert("Error: No se pudo encontrar el contenido del ticket para guardar.");
         return;
       }
 
+      // Clonar el elemento para modificarlo antes de la captura sin afectar la visualización
       const clone = elementToCapture.cloneNode(true);
-      clone.style.maxWidth = '500px'; 
-      clone.style.boxShadow = 'none'; 
-      clone.style.padding = '20px'; 
-      clone.style.marginTop = '0';
-      clone.style.marginBottom = '0';
-      
+      // Aplicar estilos directamente al clon para asegurar la captura deseada
+      clone.style.width = '300px'; // Ancho fijo para la imagen de salida, ajustar según diseño
+      clone.style.height = '400px'; // Alto fijo para la imagen de salida, ajustar según diseño
+      clone.style.boxShadow = 'none';
+      clone.style.position = 'relative'; // Asegurar que los elementos internos se posicionen correctamente
+
+      // Asegurar que el fondo del clon sea blanco si no hay imagen de fondo visible
       const clonedTicketBg = clone.querySelector('#ticketBg');
-      if (clonedTicketBg && (!clonedTicketBg.src || clonedTicketBg.style.display === 'none')) {
-          const ticketImgWrap = clone.querySelector('.ticket-img-wrap');
-          if (ticketImgWrap) ticketImgWrap.style.backgroundColor = '#ffffff'; 
+      if (clonedTicketBg && (!clonedTicketBg.src || clonedTicketBg.style.display === 'none' || getComputedStyle(clonedTicketBg).display === 'none')) {
+          clone.style.backgroundColor = '#ffffff'; // Fondo blanco para la captura si no hay imagen
+      } else if (clonedTicketBg && clonedTicketBg.src) {
+          clone.style.backgroundColor = 'transparent'; // Si hay imagen, el fondo del div debe ser transparente
       }
 
+
+      // Añadir el clon al DOM temporalmente para que html2canvas lo renderice correctamente
       clone.style.position = 'absolute';
-      clone.style.left = '-9999px'; 
+      clone.style.left = '-9999px'; // Moverlo fuera de la pantalla
       document.body.appendChild(clone);
+
 
       html2canvas(clone, { 
         useCORS: true, 
         scale: 2, 
-        backgroundColor: '#ffffff', 
+        backgroundColor: null, // Permitir que el fondo del elemento clonado (blanco o imagen) prevalezca
         onclone: (documentCloned) => {
-          const originalCanvas = document.getElementById('qrCanvas');
-          const clonedCanvas = documentCloned.getElementById('qrCanvas');
-          if (originalCanvas && clonedCanvas) {
+          const clonedCanvas = documentCloned.querySelector('#qrCanvas'); // Usar querySelector en el documento clonado
+          if (clonedCanvas) { // No necesitamos el originalCanvas aquí
             const datosQR = `Nombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}`;
-            QRCode.toCanvas(clonedCanvas, datosQR, { width: 70, height: 70, margin:1 }, function (error) {
+            // Asegurarse que el tamaño del QR en el clon sea el deseado para la imagen final.
+            // Puede ser necesario ajustar estos valores si el QR se ve muy pequeño o grande en la imagen guardada.
+            QRCode.toCanvas(clonedCanvas, datosQR, { width: 80, height: 80, margin:1 }, function (error) { // Aumentado tamaño QR para mejor visibilidad
               if (error) console.error('Error re-dibujando QR en clon:', error);
             });
           }
         }
       }).then(canvas => {
         const link = document.createElement('a');
-        link.download = `entrada-${outCodigo.textContent || 'ticket'}.png`;
+        link.download = `ticket-${outCodigo.textContent || 'entrada'}.png`; // Nombre de archivo más específico
         link.href = canvas.toDataURL('image/png');
         link.click();
         document.body.removeChild(clone); 
       }).catch(err => {
         console.error("Error al generar la imagen con html2canvas:", err);
         alert("Error al generar la imagen. Intente de nuevo.");
-        document.body.removeChild(clone); 
+        if (document.body.contains(clone)) { // Solo remover si aún está en el body
+            document.body.removeChild(clone); 
+        }
       });
 
     } catch (error) {
