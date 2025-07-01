@@ -156,7 +156,7 @@ if (btnConfirmar) {
       }
     } catch (e) {
       console.error("Error verificando cédula duplicada:", e);
-      errorMsg.textContent = "Error al verificar la cédula. Intente de nuevo.";
+      errorMsg.textContent = "Error esta cedula ya esta registrada. Intente de nuevo.";
       errorMsg.style.display = 'block';
       confirmacionDatos.style.display = 'none';
       if (formData) formData.style.display = 'block'; // Mostrar formulario para corregir
