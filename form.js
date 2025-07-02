@@ -114,9 +114,9 @@ if (formData) {
     const cedulaRaw = inputCedula.value.replace(/\D/g, ''); 
     const edad = inputEdad.value.trim();
 
-    if (!nombre || !/^\d{7,8}$/.test(cedulaRaw) || !edad || isNaN(parseInt(edad)) || parseInt(edad) < 0) {
+    if (!nombre || !/^\d{8}$/.test(cedulaRaw) || !edad || isNaN(parseInt(edad)) || parseInt(edad) < 0) {
       if (!nombre) errorMsg.textContent = 'Debe ingresar un nombre.';
-      else if (!/^\d{7,8}$/.test(cedulaRaw)) errorMsg.textContent = 'La cédula debe tener entre 7 y 8 dígitos.';
+      else if (!/^\d{8}$/.test(cedulaRaw)) errorMsg.textContent = 'La cédula debe tener exactamente 8 dígitos.';
       else errorMsg.textContent = 'Edad inválida.';
       errorMsg.style.display = 'block';
       return;
@@ -255,13 +255,13 @@ if (guardarBtn) {
 
       const clone = elementToCapture.cloneNode(true);
 
-      const targetWidthPx = 2000;
-      const targetHeightPx = 700;
+      const targetWidthPx = 2560;
+      const targetHeightPx = 980;
       // La escala se determina por la relación entre el tamaño deseado y el tamaño del clon.
-      // Si el clon se estiliza a 2000x350, la escala será 2.
-      const cloneBaseWidth = 2000; 
-      const cloneBaseHeight = 350;
-      const scaleFactor = targetWidthPx / cloneBaseWidth; // Debería ser 2
+      // Si el clon se estiliza a 2560x980, la escala será para lograr 300 DPI
+      const cloneBaseWidth = 2560; 
+      const cloneBaseHeight = 980;
+      const scaleFactor = 1; // Escala 1 ya que usamos las dimensiones finales directamente
 
       clone.style.width = `${cloneBaseWidth}px`;
       clone.style.height = `${cloneBaseHeight}px`;
@@ -341,9 +341,10 @@ if (guardarBtn) {
 
       html2canvas(clone, { 
         useCORS: true, 
-        scale: scaleFactor, 
+        scale: scaleFactor,
+        width: targetWidthPx,
+        height: targetHeightPx,
         backgroundColor: clone.style.backgroundColor,
-        // Se eliminan width y height de las opciones, html2canvas usará las dimensiones del clon.
         logging: true, 
         onclone: (documentCloned, clonedElement) => {
           const clonedCanvasEl = clonedElement.querySelector('#qrCanvas');
@@ -362,9 +363,9 @@ if (guardarBtn) {
         }
       }).then(canvas => {
         const link = document.createElement('a');
-        const nombreArchivo = `${outCodigo.textContent || 'TICKET'}${outNombre.textContent.replace(/\s/g, '') || ''}.png`;
+        const nombreArchivo = `${outCodigo.textContent || 'TICKET'}${outNombre.textContent.replace(/\s/g, '') || ''}.jpg`;
         link.download = nombreArchivo;
-        link.href = canvas.toDataURL('image/png');
+        link.href = canvas.toDataURL('image/jpeg', 0.95);
         link.click();
         document.body.removeChild(clone); 
       }).catch(err => {
