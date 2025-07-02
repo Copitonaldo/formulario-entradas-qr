@@ -255,12 +255,13 @@ if (guardarBtn) {
 
       const clone = elementToCapture.cloneNode(true);
 
-      const targetWidthPx = 2560; // Nueva dimensión
-      const targetHeightPx = 980;  // Nueva dimensión
-      const scaleFactor = 2; // Mantenemos la escala, ajustamos el tamaño base del clon
-
-      const cloneBaseWidth = targetWidthPx / scaleFactor; // 1280px
-      const cloneBaseHeight = targetHeightPx / scaleFactor; // 490px
+      const targetWidthPx = 2000;
+      const targetHeightPx = 700;
+      // La escala se determina por la relación entre el tamaño deseado y el tamaño del clon.
+      // Si el clon se estiliza a 1000x350, la escala será 2.
+      const cloneBaseWidth = 1000; 
+      const cloneBaseHeight = 350;
+      const scaleFactor = targetWidthPx / cloneBaseWidth; // Debería ser 2
 
       clone.style.width = `${cloneBaseWidth}px`;
       clone.style.height = `${cloneBaseHeight}px`;
@@ -342,8 +343,7 @@ if (guardarBtn) {
         useCORS: true, 
         scale: scaleFactor, 
         backgroundColor: clone.style.backgroundColor,
-        width: cloneBaseWidth, // Re-introducir width explícito
-        height: cloneBaseHeight, // Re-introducir height explícito
+        // Se eliminan width y height de las opciones, html2canvas usará las dimensiones del clon.
         logging: true, 
         onclone: (documentCloned, clonedElement) => {
           const clonedCanvasEl = clonedElement.querySelector('#qrCanvas');
@@ -362,9 +362,9 @@ if (guardarBtn) {
         }
       }).then(canvas => {
         const link = document.createElement('a');
-        const nombreArchivo = `${outCodigo.textContent || 'TICKET'}${outNombre.textContent.replace(/\s/g, '') || ''}.jpg`; // Cambio a .jpg
+        const nombreArchivo = `${outCodigo.textContent || 'TICKET'}${outNombre.textContent.replace(/\s/g, '') || ''}.png`;
         link.download = nombreArchivo;
-        link.href = canvas.toDataURL('image/jpeg', 0.95); // Cambio a image/jpeg y calidad 0.95
+        link.href = canvas.toDataURL('image/png');
         link.click();
         document.body.removeChild(clone); 
       }).catch(err => {
