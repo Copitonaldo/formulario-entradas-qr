@@ -281,6 +281,7 @@ if (guardarBtn) {
       clone.style.height = `${targetHeight / 4}px`; // y luego escalamos con html2canvas
       clone.style.boxSizing = 'border-box'; // Importante para que padding no altere el tamaño final
       clone.style.boxShadow = 'none';
+      clone.style.borderRadius = '0px'; // Quitar bordes redondeados
       clone.style.position = 'relative'; 
 
       const clonedTicketBg = clone.querySelector('#ticketBg');
@@ -297,52 +298,67 @@ if (guardarBtn) {
         clone.style.backgroundColor = '#ffffff';
       }
       
-      // Ajustar el QR dentro del clon
-      const qrAbsoluteDiv = clone.querySelector('.qr-absolute');
-      if (qrAbsoluteDiv) {
-        // Estos estilos deben asegurar que el QR se posicione correctamente dentro del nuevo tamaño del clon
-        qrAbsoluteDiv.style.position = 'absolute';
-        qrAbsoluteDiv.style.bottom = '20px'; // Ejemplo, ajustar según diseño
-        qrAbsoluteDiv.style.right = '20px';  // Ejemplo, ajustar según diseño
+      // Ajustar el QR y el texto del código dentro del clon
+      const qrAbsoluteDivInClone = clone.querySelector('.qr-absolute');
+      if (qrAbsoluteDivInClone) {
+        qrAbsoluteDivInClone.style.position = 'absolute';
+        qrAbsoluteDivInClone.style.bottom = '20px'; // Ajustar según el diseño deseado en la imagen final
+        qrAbsoluteDivInClone.style.right = '20px';  // Ajustar según el diseño deseado en la imagen final
+        qrAbsoluteDivInClone.style.display = 'flex'; // Para alinear canvas y label si es necesario
+        qrAbsoluteDivInClone.style.flexDirection = 'column';
+        qrAbsoluteDivInClone.style.alignItems = 'center';
+        qrAbsoluteDivInClone.style.justifyContent = 'center';
       }
+
       const qrCanvasInClone = clone.querySelector('#qrCanvas');
       if (qrCanvasInClone) {
-        // Ajustar tamaño del canvas QR en el clon para que sea proporcional al nuevo tamaño
-        qrCanvasInClone.style.width = '100px'; // Tamaño base, se escalará con html2canvas
+        qrCanvasInClone.style.width = '100px'; // Tamaño base para el canvas del QR
         qrCanvasInClone.style.height = '100px';
+        qrCanvasInClone.style.display = 'block'; // Asegurar visibilidad
       }
 
-
+      const qrCodeLabelInClone = clone.querySelector('.qr-code-label');
+      if (qrCodeLabelInClone) {
+        qrCodeLabelInClone.style.display = 'block'; // Asegurar visibilidad
+        qrCodeLabelInClone.style.color = '#000000'; // Asegurar color visible, ajustar si es necesario
+        qrCodeLabelInClone.style.textAlign = 'center';
+        qrCodeLabelInClone.style.marginTop = '5px'; // Espacio entre QR y etiqueta
+        qrCodeLabelInClone.textContent = "Código: " + outCodigo.textContent; // Asegurar que el texto esté presente
+      }
+      
       clone.style.position = 'absolute';
       clone.style.left = '-9999px'; 
       document.body.appendChild(clone);
 
       html2canvas(clone, { 
         useCORS: true, 
-        scale: 4, // Escala para alcanzar la resolución de 2000px desde 500px (500*4=2000)
-        backgroundColor: clone.style.backgroundColor || '#ffffff', // Usar el BG del clon
-        width: parseInt(clone.style.width), // Usar las dimensiones del clon
+        scale: 4, 
+        backgroundColor: clone.style.backgroundColor || '#ffffff', 
+        width: parseInt(clone.style.width), 
         height: parseInt(clone.style.height),
         onclone: (documentCloned) => {
+          // Re-dibujar QR en el canvas clonado
           const clonedCanvasEl = documentCloned.querySelector('#qrCanvas');
           if (clonedCanvasEl) {
-            clonedCanvasEl.style.display = 'block'; // Asegurar que sea visible
+            clonedCanvasEl.style.display = 'block';
             const datosQR = `Nombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}`;
-            // El tamaño aquí debe ser el tamaño final deseado en la imagen escalada.
-            // Si el canvas base es 100x100 y la escala es 4, el QR en la imagen será 400x400.
-            // Ajustar width/height en QRCode.toCanvas para el tamaño deseado en la imagen final.
-            // Dado que el canvas en el clon es 100x100, y la escala es 4, el QR será de 400x400px en la imagen final.
-            // Si se quiere más pequeño, reducir el width/height aquí. ej. 50 para 200px final.
             QRCode.toCanvas(clonedCanvasEl, datosQR, { width: 100, height: 100, margin: 1 }, function (error) {
               if (error) console.error('Error re-dibujando QR en clon:', error);
             });
+          }
+          // Asegurar que la etiqueta del código también esté visible en el clon
+          const clonedQrLabel = documentCloned.querySelector('.qr-code-label');
+          if (clonedQrLabel) {
+            clonedQrLabel.style.display = 'block';
+            clonedQrLabel.style.color = '#000000'; // O el color que deba tener
+            clonedQrLabel.textContent = "Código: " + outCodigo.textContent; 
           }
         }
       }).then(canvas => {
         const link = document.createElement('a');
         const nombreArchivo = `${outCodigo.textContent || 'TICKET'}${outNombre.textContent.replace(/\s/g, '') || ''}.png`;
         link.download = nombreArchivo;
-        link.href = canvas.toDataURL('image/png');
+        link.href = canvas.toDataURL('image/jpg');
         link.click();
         document.body.removeChild(clone); 
       }).catch(err => {
