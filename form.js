@@ -302,28 +302,34 @@ if (guardarBtn) {
       const qrAbsoluteDivInClone = clone.querySelector('.qr-absolute');
       if (qrAbsoluteDivInClone) {
         qrAbsoluteDivInClone.style.position = 'absolute';
-        qrAbsoluteDivInClone.style.bottom = '20px'; // Ajustar según el diseño deseado en la imagen final
-        qrAbsoluteDivInClone.style.right = '20px';  // Ajustar según el diseño deseado en la imagen final
-        qrAbsoluteDivInClone.style.display = 'flex'; // Para alinear canvas y label si es necesario
+        qrAbsoluteDivInClone.style.bottom = '20px'; 
+        qrAbsoluteDivInClone.style.right = '20px';  
+        qrAbsoluteDivInClone.style.display = 'flex !important'; 
         qrAbsoluteDivInClone.style.flexDirection = 'column';
         qrAbsoluteDivInClone.style.alignItems = 'center';
         qrAbsoluteDivInClone.style.justifyContent = 'center';
+        qrAbsoluteDivInClone.style.opacity = '1 !important';
+        qrAbsoluteDivInClone.style.visibility = 'visible !important';
       }
 
       const qrCanvasInClone = clone.querySelector('#qrCanvas');
       if (qrCanvasInClone) {
-        qrCanvasInClone.style.width = '100px'; // Tamaño base para el canvas del QR
+        qrCanvasInClone.style.width = '100px'; 
         qrCanvasInClone.style.height = '100px';
-        qrCanvasInClone.style.display = 'block'; // Asegurar visibilidad
+        qrCanvasInClone.style.display = 'block !important'; 
+        qrCanvasInClone.style.opacity = '1 !important';
+        qrCanvasInClone.style.visibility = 'visible !important';
       }
 
       const qrCodeLabelInClone = clone.querySelector('.qr-code-label');
       if (qrCodeLabelInClone) {
-        qrCodeLabelInClone.style.display = 'block'; // Asegurar visibilidad
-        qrCodeLabelInClone.style.color = '#000000'; // Asegurar color visible, ajustar si es necesario
+        qrCodeLabelInClone.style.display = 'block !important'; 
+        qrCodeLabelInClone.style.color = '#000000 !important'; 
         qrCodeLabelInClone.style.textAlign = 'center';
-        qrCodeLabelInClone.style.marginTop = '5px'; // Espacio entre QR y etiqueta
-        qrCodeLabelInClone.textContent = "Código: " + outCodigo.textContent; // Asegurar que el texto esté presente
+        qrCodeLabelInClone.style.marginTop = '5px'; 
+        qrCodeLabelInClone.textContent = "Código: " + outCodigo.textContent; 
+        qrCodeLabelInClone.style.opacity = '1 !important';
+        qrCodeLabelInClone.style.visibility = 'visible !important';
       }
       
       clone.style.position = 'absolute';
@@ -337,28 +343,38 @@ if (guardarBtn) {
         width: parseInt(clone.style.width), 
         height: parseInt(clone.style.height),
         onclone: (documentCloned) => {
-          // Re-dibujar QR en el canvas clonado
+          const containerInClonedDoc = documentCloned.querySelector('.qr-absolute');
+          if (containerInClonedDoc) {
+            containerInClonedDoc.style.display = 'flex !important';
+            containerInClonedDoc.style.opacity = '1 !important';
+            containerInClonedDoc.style.visibility = 'visible !important';
+          }
+
           const clonedCanvasEl = documentCloned.querySelector('#qrCanvas');
           if (clonedCanvasEl) {
-            clonedCanvasEl.style.display = 'block';
+            clonedCanvasEl.style.display = 'block !important';
+            clonedCanvasEl.style.opacity = '1 !important';
+            clonedCanvasEl.style.visibility = 'visible !important';
             const datosQR = `Nombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}`;
             QRCode.toCanvas(clonedCanvasEl, datosQR, { width: 100, height: 100, margin: 1 }, function (error) {
               if (error) console.error('Error re-dibujando QR en clon:', error);
             });
           }
-          // Asegurar que la etiqueta del código también esté visible en el clon
+          
           const clonedQrLabel = documentCloned.querySelector('.qr-code-label');
           if (clonedQrLabel) {
-            clonedQrLabel.style.display = 'block';
-            clonedQrLabel.style.color = '#000000'; // O el color que deba tener
+            clonedQrLabel.style.display = 'block !important';
+            clonedQrLabel.style.opacity = '1 !important';
+            clonedQrLabel.style.visibility = 'visible !important';
+            clonedQrLabel.style.color = '#000000 !important'; 
             clonedQrLabel.textContent = "Código: " + outCodigo.textContent; 
           }
         }
       }).then(canvas => {
         const link = document.createElement('a');
-        const nombreArchivo = `${outCodigo.textContent || 'TICKET'}${outNombre.textContent.replace(/\s/g, '') || ''}.jpg`;
+        const nombreArchivo = `${outCodigo.textContent || 'TICKET'}${outNombre.textContent.replace(/\s/g, '') || ''}.png`;
         link.download = nombreArchivo;
-        link.href = canvas.toDataURL('image/jpg');
+        link.href = canvas.toDataURL('image/png');
         link.click();
         document.body.removeChild(clone); 
       }).catch(err => {
