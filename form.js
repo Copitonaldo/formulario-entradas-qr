@@ -342,7 +342,8 @@ if (guardarBtn) {
         useCORS: true, 
         scale: scaleFactor, 
         backgroundColor: clone.style.backgroundColor,
-        // Se eliminan width y height de las opciones, html2canvas usará las dimensiones del clon.
+        width: cloneBaseWidth, // Re-introducir width explícito
+        height: cloneBaseHeight, // Re-introducir height explícito
         logging: true, 
         onclone: (documentCloned, clonedElement) => {
           const clonedCanvasEl = clonedElement.querySelector('#qrCanvas');
