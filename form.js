@@ -258,8 +258,8 @@ if (guardarBtn) {
       const targetWidthPx = 2000;
       const targetHeightPx = 700;
       // La escala se determina por la relación entre el tamaño deseado y el tamaño del clon.
-      // Si el clon se estiliza a 1000x350, la escala será 2.
-      const cloneBaseWidth = 1000; 
+      // Si el clon se estiliza a 2000x350, la escala será 2.
+      const cloneBaseWidth = 2000; 
       const cloneBaseHeight = 350;
       const scaleFactor = targetWidthPx / cloneBaseWidth; // Debería ser 2
 
