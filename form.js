@@ -257,12 +257,12 @@ if (guardarBtn) {
       // Clonar el elemento para modificarlo antes de la captura sin afectar la visualización
       const clone = elementToCapture.cloneNode(true);
 
-      // Forzar dimensiones para la captura de 2000x600px (o lo más cercano posible)
+      // Forzar dimensiones para la captura de 2000x750px (o lo más cercano posible)
       // El elemento original '.ticket-img-wrap' podría tener un aspect-ratio diferente.
       // Para mantener el contenido visible, podríamos necesitar ajustar el 'scale'
       // o aceptar que el aspect ratio de la imagen final será el del clon.
       const targetWidth = 2000;
-      const targetHeight = 600;
+      const targetHeight = 750;
 
       // Mantener el aspect ratio del elemento original si es posible, escalando a targetWidth
       const originalRect = elementToCapture.getBoundingClientRect();
