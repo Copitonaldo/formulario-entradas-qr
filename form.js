@@ -254,12 +254,15 @@ return;
 
 const clone = elementToCapture.cloneNode(true);
 
-const targetWidthPx = 2000;
-const targetHeightPx = 700;
-const cloneBaseWidth = 2000;
-const cloneBaseHeight = 350;
-const scaleFactor = targetWidthPx / cloneBaseWidth; // debería ser 2
+// Definir las dimensiones objetivo para la imagen descargada
+const targetOutputWidthPx = 2500;
+const targetOutputHeightPx = 960;
 
+// Usar las dimensiones del elemento original para el clon base
+const cloneBaseWidth = elementToCapture.offsetWidth;
+const cloneBaseHeight = elementToCapture.offsetHeight;
+
+// Aplicar las dimensiones base al clon
 clone.style.width = `${cloneBaseWidth}px`;
 clone.style.height = `${cloneBaseHeight}px`;
 clone.style.boxSizing = 'border-box';
@@ -274,6 +277,7 @@ el.style.boxShadow = 'none';
 });
 
 // Forzar fondo blanco para evitar sombras o transparencias negras
+// Esto será el fondo por defecto si no hay imagen o si la imagen es transparente.
 clone.style.backgroundColor = '#ffffff';
 
 // Imagen de fondo
@@ -281,13 +285,18 @@ const clonedTicketBg = clone.querySelector('#ticketBg');
 if (clonedTicketBg) {
 clonedTicketBg.style.width = '100%';
 clonedTicketBg.style.height = '100%';
-clonedTicketBg.style.objectFit = 'cover';
+clonedTicketBg.style.objectFit = 'cover'; // Estirar la imagen de fondo para cubrir el contenedor
 if (!clonedTicketBg.src || getComputedStyle(clonedTicketBg).display === 'none') {
+// No hay imagen de fondo o está oculta, mantener el fondo blanco del clon.
 clone.style.backgroundColor = '#ffffff';
 } else {
+// Hay imagen de fondo, el fondo del clon debe ser transparente para que se vea.
+// html2canvas con `backgroundColor: null` intentará capturar esto.
+// Si la imagen de fondo en sí tiene transparencias, estas se volverán blancas en el JPEG final.
 clone.style.backgroundColor = 'transparent';
 }
 } else {
+// No hay elemento de imagen de fondo, mantener el fondo blanco del clon.
 clone.style.backgroundColor = '#ffffff';
 }
 
@@ -298,10 +307,10 @@ qrAbsoluteDivInClone.style.position = 'absolute';
 qrAbsoluteDivInClone.style.top = '50%';
 qrAbsoluteDivInClone.style.left = '30px';
 qrAbsoluteDivInClone.style.transform = 'translateY(-50%)';
-qrAbsoluteDivInClone.style.background = '#ffffff'; // fondo blanco para evitar sombras
+qrAbsoluteDivInClone.style.background = '#ffffff'; 
 qrAbsoluteDivInClone.style.padding = getComputedStyle(elementToCapture.querySelector('.qr-absolute')).padding;
-qrAbsoluteDivInClone.style.borderRadius = getComputedStyle(elementToCapture.querySelector('.qr-absolute')).borderRadius; // mantener bordes redondeados
-qrAbsoluteDivInClone.style.boxShadow = 'none'; // quitar sombra gris
+qrAbsoluteDivInClone.style.borderRadius = getComputedStyle(elementToCapture.querySelector('.qr-absolute')).borderRadius;
+qrAbsoluteDivInClone.style.boxShadow = 'none';
 qrAbsoluteDivInClone.style.display = 'flex';
 qrAbsoluteDivInClone.style.flexDirection = 'column';
 qrAbsoluteDivInClone.style.alignItems = 'center';
@@ -314,8 +323,8 @@ if (qrCanvasInClone) {
 const originalQrCanvas = document.getElementById('qrCanvas');
 qrCanvasInClone.style.width = originalQrCanvas.style.width || '70px';
 qrCanvasInClone.style.height = originalQrCanvas.style.height || '70px';
-qrCanvasInClone.style.borderRadius = originalQrCanvas.style.borderRadius || '4px'; // mantener bordes redondeados
-qrCanvasInClone.style.boxShadow = 'none'; // quitar sombra gris
+qrCanvasInClone.style.borderRadius = originalQrCanvas.style.borderRadius || '4px';
+qrCanvasInClone.style.boxShadow = 'none';
 qrCanvasInClone.style.display = 'block';
 }
 
@@ -332,17 +341,26 @@ qrCodeLabelInClone.textContent = "Código: " + outCodigo.textContent;
 }
 
 clone.style.position = 'absolute';
-clone.style.left = '-9999px';
+clone.style.left = '-9999px'; // Mover fuera de la pantalla para evitar parpadeo
 document.body.appendChild(clone);
 
-await new Promise(resolve => setTimeout(resolve, 250));
+// Pequeña espera para asegurar que el DOM se actualice y los estilos se apliquen antes de la captura
+await new Promise(resolve => setTimeout(resolve, 250)); 
+
+// Calcular el factor de escala para html2canvas.
+// Queremos que el renderizado inicial sea de alta calidad.
+const scaleFactor = targetOutputWidthPx / cloneBaseWidth;
 
 html2canvas(clone, {
 useCORS: true,
-scale: scaleFactor,
-backgroundColor: clone.style.backgroundColor,
+scale: scaleFactor, // Escalar para mejorar la resolución antes del estiramiento final
+// Si el clon está configurado para ser transparente (porque tiene una imagen de fondo),
+// pasar null a html2canvas para que intente capturar la transparencia.
+// De lo contrario, usar el color de fondo del clon (que sería blanco).
+backgroundColor: clone.style.backgroundColor === 'transparent' ? null : clone.style.backgroundColor,
 logging: true,
 onclone: (documentCloned, clonedElement) => {
+// Re-dibujar QR en el clon si es necesario, ya que a veces el canvas no se clona bien
 const clonedCanvasEl = clonedElement.querySelector('#qrCanvas');
 if (clonedCanvasEl) {
 const datosQR = `Nombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}`;
@@ -355,13 +373,36 @@ if (clonedQrLabel) {
 clonedQrLabel.textContent = "Código: " + outCodigo.textContent;
 }
 }
-}).then(canvas => {
+}).then(canvasFromHtml2Canvas => {
+// Crear un nuevo canvas con las dimensiones finales deseadas (2500x960)
+const finalCanvas = document.createElement('canvas');
+finalCanvas.width = targetOutputWidthPx;
+finalCanvas.height = targetOutputHeightPx;
+const finalCtx = finalCanvas.getContext('2d');
+
+// Si el canvas original de html2canvas era transparente y queremos un fondo blanco para el JPG:
+if (clone.style.backgroundColor === 'transparent') {
+    finalCtx.fillStyle = '#ffffff'; // Establecer color de relleno a blanco
+    finalCtx.fillRect(0, 0, targetOutputWidthPx, targetOutputHeightPx); // Rellenar el canvas
+}
+
+
+// Dibujar el canvas renderizado por html2canvas en el finalCanvas,
+// estirándolo para que ocupe las dimensiones 2500x960.
+finalCtx.drawImage(
+canvasFromHtml2Canvas,
+0, 0, canvasFromHtml2Canvas.width, canvasFromHtml2Canvas.height, // Coordenadas y tamaño del canvas fuente (renderizado por html2canvas)
+0, 0, targetOutputWidthPx, targetOutputHeightPx // Coordenadas y tamaño del canvas destino (2500x960)
+);
+
+// Crear el enlace de descarga para la imagen JPG
 const link = document.createElement('a');
-const nombreArchivo = `${outCodigo.textContent || 'TICKET'}${outNombre.textContent.replace(/\s/g, '') || ''}.png`;
+const nombreArchivo = `${outCodigo.textContent || 'TICKET'}_${(outNombre.textContent || 'nombre').replace(/\s/g, '')}.jpg`;
 link.download = nombreArchivo;
-link.href = canvas.toDataURL('image/png');
+link.href = finalCanvas.toDataURL('image/jpeg', 0.9); // 0.9 es la calidad (0 a 1)
 link.click();
-document.body.removeChild(clone);
+
+document.body.removeChild(clone); // Limpiar el clon del DOM
 }).catch(err => {
 console.error("Error al generar la imagen con html2canvas:", err);
 alert("Error al generar la imagen. Intente de nuevo.");
@@ -371,8 +412,8 @@ document.body.removeChild(clone);
 });
 
 } catch (error) {
-console.error("Error al cargar html2canvas:", error);
-alert("No se pudo cargar la funcionalidad para guardar la imagen. Verifique su conexión o intente más tarde.");
+console.error("Error al cargar html2canvas o en la lógica de guardado:", error);
+alert("No se pudo cargar la funcionalidad para guardar la imagen o hubo un error. Verifique su conexión o intente más tarde.");
 }
 });
 }
