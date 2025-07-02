@@ -255,79 +255,75 @@ if (guardarBtn) {
 
       const clone = elementToCapture.cloneNode(true);
 
-      const targetWidthPx = 2560; // Nueva dimensión
-      const targetHeightPx = 980;  // Nueva dimensión
-      const scaleFactor = 2; // Mantenemos la escala, ajustamos el tamaño base del clon
+      // Usar un ancho base moderado para el clon, la altura se ajustará por aspect-ratio.
+      const cloneBaseWidth = 600; // Ancho base para el clon (ej. 600px)
+      const scaleFactor = 3; // Escala para resolución final (ej. 600 * 3 = 1800px de ancho)
 
-      const cloneBaseWidth = targetWidthPx / scaleFactor; // 1280px
-      const cloneBaseHeight = targetHeightPx / scaleFactor; // 490px
+      // Obtener el aspect ratio del elemento original tal como se muestra en pantalla
+      const originalRect = elementToCapture.getBoundingClientRect();
+      const aspectRatio = originalRect.width / originalRect.height;
 
       clone.style.width = `${cloneBaseWidth}px`;
-      clone.style.height = `${cloneBaseHeight}px`;
+      clone.style.height = `${Math.round(cloneBaseWidth / aspectRatio)}px`; // Mantener aspect ratio
       clone.style.boxSizing = 'border-box';
-      clone.style.boxShadow = 'none'; // Quitar sombra si la tuviera el original
-      clone.style.borderRadius = '0px'; // Quitar bordes redondeados
-      clone.style.position = 'relative'; 
-      clone.style.overflow = 'hidden'; // Ayuda a que el contenido se recorte si excede
+      clone.style.boxShadow = 'none';
+      clone.style.borderRadius = '0px';
+      clone.style.position = 'relative';
+      clone.style.overflow = 'hidden'; 
       
-      // Estilos para la imagen de fondo en el clon
       const clonedTicketBg = clone.querySelector('#ticketBg');
       if (clonedTicketBg) {
         clonedTicketBg.style.width = '100%';
         clonedTicketBg.style.height = '100%';
-        clonedTicketBg.style.objectFit = 'cover'; // 'cover' para llenar, 'contain' para ajustar
+        clonedTicketBg.style.objectFit = 'cover';
         if (!clonedTicketBg.src || getComputedStyle(clonedTicketBg).display === 'none') {
             clone.style.backgroundColor = '#ffffff'; 
         } else {
-            clone.style.backgroundColor = 'transparent'; // Si hay imagen, que el div sea transparente
+            clone.style.backgroundColor = 'transparent';
         }
       } else {
-         clone.style.backgroundColor = '#ffffff'; // Fondo blanco si no hay imagen de fondo
+         clone.style.backgroundColor = '#ffffff';
       }
 
-      // Estilos para el contenedor del QR y etiqueta en el clon
+      // Re-aplicar estilos esenciales al contenedor del QR y sus hijos en el clon
+      // para que se parezcan lo más posible a la previsualización.
       const qrAbsoluteDivInClone = clone.querySelector('.qr-absolute');
-      if (qrAbsoluteDivInClone) {
-        // Replicar estilos de form.css para .qr-absolute
-        // Es importante que estos estilos sean consistentes con la previsualización
-        // y se adapten bien al tamaño del clon (cloneBaseWidth/Height)
-        // Los valores de left, padding, etc., podrían necesitar ser proporcionales
-        // o fijos si el diseño lo permite.
-        qrAbsoluteDivInClone.style.position = 'absolute';
-        qrAbsoluteDivInClone.style.top = '50%'; // Como en form.css
-        qrAbsoluteDivInClone.style.left = '30px'; // Como en form.css, ajustar si es necesario para el tamaño del clon
-        qrAbsoluteDivInClone.style.transform = 'translateY(-50%)'; // Como en form.css
-        qrAbsoluteDivInClone.style.background = getComputedStyle(elementToCapture.querySelector('.qr-absolute')).backgroundColor;
-        qrAbsoluteDivInClone.style.padding = getComputedStyle(elementToCapture.querySelector('.qr-absolute')).padding;
-        qrAbsoluteDivInClone.style.borderRadius = getComputedStyle(elementToCapture.querySelector('.qr-absolute')).borderRadius;
-        qrAbsoluteDivInClone.style.boxShadow = getComputedStyle(elementToCapture.querySelector('.qr-absolute')).boxShadow;
-        qrAbsoluteDivInClone.style.display = 'flex';
+      const originalQrAbsoluteDiv = elementToCapture.querySelector('.qr-absolute');
+      if (qrAbsoluteDivInClone && originalQrAbsoluteDiv) {
+        const computedStyles = getComputedStyle(originalQrAbsoluteDiv);
+        qrAbsoluteDivInClone.style.position = 'absolute'; // Forzar position absolute
+        qrAbsoluteDivInClone.style.top = computedStyles.top;
+        qrAbsoluteDivInClone.style.left = computedStyles.left;
+        qrAbsoluteDivInClone.style.transform = computedStyles.transform;
+        qrAbsoluteDivInClone.style.background = computedStyles.background;
+        qrAbsoluteDivInClone.style.padding = computedStyles.padding;
+        qrAbsoluteDivInClone.style.borderRadius = computedStyles.borderRadius;
+        qrAbsoluteDivInClone.style.boxShadow = computedStyles.boxShadow;
+        qrAbsoluteDivInClone.style.display = 'flex'; // Asegurar display flex
         qrAbsoluteDivInClone.style.flexDirection = 'column';
         qrAbsoluteDivInClone.style.alignItems = 'center';
         qrAbsoluteDivInClone.style.zIndex = '10';
       }
       
-      // Canvas del QR en el clon
       const qrCanvasInClone = clone.querySelector('#qrCanvas');
-      if (qrCanvasInClone) {
-        // Tomar dimensiones del canvas original en la previsualización
-        const originalQrCanvas = document.getElementById('qrCanvas');
-        qrCanvasInClone.style.width = originalQrCanvas.style.width || '70px';
-        qrCanvasInClone.style.height = originalQrCanvas.style.height || '70px';
-        qrCanvasInClone.style.borderRadius = getComputedStyle(originalQrCanvas).borderRadius || '4px';
-        qrCanvasInClone.style.display = 'block';
+      const originalQrCanvas = elementToCapture.querySelector('#qrCanvas'); // Referencia al original para estilos
+      if (qrCanvasInClone && originalQrCanvas) {
+        const computedCanvasStyles = getComputedStyle(originalQrCanvas);
+        qrCanvasInClone.style.width = computedCanvasStyles.width;
+        qrCanvasInClone.style.height = computedCanvasStyles.height;
+        qrCanvasInClone.style.borderRadius = computedCanvasStyles.borderRadius;
+        qrCanvasInClone.style.display = 'block'; // Asegurar que el canvas sea visible
       }
 
-      // Etiqueta del código en el clon
-      const qrCodeLabelInClone = clone.querySelector('.qr-code-label'); // ID es 'codigoQR'
-      if (qrCodeLabelInClone) {
-         // Tomar estilos de la etiqueta original en la previsualización
-        const originalQrLabel = document.getElementById('codigoQR');
-        qrCodeLabelInClone.style.fontSize = getComputedStyle(originalQrLabel).fontSize;
-        qrCodeLabelInClone.style.marginTop = getComputedStyle(originalQrLabel).marginTop;
-        qrCodeLabelInClone.style.color = getComputedStyle(originalQrLabel).color;
-        qrCodeLabelInClone.style.textAlign = getComputedStyle(originalQrLabel).textAlign;
-        qrCodeLabelInClone.style.fontWeight = getComputedStyle(originalQrLabel).fontWeight;
+      const qrCodeLabelInClone = clone.querySelector('.qr-code-label');
+      const originalQrLabel = elementToCapture.querySelector('.qr-code-label');
+      if (qrCodeLabelInClone && originalQrLabel) {
+        const computedLabelStyles = getComputedStyle(originalQrLabel);
+        qrCodeLabelInClone.style.fontSize = computedLabelStyles.fontSize;
+        qrCodeLabelInClone.style.marginTop = computedLabelStyles.marginTop;
+        qrCodeLabelInClone.style.color = computedLabelStyles.color;
+        qrCodeLabelInClone.style.textAlign = computedLabelStyles.textAlign;
+        qrCodeLabelInClone.style.fontWeight = computedLabelStyles.fontWeight;
         qrCodeLabelInClone.textContent = "Código: " + outCodigo.textContent;
       }
       
@@ -335,21 +331,18 @@ if (guardarBtn) {
       clone.style.left = '-9999px'; 
       document.body.appendChild(clone);
 
-      // Pequeña demora para asegurar que el DOM se actualice con el clon y sus estilos
-      await new Promise(resolve => setTimeout(resolve, 250)); // Aumentado ligeramente
+      await new Promise(resolve => setTimeout(resolve, 100)); // Pequeña demora
 
       html2canvas(clone, { 
         useCORS: true, 
         scale: scaleFactor, 
         backgroundColor: clone.style.backgroundColor,
-        width: cloneBaseWidth, // Re-introducir width explícito
-        height: cloneBaseHeight, // Re-introducir height explícito
-        logging: true, 
+        logging: true,
         onclone: (documentCloned, clonedElement) => {
           const clonedCanvasEl = clonedElement.querySelector('#qrCanvas');
           if (clonedCanvasEl) {
             const datosQR = `Nombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}`;
-            const qrWidth = parseInt(clonedCanvasEl.style.width) || 70; // Usar el tamaño definido para el clon
+            const qrWidth = parseInt(clonedCanvasEl.style.width) || 70;
             const qrHeight = parseInt(clonedCanvasEl.style.height) || 70;
             QRCode.toCanvas(clonedCanvasEl, datosQR, { width: qrWidth, height: qrHeight, margin: 1 }, function (error) {
               if (error) console.error('Error re-dibujando QR en clon:', error);
@@ -362,9 +355,9 @@ if (guardarBtn) {
         }
       }).then(canvas => {
         const link = document.createElement('a');
-        const nombreArchivo = `${outCodigo.textContent || 'TICKET'}${outNombre.textContent.replace(/\s/g, '') || ''}.jpg`; // Cambio a .jpg
+        const nombreArchivo = `${outCodigo.textContent || 'TICKET'}${outNombre.textContent.replace(/\s/g, '') || ''}.png`; // Volver a PNG
         link.download = nombreArchivo;
-        link.href = canvas.toDataURL('image/jpeg', 0.95); // Cambio a image/jpeg y calidad 0.95
+        link.href = canvas.toDataURL('image/png'); // Volver a PNG
         link.click();
         document.body.removeChild(clone); 
       }).catch(err => {
