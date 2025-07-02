@@ -240,6 +240,7 @@ if (btnCorregir) {
   });
 }
 
+// ---- CAMBIO SOLICITADO: BOTÓN GUARDAR ----
 if (guardarBtn) {
   guardarBtn.addEventListener('click', async () => {
     try {
@@ -254,26 +255,27 @@ if (guardarBtn) {
 
       const clone = elementToCapture.cloneNode(true);
 
-      const targetWidthPx = 2000;
-      const targetHeightPx = 700;
-      const cloneBaseWidth = 2000;
-      const cloneBaseHeight = 350;
-      const scaleFactor = targetWidthPx / cloneBaseWidth; // debería ser 2
+      // NUEVAS DIMENSIONES
+      const targetWidthPx = 2500;
+      const targetHeightPx = 960;
+      const cloneBaseWidth = 2500;
+      const cloneBaseHeight = 960;
+      const scaleFactor = 1; // html2canvas ya usará el tamaño final
 
       clone.style.width = `${cloneBaseWidth}px`;
       clone.style.height = `${cloneBaseHeight}px`;
       clone.style.boxSizing = 'border-box';
+      clone.style.position = 'absolute';
+      clone.style.left = '-9999px';
 
-      // Eliminar sombra gris: quitar box-shadow del clon y todos sus hijos
+      // Eliminar sombra gris y bordes redondeados
       clone.style.boxShadow = 'none';
-      clone.style.borderRadius = '0px'; // quitar bordes redondeados del clon general
-
+      clone.style.borderRadius = '0px';
       clone.querySelectorAll('*').forEach(el => {
         el.style.boxShadow = 'none';
-        // NO tocar borderRadius para mantener bordes redondeados en QR
       });
 
-      // Forzar fondo blanco para evitar sombras o transparencias negras
+      // Fondo blanco por defecto
       clone.style.backgroundColor = '#ffffff';
 
       // Imagen de fondo
@@ -281,7 +283,7 @@ if (guardarBtn) {
       if (clonedTicketBg) {
         clonedTicketBg.style.width = '100%';
         clonedTicketBg.style.height = '100%';
-        clonedTicketBg.style.objectFit = 'cover';
+        clonedTicketBg.style.objectFit = 'fill'; // ESTIRAR la imagen
         if (!clonedTicketBg.src || getComputedStyle(clonedTicketBg).display === 'none') {
           clone.style.backgroundColor = '#ffffff';
         } else {
@@ -298,10 +300,10 @@ if (guardarBtn) {
         qrAbsoluteDivInClone.style.top = '50%';
         qrAbsoluteDivInClone.style.left = '30px';
         qrAbsoluteDivInClone.style.transform = 'translateY(-50%)';
-        qrAbsoluteDivInClone.style.background = '#ffffff'; // fondo blanco para evitar sombras
+        qrAbsoluteDivInClone.style.background = '#ffffff';
         qrAbsoluteDivInClone.style.padding = getComputedStyle(elementToCapture.querySelector('.qr-absolute')).padding;
-        qrAbsoluteDivInClone.style.borderRadius = getComputedStyle(elementToCapture.querySelector('.qr-absolute')).borderRadius; // mantener bordes redondeados
-        qrAbsoluteDivInClone.style.boxShadow = 'none'; // quitar sombra gris
+        qrAbsoluteDivInClone.style.borderRadius = getComputedStyle(elementToCapture.querySelector('.qr-absolute')).borderRadius;
+        qrAbsoluteDivInClone.style.boxShadow = 'none';
         qrAbsoluteDivInClone.style.display = 'flex';
         qrAbsoluteDivInClone.style.flexDirection = 'column';
         qrAbsoluteDivInClone.style.alignItems = 'center';
@@ -314,8 +316,8 @@ if (guardarBtn) {
         const originalQrCanvas = document.getElementById('qrCanvas');
         qrCanvasInClone.style.width = originalQrCanvas.style.width || '70px';
         qrCanvasInClone.style.height = originalQrCanvas.style.height || '70px';
-        qrCanvasInClone.style.borderRadius = originalQrCanvas.style.borderRadius || '4px'; // mantener bordes redondeados
-        qrCanvasInClone.style.boxShadow = 'none'; // quitar sombra gris
+        qrCanvasInClone.style.borderRadius = originalQrCanvas.style.borderRadius || '4px';
+        qrCanvasInClone.style.boxShadow = 'none';
         qrCanvasInClone.style.display = 'block';
       }
 
@@ -331,14 +333,13 @@ if (guardarBtn) {
         qrCodeLabelInClone.textContent = "Código: " + outCodigo.textContent;
       }
 
-      clone.style.position = 'absolute';
-      clone.style.left = '-9999px';
       document.body.appendChild(clone);
-
       await new Promise(resolve => setTimeout(resolve, 250));
 
       html2canvas(clone, {
         useCORS: true,
+        width: targetWidthPx,
+        height: targetHeightPx,
         scale: scaleFactor,
         backgroundColor: clone.style.backgroundColor,
         logging: true,
@@ -356,10 +357,82 @@ if (guardarBtn) {
           }
         }
       }).then(canvas => {
+        // --- 300 DPI ---
+        // Para PNG, DPI es una metadata. Vamos a modificar el header del PNG para poner 300 DPI:
+        function setDPI(pngDataUrl, dpi = 300) {
+          // Convertir base64 a binario
+          function base64ToUint8Array(base64) {
+            const raw = atob(base64);
+            const arr = new Uint8Array(raw.length);
+            for (let i = 0; i < raw.length; ++i) arr[i] = raw.charCodeAt(i);
+            return arr;
+          }
+          // Insertar chunk pHYs en el PNG con el DPI deseado
+          function insertPhysChunk(pngBytes, dpi) {
+            const ppcm = Math.round(dpi / 0.0254); // pixels per meter
+            const chunkType = [0x70, 0x48, 0x59, 0x73]; // 'pHYs'
+            const chunkData = new Uint8Array(9);
+            chunkData.set([
+              (ppcm >> 24) & 0xff, (ppcm >> 16) & 0xff, (ppcm >> 8) & 0xff, ppcm & 0xff,
+              (ppcm >> 24) & 0xff, (ppcm >> 16) & 0xff, (ppcm >> 8) & 0xff, ppcm & 0xff,
+              0x01
+            ]);
+            // Calcular CRC
+            function crc32(buf) {
+              let crc = -1;
+              for (let i = 0; i < buf.length; i++) {
+                crc = crc ^ buf[i];
+                for (let j = 0; j < 8; j++) {
+                  crc = (crc >>> 1) ^ (0xedb88320 & -(crc & 1));
+                }
+              }
+              return (crc ^ -1) >>> 0;
+            }
+            const chunkLen = new Uint8Array([0x00, 0x00, 0x00, 0x09]);
+            const chunk = new Uint8Array(4 + 4 + 9 + 4);
+            chunk.set(chunkLen, 0);
+            chunk.set(chunkType, 4);
+            chunk.set(chunkData, 8);
+            const crc = crc32(new Uint8Array([...chunkType, ...chunkData]));
+            chunk.set([
+              (crc >> 24) & 0xff, (crc >> 16) & 0xff, (crc >> 8) & 0xff, crc & 0xff
+            ], 17);
+
+            // Insertar después de IHDR (primer chunk)
+            let pos = 8; // saltar firma PNG
+            // Buscar fin de IHDR
+            while (pos < pngBytes.length) {
+              const len = (pngBytes[pos] << 24) | (pngBytes[pos+1] << 16) | (pngBytes[pos+2] << 8) | pngBytes[pos+3];
+              const type = String.fromCharCode(...pngBytes.slice(pos+4, pos+8));
+              if (type === 'IHDR') {
+                pos += 8 + len + 4;
+                break;
+              }
+              pos += 8 + len + 4;
+            }
+            // Insertar el chunk
+            const newBytes = new Uint8Array(pngBytes.length + chunk.length);
+            newBytes.set(pngBytes.slice(0, pos), 0);
+            newBytes.set(chunk, pos);
+            newBytes.set(pngBytes.slice(pos), pos + chunk.length);
+            return newBytes;
+          }
+
+          const base64 = pngDataUrl.split(',')[1];
+          let pngBytes = base64ToUint8Array(base64);
+          pngBytes = insertPhysChunk(pngBytes, dpi);
+          // Convertir de nuevo a base64
+          const newBase64 = btoa(String.fromCharCode(...pngBytes));
+          return 'data:image/png;base64,' + newBase64;
+        }
+
+        let dataUrl = canvas.toDataURL('image/png');
+        dataUrl = setDPI(dataUrl, 300);
+
         const link = document.createElement('a');
         const nombreArchivo = `${outCodigo.textContent || 'TICKET'}${outNombre.textContent.replace(/\s/g, '') || ''}.png`;
         link.download = nombreArchivo;
-        link.href = canvas.toDataURL('image/png');
+        link.href = dataUrl;
         link.click();
         document.body.removeChild(clone);
       }).catch(err => {
