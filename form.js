@@ -155,8 +155,8 @@ if (btnConfirmar) {
         return;
       }
     } catch (e) {
-      console.error("Error verificando cédula duplicada:", e);
-      errorMsg.textContent = "Error al verificar la cédula. Intente de nuevo.";
+      console.error("Error detallado verificando cédula duplicada:", e); // Log más detallado
+      errorMsg.textContent = "Error al verificar la cédula. Intente de nuevo. (Ver consola para detalles)";
       errorMsg.style.display = 'block';
       confirmacionDatos.style.display = 'none';
       if (formData) formData.style.display = 'block'; // Mostrar formulario para corregir
@@ -256,45 +256,92 @@ if (guardarBtn) {
 
       // Clonar el elemento para modificarlo antes de la captura sin afectar la visualización
       const clone = elementToCapture.cloneNode(true);
-      // Aplicar estilos directamente al clon para asegurar la captura deseada
-      clone.style.width = '300px'; // Ancho fijo para la imagen de salida, ajustar según diseño
-      clone.style.height = '400px'; // Alto fijo para la imagen de salida, ajustar según diseño
-      clone.style.boxShadow = 'none';
-      clone.style.position = 'relative'; // Asegurar que los elementos internos se posicionen correctamente
 
-      // Asegurar que el fondo del clon sea blanco si no hay imagen de fondo visible
+      // Forzar dimensiones para la captura de 2000x600px (o lo más cercano posible)
+      // El elemento original '.ticket-img-wrap' podría tener un aspect-ratio diferente.
+      // Para mantener el contenido visible, podríamos necesitar ajustar el 'scale'
+      // o aceptar que el aspect ratio de la imagen final será el del clon.
+      const targetWidth = 2000;
+      const targetHeight = 600;
+
+      // Mantener el aspect ratio del elemento original si es posible, escalando a targetWidth
+      const originalRect = elementToCapture.getBoundingClientRect();
+      const originalAspectRatio = originalRect.width / originalRect.height;
+      
+      let cloneWidth = targetWidth;
+      let cloneHeight = targetWidth / originalAspectRatio;
+
+      // Si la altura calculada es mucho mayor que targetHeight, podríamos necesitar
+      // ajustar el width para que la altura se acerque más a targetHeight,
+      // o simplemente dejar que el contenido se escale dentro de targetWidth x targetHeight.
+      // Por simplicidad, vamos a fijar el ancho y dejar que el alto se ajuste,
+      // luego html2canvas escalará esto. O podemos fijar ambos y ver el resultado.
+
+      clone.style.width = `${targetWidth / 4}px`; // Usamos un tamaño base menor para el DOM
+      clone.style.height = `${targetHeight / 4}px`; // y luego escalamos con html2canvas
+      clone.style.boxSizing = 'border-box'; // Importante para que padding no altere el tamaño final
+      clone.style.boxShadow = 'none';
+      clone.style.position = 'relative'; 
+
       const clonedTicketBg = clone.querySelector('#ticketBg');
-      if (clonedTicketBg && (!clonedTicketBg.src || clonedTicketBg.style.display === 'none' || getComputedStyle(clonedTicketBg).display === 'none')) {
-          clone.style.backgroundColor = '#ffffff'; // Fondo blanco para la captura si no hay imagen
-      } else if (clonedTicketBg && clonedTicketBg.src) {
-          clone.style.backgroundColor = 'transparent'; // Si hay imagen, el fondo del div debe ser transparente
+      if (clonedTicketBg) {
+        clonedTicketBg.style.width = '100%';
+        clonedTicketBg.style.height = '100%';
+        clonedTicketBg.style.objectFit = 'cover'; // o 'contain' según se prefiera
+         if (!clonedTicketBg.src || clonedTicketBg.style.display === 'none' || getComputedStyle(clonedTicketBg).display === 'none') {
+            clone.style.backgroundColor = '#ffffff'; 
+        } else {
+            clone.style.backgroundColor = 'transparent';
+        }
+      } else {
+        clone.style.backgroundColor = '#ffffff';
+      }
+      
+      // Ajustar el QR dentro del clon
+      const qrAbsoluteDiv = clone.querySelector('.qr-absolute');
+      if (qrAbsoluteDiv) {
+        // Estos estilos deben asegurar que el QR se posicione correctamente dentro del nuevo tamaño del clon
+        qrAbsoluteDiv.style.position = 'absolute';
+        qrAbsoluteDiv.style.bottom = '20px'; // Ejemplo, ajustar según diseño
+        qrAbsoluteDiv.style.right = '20px';  // Ejemplo, ajustar según diseño
+      }
+      const qrCanvasInClone = clone.querySelector('#qrCanvas');
+      if (qrCanvasInClone) {
+        // Ajustar tamaño del canvas QR en el clon para que sea proporcional al nuevo tamaño
+        qrCanvasInClone.style.width = '100px'; // Tamaño base, se escalará con html2canvas
+        qrCanvasInClone.style.height = '100px';
       }
 
 
-      // Añadir el clon al DOM temporalmente para que html2canvas lo renderice correctamente
       clone.style.position = 'absolute';
-      clone.style.left = '-9999px'; // Moverlo fuera de la pantalla
+      clone.style.left = '-9999px'; 
       document.body.appendChild(clone);
-
 
       html2canvas(clone, { 
         useCORS: true, 
-        scale: 2, 
-        backgroundColor: null, // Permitir que el fondo del elemento clonado (blanco o imagen) prevalezca
+        scale: 4, // Escala para alcanzar la resolución de 2000px desde 500px (500*4=2000)
+        backgroundColor: clone.style.backgroundColor || '#ffffff', // Usar el BG del clon
+        width: parseInt(clone.style.width), // Usar las dimensiones del clon
+        height: parseInt(clone.style.height),
         onclone: (documentCloned) => {
-          const clonedCanvas = documentCloned.querySelector('#qrCanvas'); // Usar querySelector en el documento clonado
-          if (clonedCanvas) { // No necesitamos el originalCanvas aquí
+          const clonedCanvasEl = documentCloned.querySelector('#qrCanvas');
+          if (clonedCanvasEl) {
+            clonedCanvasEl.style.display = 'block'; // Asegurar que sea visible
             const datosQR = `Nombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}`;
-            // Asegurarse que el tamaño del QR en el clon sea el deseado para la imagen final.
-            // Puede ser necesario ajustar estos valores si el QR se ve muy pequeño o grande en la imagen guardada.
-            QRCode.toCanvas(clonedCanvas, datosQR, { width: 80, height: 80, margin:1 }, function (error) { // Aumentado tamaño QR para mejor visibilidad
+            // El tamaño aquí debe ser el tamaño final deseado en la imagen escalada.
+            // Si el canvas base es 100x100 y la escala es 4, el QR en la imagen será 400x400.
+            // Ajustar width/height en QRCode.toCanvas para el tamaño deseado en la imagen final.
+            // Dado que el canvas en el clon es 100x100, y la escala es 4, el QR será de 400x400px en la imagen final.
+            // Si se quiere más pequeño, reducir el width/height aquí. ej. 50 para 200px final.
+            QRCode.toCanvas(clonedCanvasEl, datosQR, { width: 100, height: 100, margin: 1 }, function (error) {
               if (error) console.error('Error re-dibujando QR en clon:', error);
             });
           }
         }
       }).then(canvas => {
         const link = document.createElement('a');
-        link.download = `ticket-${outCodigo.textContent || 'entrada'}.png`; // Nombre de archivo más específico
+        const nombreArchivo = `${outCodigo.textContent || 'TICKET'}${outNombre.textContent.replace(/\s/g, '') || ''}.png`;
+        link.download = nombreArchivo;
         link.href = canvas.toDataURL('image/png');
         link.click();
         document.body.removeChild(clone); 
