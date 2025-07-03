@@ -5,10 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Formulario Público</title>
   <link rel="stylesheet" href="form.css" />
+  <!-- Librería QRCode -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js "></script>
 </head>
 <body>
 <div class="center">
   <h2 id="formTitle">Cargando formulario...</h2>
+
   <form id="formData">
     <label>Nombre y Apellido:
       <input type="text" id="nombre" required autocomplete="off" />
@@ -21,7 +24,9 @@
     </label>
     <button type="submit">Generar QR</button>
   </form>
+
   <div id="errorMsg" style="color: #dc3545; font-weight: bold; margin-bottom: 16px; display: none;"></div>
+
   <div id="confirmacionDatos" style="display:none; background: white; padding: 30px 40px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 350px; box-sizing: border-box; margin-top: 20px;">
     <h3>¿Sus datos son correctos?</h3>
     <div>
@@ -34,6 +39,7 @@
       <button id="btnCorregir" style="background-color: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">No</button>
     </div>
   </div>
+
   <div id="entradaGenerada" style="display:none;">
     <h3>Su entrada ha sido generada</h3>
     <div class="ticket-img-wrap">
@@ -52,7 +58,8 @@
     <button id="guardarBtn">Guardar entrada</button>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+<!-- Carga de scripts -->
 <script type="module" src="form.js"></script>
 </body>
 </html>
