@@ -79,13 +79,41 @@ createForm.addEventListener('submit', async (e) => {
   const nombre = formNameInput.value.trim();
   if (!nombre) return alert('Ingrese un nombre para el formulario');
 
+  const minAgeValue = minAgeInput.value;
+  const maxAgeValue = maxAgeInput.value;
+
+  let minAge = null;
+  if (minAgeValue && minAgeValue.trim() !== "") { // Check if not empty string
+    minAge = parseInt(minAgeValue);
+    if (isNaN(minAge)) return alert('Edad mínima inválida. Debe ser un número.');
+    if (minAge < 0) return alert('La edad mínima no puede ser negativa.');
+  }
+
+  let maxAge = null;
+  if (maxAgeValue && maxAgeValue.trim() !== "") { // Check if not empty string
+    maxAge = parseInt(maxAgeValue);
+    if (isNaN(maxAge)) return alert('Edad máxima inválida. Debe ser un número.');
+    if (maxAge < 0) return alert('La edad máxima no puede ser negativa.');
+  }
+
+  // Validate that minAge is not greater than maxAge if both are provided
+  if (minAge !== null && maxAge !== null && minAge > maxAge) {
+    return alert('La edad mínima no puede ser mayor que la edad máxima.');
+  }
+
   let imagenBase64 = '';
   if (formBgInput.files.length > 0) {
     imagenBase64 = await leerArchivoBase64(formBgInput.files[0]);
   }
 
   const codigo = generarCodigoFormulario();
-  const nuevoFormulario = { codigo, nombre, imagen: imagenBase64 };
+  const nuevoFormulario = {
+    codigo,
+    nombre,
+    imagen: imagenBase64,
+    minAge: minAge, 
+    maxAge: maxAge
+  };
   push(ref(database, 'formularios'), nuevoFormulario);
   createForm.reset();
   alert(`Formulario creado con código ${codigo}`);
