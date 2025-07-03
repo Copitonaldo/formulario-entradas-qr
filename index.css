@@ -135,6 +135,7 @@ form#createForm label {
 }
 
 form#createForm input[type="text"],
+form#createForm input[type="number"],
 form#createForm input[type="file"] {
   width: 100%;
   padding: 8px 10px;
@@ -147,6 +148,7 @@ form#createForm input[type="file"] {
 }
 
 form#createForm input[type="text"]:focus,
+form#createForm input[type="number"]:focus,
 form#createForm input[type="file"]:focus {
   border-color: #007bff;
   outline: none;
