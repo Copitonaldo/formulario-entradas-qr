@@ -113,9 +113,9 @@ const nombre = inputNombre.value.trim();
 const cedulaRaw = inputCedula.value.replace(/\D/g, '');
 const edad = inputEdad.value.trim();
 
-if (!nombre || !/^\d{7,8}$/.test(cedulaRaw) || !edad || isNaN(parseInt(edad)) || parseInt(edad) < 0) {
+if (!nombre || !/^\d{8}$/.test(cedulaRaw) || !edad || isNaN(parseInt(edad)) || parseInt(edad) < 0) {
 if (!nombre) errorMsg.textContent = 'Debe ingresar un nombre.';
-else if (!/^\d{7,8}$/.test(cedulaRaw)) errorMsg.textContent = 'La cédula debe tener entre 7 y 8 dígitos.';
+else if (!/^\d{8}$/.test(cedulaRaw)) errorMsg.textContent = 'La cédula debe tener exactamente 8 dígitos.';
 else errorMsg.textContent = 'Edad inválida.';
 errorMsg.style.display = 'block';
 return;
