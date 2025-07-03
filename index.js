@@ -29,7 +29,6 @@ const loginError = document.getElementById('loginError');
 const logoutBtn = document.getElementById('logoutBtn');
 const createForm = document.getElementById('createForm');
 const formNameInput = document.getElementById('formName');
-const formImageInput = document.getElementById('formImage'); // Referencia al nuevo campo URL imagen formulario
 const minAgeInput = document.getElementById('minAge'); // Referencia al nuevo campo edad mínima
 const maxAgeInput = document.getElementById('maxAge'); // Referencia al nuevo campo edad máxima
 const formBgInput = document.getElementById('formBgInput');
@@ -64,7 +63,7 @@ function renderFormularios() {
     tr.innerHTML = `
       <td>${f.codigo}</td>
       <td>${f.nombre}</td>
-      <td><img src="${f.imagen || ''}" alt="Imagen" class="thumb"></td>
+      <td><img src="${f.imagenFondo || ''}" alt="Fondo" class="thumb"></td>
       <td>
         <a href="form.html?id=${f.codigo}" target="_blank">Formulario Público</a> |
         <a href="respuestas.html?id=${f.codigo}" target="_blank">Lista de Datos</a> |
