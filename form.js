@@ -141,6 +141,7 @@ return;
 }
 
 const { nombre, cedula, edad } = window.datosParaConfirmar;
+const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
 
 const respuestasQuery = query(ref(database, `respuestas/${formId}`), orderByChild('cedula'), equalTo(cedula));
 try {
@@ -204,7 +205,7 @@ outCodigo.textContent = nuevaRespuesta.codigo;
 if (codigoQR) codigoQR.textContent = "Código: " + nuevaRespuesta.codigo;
 
 const qrCanvasElement = document.getElementById('qrCanvas');
-const datosQR = `Nombre: ${toTitleCase(nombre)}\nCédula: ${cedula}\nEdad: ${edad}\nCódigo: ${nuevaRespuesta.codigo}`;
+const datosQR = `${formDisplayName}\nNombre: ${toTitleCase(nombre)}\nCédula: ${cedula}\nEdad: ${edad}\nCódigo: ${nuevaRespuesta.codigo}`;
 
 if (qrCanvasElement) {
 QRCode.toCanvas(qrCanvasElement, datosQR, {
@@ -363,7 +364,8 @@ onclone: (documentCloned, clonedElement) => {
 // Re-dibujar QR en el clon si es necesario, ya que a veces el canvas no se clona bien
 const clonedCanvasEl = clonedElement.querySelector('#qrCanvas');
 if (clonedCanvasEl) {
-const datosQR = `Nombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}`;
+const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
+const datosQR = `${formDisplayName}\nNombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}`;
 QRCode.toCanvas(clonedCanvasEl, datosQR, { width: parseInt(clonedCanvasEl.style.width) || 70, height: parseInt(clonedCanvasEl.style.height) || 70, margin: 1 }, function (error) {
 if (error) console.error('Error re-dibujando QR en clon:', error);
 });
@@ -397,7 +399,7 @@ canvasFromHtml2Canvas,
 
 // Crear el enlace de descarga para la imagen JPG
 const link = document.createElement('a');
-const nombreArchivo = `${outCodigo.textContent || 'TICKET'}_${(outNombre.textContent || 'nombre').replace(/\s/g, '')}.jpg`;
+const nombreArchivo = `${outCodigo.textContent || 'TICKET'}${(outNombre.textContent || 'nombre')}.jpg`;
 link.download = nombreArchivo;
 link.href = finalCanvas.toDataURL('image/jpeg', 0.9); // 0.9 es la calidad (0 a 1)
 link.click();
