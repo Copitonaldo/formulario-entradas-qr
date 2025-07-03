@@ -260,14 +260,3 @@ if (excelBtn) {
     XLSX.writeFile(wb, `Respuestas_${formId}.xlsx`);
   };
 }
-
-// TODOs:
-// - Implementar la función `cargarRespuestas` para obtener primero el `formulario_id` (UUID)
-//   basado en `codigo_form` (el `formId` de la URL), y luego obtener las respuestas.
-// - Los botones Editar/Borrar en `renderTableAndPagination` están deshabilitados y necesitarían
-//   el `id_db` (UUID de la respuesta) para funcionar, además de la lógica de Supabase.
-// - Se eliminó la dependencia de `onValue` de Firebase.
-// - `formId` de la URL ahora se considera `codigo_form`.
-// - `todasLasRespuestas` almacena los datos originales de Supabase, `filteredRespuestas` para la UI.
-// - La función `escapeHtml` se ha hecho más robusta para manejar null/undefined.
-```
