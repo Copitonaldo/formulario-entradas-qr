@@ -1,8 +1,8 @@
 // Importar Supabase
-import { createClient } from 'https://cdn.jsdelivr.net/npm/ @supabase/supabase-js/+esm';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 // Configuración de Supabase
-const SUPABASE_URL = 'https://wiyejeeiehwfkdcbpomp.supabase.co ';
+const SUPABASE_URL = 'https://wiyejeeiehwfkdcbpomp.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpeWVqZWVpZWh3ZmtkY2Jwb21wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NjQwOTYsImV4cCI6MjA2NzE0MDA5Nn0.yDq4eOHujKH2nmg-F-DVnqCHGwdfEmf4Z968KXl1SDc';
 
 // Inicializar Supabase
@@ -158,7 +158,7 @@ window.borrarFormulario = async function(codigoForm, db_id) {
       .delete()
       .eq('formulario_id', db_id);
 
-    if (deleteContadorError && deleteContadorError.code !== 'PGRST116') {
+    if (deleteContadorError && deleteContadorError.code !== 'PGRST116') { // PGRST116: No rows found
       throw deleteContadorError;
     }
 
@@ -169,7 +169,7 @@ window.borrarFormulario = async function(codigoForm, db_id) {
       .eq('id', db_id)
       .single();
 
-    if (fetchImageError && fetchImageError.code !== 'PGRST116') {
+    if (fetchImageError && fetchImageError.code !== 'PGRST116') { // PGRST116: No rows found
       throw fetchImageError;
     }
 
@@ -178,8 +178,11 @@ window.borrarFormulario = async function(codigoForm, db_id) {
       const { error: deleteImageError } = await supabase.storage
         .from('form-backgrounds')
         .remove([imagePath]);
-
-      if (deleteImageError) throw deleteImageError;
+      // No lanzar error si la imagen no se encuentra, podría haber sido borrada manualmente o no existir.
+      if (deleteImageError && deleteImageError.statusCode !== '404' && !deleteImageError.message.includes("Object not found")) {
+          console.warn("Advertencia al borrar imagen de Supabase Storage:", deleteImageError);
+          // Opcional: alert('Advertencia: No se pudo borrar la imagen del almacenamiento, pero el formulario se eliminará.');
+      }
     }
 
     // 4. Finalmente, borrar el formulario
