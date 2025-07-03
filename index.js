@@ -29,6 +29,9 @@ const loginError = document.getElementById('loginError');
 const logoutBtn = document.getElementById('logoutBtn');
 const createForm = document.getElementById('createForm');
 const formNameInput = document.getElementById('formName');
+const formImageInput = document.getElementById('formImage'); // Referencia al nuevo campo URL imagen formulario
+const minAgeInput = document.getElementById('minAge'); // Referencia al nuevo campo edad mínima
+const maxAgeInput = document.getElementById('maxAge'); // Referencia al nuevo campo edad máxima
 const formBgInput = document.getElementById('formBgInput');
 const formulariosTableBody = document.querySelector('#formulariosTable tbody');
 
