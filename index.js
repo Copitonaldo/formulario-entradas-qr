@@ -8,7 +8,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // Inicializar Supabase
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Contraseña simple para login local
+// Contraseña simple
 const PASSWORD = 'admin123';
 
 // Variables del DOM
@@ -107,10 +107,7 @@ createForm.addEventListener('submit', async (e) => {
     const filePath = `public/${Date.now()}_${file.name.replace(/\s/g, '_')}`;
     const { error: uploadError } = await supabase.storage
       .from('form-backgrounds')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false
-      });
+      .upload(filePath, file);
 
     if (uploadError) {
       alert('Error al subir imagen. El formulario se creará sin imagen.');
@@ -165,8 +162,8 @@ window.borrarFormulario = async function(codigoForm, db_id) {
       throw deleteContadorError;
     }
 
-    // 3. Borrar imagen del Storage si existe
-    const {  formData, error: fetchImageError } = await supabase
+    // 3. Borrar imagen del formulario (si existe)
+    const { data: formData, error: fetchImageError } = await supabase
       .from('formularios')
       .select('imagen_url')
       .eq('id', db_id)
