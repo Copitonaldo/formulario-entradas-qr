@@ -116,9 +116,9 @@ createForm.addEventListener('submit', async (e) => {
   }
 
   const file = formBgInput.files.length > 0 ? formBgInput.files[0] : null;
-  let imagenUrl = null;
+  let imagenUrl = null; // ÚNICA DECLARACIÓN DE imagenUrl
 
-  let imagenUrl = null;
+  // LA LÍNEA DUPLICADA "let imagenUrl = null;" HA SIDO ELIMINADA DE AQUÍ.
   if (file) {
     const fileName = `public/${Date.now()}_${file.name.replace(/\s/g, '_')}`; // Almacenar en una carpeta 'public' dentro del bucket
     const { data: uploadData, error: uploadError } = await supabase.storage
@@ -237,4 +237,3 @@ logoutBtn.addEventListener('click', () => {
 // - Se eliminó la dependencia de 'onValue' de Firebase.
 // - La función 'leerArchivoBase64' se comentó, ya que Supabase Storage maneja Files.
 // - El login es local y no necesita cambios de Supabase Auth por ahora.
-```
