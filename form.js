@@ -442,6 +442,3 @@ if (guardarBtn) {
     }
   });
 }
-
-// La sección TODO ha sido eliminada para descartar que sea la causa del SyntaxError.
-```
