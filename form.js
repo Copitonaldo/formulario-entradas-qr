@@ -1,9 +1,11 @@
 // Importar Supabase
-import { createClient } from 'https://cdn.jsdelivr.net/npm/ @supabase/supabase-js/+esm';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 // Configuración de Supabase
-const SUPABASE_URL = 'https://wiyejeeiehwfkdcbpomp.supabase.co ';
+const SUPABASE_URL = 'https://wiyejeeiehwfkdcbpomp.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpeWVqZWVpZWh3ZmtkY2Jwb21wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NjQwOTYsImV4cCI6MjA2NzE0MDA5Nn0.yDq4eOHujKH2nmg-F-DVnqCHGwdfEmf4Z968KXl1SDc';
+
+// Inicializar Supabase
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Variables del DOM
@@ -38,11 +40,13 @@ let currentFormDbId = null; // Para almacenar el UUID del formulario de Supabase
 // --- Carga de datos del formulario (incluida imagen de fondo) ---
 async function cargarDatosFormulario() {
   if (!formId) return; // formId aquí es el 'codigo_form'
+
   const { data: formDataResult, error: formError } = await supabase
     .from('formularios')
     .select('id, nombre, imagen_url, min_age, max_age')
     .eq('codigo_form', formId) // formId de la URL es codigo_form
     .single();
+
   if (formError) {
     console.error("Error al cargar datos del formulario desde Supabase:", formError);
     if (formTitleElement) formTitleElement.textContent = 'Error al cargar formulario';
@@ -52,6 +56,7 @@ async function cargarDatosFormulario() {
     errorMsg.style.display = 'block';
     return;
   }
+
   if (formDataResult) {
     currentFormDbId = formDataResult.id; // Guardar el UUID del formulario para usarlo después
     if (formTitleElement) {
@@ -107,6 +112,7 @@ if (formData) {
     const nombre = inputNombre.value.trim();
     const cedulaRaw = inputCedula.value.replace(/\D/g, '');
     const edadValue = inputEdad.value.trim();
+
     if (!nombre || !/^\d{8}$/.test(cedulaRaw) || !edadValue) {
       if (!nombre) errorMsg.textContent = 'Debe ingresar un nombre.';
       else if (!/^\d{8}$/.test(cedulaRaw)) errorMsg.textContent = 'La cédula debe tener exactamente 8 dígitos.';
@@ -114,12 +120,14 @@ if (formData) {
       errorMsg.style.display = 'block';
       return;
     }
+
     const edad = parseInt(edadValue);
     if (isNaN(edad) || edad < 0) {
-      errorMsg.textContent = 'Edad inválida.';
-      errorMsg.style.display = 'block';
-      return;
+        errorMsg.textContent = 'Edad inválida.';
+        errorMsg.style.display = 'block';
+        return;
     }
+
     // Age validation against form's minAge and maxAge (cargados desde Supabase)
     if (currentMinAge !== null && edad < currentMinAge) {
       errorMsg.textContent = `Error: Su edad no es válida. Debe ser mayor o igual a ${currentMinAge}.`;
@@ -131,9 +139,11 @@ if (formData) {
       errorMsg.style.display = 'block';
       return;
     }
+
     confNombre.textContent = toTitleCase(nombre);
     confCedula.textContent = formatCedula(cedulaRaw);
     confEdad.textContent = `${edad} años`;
+
     formData.style.display = 'none';
     entradaGenerada.style.display = 'none';
     confirmacionDatos.style.display = 'block';
@@ -148,23 +158,27 @@ if (btnConfirmar) {
       errorMsg.style.display = 'block';
       return;
     }
+
     const { nombre, cedula, edadInt } = window.datosParaConfirmar; // Usar edadInt
     const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
+
     // Verificar cédula duplicada en Supabase
-    const { data: existingResponse, error: checkError } = await supabase
+    const { data: existingResponse, error:查Error } = await supabase
       .from('respuestas')
       .select('cedula')
       .eq('formulario_id', currentFormDbId)
       .eq('cedula', cedula)
       .maybeSingle(); // .maybeSingle() porque podría no existir o existir uno
-    if (checkError) {
-      console.error("Error detallado verificando cédula duplicada en Supabase:", checkError);
+
+    if (查Error) {
+      console.error("Error detallado verificando cédula duplicada en Supabase:", 查Error);
       errorMsg.textContent = "Error al verificar la cédula. Intente de nuevo.";
       errorMsg.style.display = 'block';
       confirmacionDatos.style.display = 'none';
       if (formData) formData.style.display = 'block';
       return;
     }
+
     if (existingResponse) {
       errorMsg.textContent = "Esta cédula ya ha sido registrada para este formulario.";
       errorMsg.style.display = 'block';
@@ -172,8 +186,10 @@ if (btnConfirmar) {
       if (formData) formData.style.display = 'block';
       return;
     }
+
     let nuevoCodigoSecuencial;
     let nuevoCodigoSecuencialFormateado;
+
     try {
       // Intentar obtener el contador actual
       let { data: contadorData, error: contadorError } = await supabase
@@ -181,23 +197,28 @@ if (btnConfirmar) {
         .select('ultimo_codigo')
         .eq('formulario_id', currentFormDbId)
         .single();
+
       if (contadorError && contadorError.code !== 'PGRST116') { // PGRST116: 'single row not found'
         throw contadorError; // Otro error diferente a "no encontrado"
       }
+
       if (contadorData) {
         nuevoCodigoSecuencial = contadorData.ultimo_codigo + 1;
       } else {
         // No existe contador para este formulario, empezamos en 1
         nuevoCodigoSecuencial = 1;
       }
+
       // Actualizar o insertar el nuevo valor del contador
       const { error: upsertError } = await supabase
         .from('contadores_formularios')
         .upsert({ formulario_id: currentFormDbId, ultimo_codigo: nuevoCodigoSecuencial }, { onConflict: 'formulario_id' });
+
       if (upsertError) {
         throw upsertError;
       }
       nuevoCodigoSecuencialFormateado = formatSequentialCode(nuevoCodigoSecuencial);
+
     } catch (e) {
       console.error("Error en la lógica del contador con Supabase:", e);
       errorMsg.textContent = "Error crítico al generar el código. Contacte al administrador.";
@@ -206,6 +227,7 @@ if (btnConfirmar) {
       if (formData) formData.style.display = 'block';
       return;
     }
+
     const nuevaRespuesta = {
       formulario_id: currentFormDbId,
       codigo_secuencial: nuevoCodigoSecuencialFormateado,
@@ -214,12 +236,14 @@ if (btnConfirmar) {
       edad: edadInt, // Guardar la edad como número
       // fecha_registro se establece por defecto en Supabase
     };
+
     try {
       const { data: insertData, error: insertError } = await supabase
         .from('respuestas')
         .insert([nuevaRespuesta])
         .select()
         .single();
+
       if (insertError) {
         // Si el error es por la constraint unique de (formulario_id, cedula), ya lo manejamos arriba.
         // Podríamos verificar el código de error específico si quisiéramos ser más precisos.
@@ -238,18 +262,18 @@ if (btnConfirmar) {
         if (formData) formData.style.display = 'block'; // Mostrar el formulario de nuevo
         return;
       }
+
       if (insertData) {
         outNombre.textContent = insertData.nombre_completo; // Usar datos de la respuesta insertada
         outCedula.textContent = formatCedula(insertData.cedula);
         outEdad.textContent = `${insertData.edad} años`;
         outCodigo.textContent = insertData.codigo_secuencial;
+
         if (codigoQR) codigoQR.textContent = "Código: " + insertData.codigo_secuencial;
+
         const qrCanvasElement = document.getElementById('qrCanvas');
-        const datosQR = `${formDisplayName}
-Nombre: ${insertData.nombre_completo}
-Cédula: ${insertData.cedula}
-Edad: ${insertData.edad}
-Código: ${insertData.codigo_secuencial}`;
+        const datosQR = `${formDisplayName}\nNombre: ${insertData.nombre_completo}\nCédula: ${insertData.cedula}\nEdad: ${insertData.edad}\nCódigo: ${insertData.codigo_secuencial}`;
+
         if (qrCanvasElement) {
           QRCode.toCanvas(qrCanvasElement, datosQR, {
             width: parseInt(qrCanvasElement.style.width) || 70,
@@ -293,7 +317,7 @@ if (btnCorregir) {
 if (guardarBtn) {
   guardarBtn.addEventListener('click', async () => {
     try {
-      const html2canvas = (await import('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.esm.min.js ')).default;
+      const html2canvas = (await import('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.esm.min.js')).default;
       const elementToCapture = document.querySelector('#entradaGenerada .ticket-img-wrap');
       if (!elementToCapture) {
         console.error("Elemento '.ticket-img-wrap' no encontrado para captura.");
@@ -375,11 +399,7 @@ if (guardarBtn) {
           const clonedCanvasEl = clonedElement.querySelector('#qrCanvas');
           if (clonedCanvasEl) {
             const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
-            const datosQR = `${formDisplayName}
-Nombre: ${outNombre.textContent}
-Cédula: ${outCedula.textContent}
-Edad: ${outEdad.textContent}
-Código: ${outCodigo.textContent}`;
+            const datosQR = `${formDisplayName}\nNombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}`;
             QRCode.toCanvas(clonedCanvasEl, datosQR, { width: parseInt(clonedCanvasEl.style.width) || 70, height: parseInt(clonedCanvasEl.style.height) || 70, margin: 1 }, function (error) {
               if (error) console.error('Error re-dibujando QR en clon:', error);
             });
@@ -422,3 +442,6 @@ Código: ${outCodigo.textContent}`;
     }
   });
 }
+
+// La sección TODO ha sido eliminada para descartar que sea la causa del SyntaxError.
+```
