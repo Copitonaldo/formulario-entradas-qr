@@ -364,29 +364,11 @@ onclone: (documentCloned, clonedElement) => {
 // Re-dibujar QR en el clon si es necesario, ya que a veces el canvas no se clona bien
 const clonedCanvasEl = clonedElement.querySelector('#qrCanvas');
 if (clonedCanvasEl) {
-    const originalStyleWidth = parseInt(clonedCanvasEl.style.width) || 70;
-    const originalStyleHeight = parseInt(clonedCanvasEl.style.height) || 70;
-
-    // Calcular el tamaño de renderizado del QR basado en el scaleFactor de html2canvas
-    // para que el QR tenga suficientes píxeles para la imagen escalada.
-    // scaleFactor está disponible en este scope.
-    const qrRenderWidth = Math.round(originalStyleWidth * scaleFactor);
-    const qrRenderHeight = Math.round(originalStyleHeight * scaleFactor);
-
-    // Asegurar un tamaño mínimo por si acaso scaleFactor es < 1 o los tamaños son muy pequeños.
-    const finalQrWidth = Math.max(qrRenderWidth, originalStyleWidth);
-    const finalQrHeight = Math.max(qrRenderHeight, originalStyleHeight);
-
-    const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
-    const datosQR = `${formDisplayName}\nNombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}`;
-    
-    QRCode.toCanvas(clonedCanvasEl, datosQR, { 
-        width: finalQrWidth, 
-        height: finalQrHeight, 
-        margin: 1 // Mantener el margen como estaba especificado originalmente
-    }, function (error) {
-        if (error) console.error('Error re-dibujando QR en clon con nuevo tamaño:', error);
-    });
+const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
+const datosQR = `${formDisplayName}\nNombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}`;
+QRCode.toCanvas(clonedCanvasEl, datosQR, { width: parseInt(clonedCanvasEl.style.width) || 70, height: parseInt(clonedCanvasEl.style.height) || 70, margin: 1 }, function (error) {
+if (error) console.error('Error re-dibujando QR en clon:', error);
+});
 }
 const clonedQrLabel = clonedElement.querySelector('.qr-code-label');
 if (clonedQrLabel) {
