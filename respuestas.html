@@ -14,7 +14,7 @@
 
 <main>
   <div id="dashboard">Entradas totales: <span id="dashboardCount">0</span></div>
-  <h2 id="formTitle">Cargando formulario...</h2>
+  <h2 id="formTitle">Cargando respuestas...</h2>
 
   <input type="text" id="searchInput" placeholder="Buscar por nombre, cédula o edad..." />
 
@@ -32,20 +32,15 @@
       </tr>
     </thead>
     <tbody>
-      <!-- Aquí aparecerán las respuestas -->
+      <!-- Respuestas aquí -->
     </tbody>
   </table>
-
   <div id="pagination" style="margin-top:16px; display:flex; justify-content:center;"></div>
-  <p id="noDataMsg" style="display:none; font-weight:bold; margin-top:20px;">
-    No hay respuestas para este formulario.
-  </p>
+  <p id="noDataMsg" style="display:none; font-weight: bold; margin-top: 20px;">No hay respuestas para este formulario.</p>
 </main>
 
-<!-- Librería SheetJS para exportar a Excel -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx @0.18.5/dist/xlsx.full.min.js"></script>
-<!-- Script de Supabase -->
+<!-- SheetJS para exportar a Excel -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx  @0.18.5/dist/xlsx.full.min.js"></script>
 <script type="module" src="respuestas.js"></script>
-
 </body>
 </html>
