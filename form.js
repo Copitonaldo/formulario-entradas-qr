@@ -189,14 +189,33 @@ async function validarYObtenerReferencia(codigoReferencia, formDbId) {
 }
 
 async function decrementarUsoReferencia(idReferencia) {
-  const { error } = await supabase
+  // 1. Leer el valor actual
+  const { data: refData, error: fetchError } = await supabase
     .from('referencias_usos')
-    .update({ usos_disponibles: supabase.sql('usos_disponibles - 1') })
+    .select('usos_disponibles')
+    .eq('id', idReferencia)
+    .single();
+
+  if (fetchError || !refData) {
+    console.error("Error al obtener la referencia para decrementar o no encontrada:", fetchError);
+    // Aquí podrías querer manejar el error de forma más robusta,
+    // por ejemplo, notificando que no se pudo decrementar.
+    // Por ahora, solo lo logueamos, ya que la entrada principal ya se guardó.
+    return;
+  }
+
+  const nuevosUsosDisponibles = refData.usos_disponibles - 1;
+
+  // 2. Actualizar con el nuevo valor
+  const { error: updateError } = await supabase
+    .from('referencias_usos')
+    .update({ usos_disponibles: nuevosUsosDisponibles })
     .eq('id', idReferencia);
 
-  if (error) {
-    console.error("Error al decrementar uso de referencia:", error);
-    // Considerar cómo manejar este error, ¿quizás reintentar o notificar al admin?
+  if (updateError) {
+    console.error("Error al decrementar uso de referencia:", updateError);
+  } else {
+    console.log(`Referencia ${idReferencia} decrementada a ${nuevosUsosDisponibles} usos.`);
   }
 }
 
