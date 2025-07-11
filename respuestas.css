@@ -218,29 +218,32 @@ tbody tr:hover {
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   }
   td {
-    text-align: right; /* Alineación de los datos a la derecha */
-    padding: 10px 15px; /* Ajustar padding de celdas */
+    /* text-align: right; */ /* Eliminado para control con flex */
+    padding: 10px 15px; 
     border: none;
-    border-bottom: 1px solid #eee; /* Separador sutil entre campos */
-    position: relative;
-    padding-left: 50%; /* Espacio para la etiqueta (data-label) */
+    border-bottom: 1px solid #eee; 
+    position: relative; /* Mantenido por si se necesita para otros elementos absolutos */
+    display: flex; /* Convertir td en flex container */
+    justify-content: space-between; /* Distribuir espacio entre etiqueta y valor */
+    align-items: center; /* Centrar verticalmente */
   }
   td:last-child {
-    border-bottom: none; /* Sin borde para el último campo */
+    border-bottom: none; 
   }
   td:before {
     content: attr(data-label);
     font-weight: bold;
-    display: block;
+    /* display: block; */ /* Eliminado */
     margin-bottom: 0;
-    color: #333; /* Color de etiqueta más oscuro */
-    position: absolute;
-    left: 15px; /* Alineación de la etiqueta a la izquierda */
-    top: 50%;
-    transform: translateY(-50%);
-    white-space: nowrap; /* Evitar que la etiqueta se rompa */
+    color: #333; 
+    /* position: absolute; */ /* Eliminado */
+    /* left: 15px; */ /* Eliminado */
+    /* top: 50%; */ /* Eliminado */
+    /* transform: translateY(-50%); */ /* Eliminado */
+    white-space: nowrap; 
+    margin-right: 10px; /* Añadir un pequeño margen a la derecha de la etiqueta */
   }
-  .action-btn { /* Asegurar que los botones de acción sean visibles y usables */
+  .action-btn { 
     display: inline-block;
     margin: 2px;
   }
@@ -269,12 +272,13 @@ tbody tr:hover {
     margin-bottom: 15px; /* Más espacio debajo de los botones */
   }
   td {
-    padding: 8px 10px;
-    padding-left: 45%; /* Ajustar espacio para data-label */
+    padding: 8px 10px; /* Se mantiene el padding general */
+    /* padding-left: 45%; */ /* Eliminado, ya no es necesario con flex */
   }
   td:before {
-    left: 10px;
-    font-size: 0.85rem; /* Reducir tamaño de etiqueta */
+    /* left: 10px; */ /* Eliminado */
+    font-size: 0.85rem; 
+    margin-right: 8px; /* Ajustar margen para pantallas más pequeñas */
   }
   .action-btn {
     padding: 3px 8px;
