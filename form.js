@@ -40,6 +40,7 @@ const guardarBtn = document.getElementById('guardarBtn');
 let currentMinAge = null;
 let currentMaxAge = null;
 let currentFormDbId = null; // Para almacenar el UUID del formulario de Supabase
+let isSubmitting = false; // Para prevenir envíos múltiples
 
 // --- Carga de datos del formulario (incluida imagen de fondo) ---
 async function cargarDatosFormulario() {
@@ -118,12 +119,11 @@ if (formData) {
     const edadValue = inputEdad.value.trim();
     const referenciaValue = inputReferencia.value.trim();
 
-    // Modificado para incluir referencia obligatoria
     if (!nombre || !/^\d{8}$/.test(cedulaRaw) || !edadValue || !referenciaValue) {
       if (!nombre) errorMsg.textContent = 'Debe ingresar un nombre.';
       else if (!/^\d{8}$/.test(cedulaRaw)) errorMsg.textContent = 'La cédula debe tener exactamente 8 dígitos.';
       else if (!edadValue) errorMsg.textContent = 'Debe ingresar una edad.';
-      else if (!referenciaValue) errorMsg.textContent = 'Debe ingresar un código de referencia.'; // Nuevo mensaje
+      else if (!referenciaValue) errorMsg.textContent = 'Debe ingresar un código de referencia.';
       errorMsg.style.display = 'block';
       return;
     }
@@ -135,7 +135,6 @@ if (formData) {
         return;
     }
     
-    // Modificado: si está aquí, es porque referenciaValue no está vacío y debe ser de 4 dígitos.
     if (!/^\d{4}$/.test(referenciaValue)) {
       errorMsg.textContent = 'El código de referencia debe ser de 4 dígitos.';
       errorMsg.style.display = 'block';
@@ -156,18 +155,16 @@ if (formData) {
     confNombre.textContent = toTitleCase(nombre);
     confCedula.textContent = formatCedula(cedulaRaw);
     confEdad.textContent = `${edad} años`;
-    if (confReferencia) confReferencia.textContent = referenciaValue ? referenciaValue : '-'; // Se mantiene para la confirmación visual
+    if (confReferencia) confReferencia.textContent = referenciaValue ? referenciaValue : '-';
 
     formData.style.display = 'none';
     entradaGenerada.style.display = 'none';
     confirmacionDatos.style.display = 'block';
-    window.datosParaConfirmar = { nombre, cedula: cedulaRaw, edad: edadValue, edadInt: edad, referencia: referenciaValue }; // referenciaValue ya no es `|| null`
+    window.datosParaConfirmar = { nombre, cedula: cedulaRaw, edad: edadValue, edadInt: edad, referencia: referenciaValue };
   });
 }
 
 async function validarYObtenerReferencia(codigoReferencia, formDbId) {
-  // Asumimos que codigoReferencia SIEMPRE se pasa porque es obligatorio.
-  // La validación de si se proporcionó o no, y su formato, ya se hizo en el 'submit'.
   const { data, error } = await supabase
     .from('referencias_usos')
     .select('id, usos_disponibles')
@@ -177,7 +174,6 @@ async function validarYObtenerReferencia(codigoReferencia, formDbId) {
 
   if (error || !data) {
     console.warn("Error al buscar referencia o no encontrada:", error);
-    // Mensaje más específico según el nuevo requisito
     return { valida: false, mensaje: "El código de referencia proporcionado no existe o es incorrecto." };
   }
 
@@ -189,7 +185,6 @@ async function validarYObtenerReferencia(codigoReferencia, formDbId) {
 }
 
 async function decrementarUsoReferencia(idReferencia) {
-  // 1. Leer el valor actual
   const { data: refData, error: fetchError } = await supabase
     .from('referencias_usos')
     .select('usos_disponibles')
@@ -198,15 +193,11 @@ async function decrementarUsoReferencia(idReferencia) {
 
   if (fetchError || !refData) {
     console.error("Error al obtener la referencia para decrementar o no encontrada:", fetchError);
-    // Aquí podrías querer manejar el error de forma más robusta,
-    // por ejemplo, notificando que no se pudo decrementar.
-    // Por ahora, solo lo logueamos, ya que la entrada principal ya se guardó.
     return;
   }
 
   const nuevosUsosDisponibles = refData.usos_disponibles - 1;
 
-  // 2. Actualizar con el nuevo valor
   const { error: updateError } = await supabase
     .from('referencias_usos')
     .update({ usos_disponibles: nuevosUsosDisponibles })
@@ -221,139 +212,175 @@ async function decrementarUsoReferencia(idReferencia) {
 
 if (btnConfirmar) {
   btnConfirmar.addEventListener('click', async function () {
-    if (!formId || formId.trim() === "" || !currentFormDbId) {
-      errorMsg.innerHTML = "<b>Error Crítico:</b> ID de formulario ausente o no válido.";
-      errorMsg.style.display = 'block';
+    if (isSubmitting) {
+      console.log('Envío ya en progreso...');
       return;
     }
 
-    const { nombre, cedula, edadInt, referencia } = window.datosParaConfirmar;
-    const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
+    isSubmitting = true;
+    btnConfirmar.disabled = true;
+    const originalButtonText = btnConfirmar.textContent; // Guardar texto original
+    btnConfirmar.textContent = 'Procesando...';
+    errorMsg.style.display = 'none';
 
-    // Como la referencia ahora es obligatoria, 'referencia' SIEMPRE debería tener un valor aquí.
-    // La validación de formato y existencia ya ocurrió en el 'submit' y se re-valida aquí.
-    if (!referencia) { 
-        // Este caso no debería ocurrir si la lógica del submit es correcta, pero es una salvaguarda.
+    try {
+      if (!formId || formId.trim() === "" || !currentFormDbId) {
+        errorMsg.innerHTML = "<b>Error Crítico:</b> ID de formulario ausente o no válido.";
+        errorMsg.style.display = 'block';
+        isSubmitting = false;
+        btnConfirmar.disabled = false;
+        btnConfirmar.textContent = originalButtonText;
+        return;
+      }
+
+      const { nombre, cedula, edadInt, referencia } = window.datosParaConfirmar;
+      const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
+
+      if (!referencia) { 
         errorMsg.textContent = "Error: Falta el código de referencia. Por favor, corrija sus datos.";
         errorMsg.style.display = 'block';
         confirmacionDatos.style.display = 'none'; 
         if (formData) formData.style.display = 'block'; 
+        isSubmitting = false;
+        btnConfirmar.disabled = false;
+        btnConfirmar.textContent = originalButtonText;
         return;
-    }
-
-    let idReferenciaParaDecrementar = null;
-    // Validar referencia (ya no es opcional)
-    const validacionRef = await validarYObtenerReferencia(referencia, currentFormDbId);
-    if (!validacionRef.valida) {
-      errorMsg.textContent = validacionRef.mensaje; // Mensaje de validarYObtenerReferencia
-      errorMsg.style.display = 'block';
-      // Mantener confirmacionDatos visible para que btnCorregir funcione, 
-      // o el usuario puede usar "No" para volver al formulario.
-      return;
-    }
-    
-    // Si validacionRef.valida es true, entonces validacionRef.datosReferencia debería existir.
-    if (validacionRef.datosReferencia) {
-      idReferenciaParaDecrementar = validacionRef.datosReferencia.id;
-    } else {
-      // Caso anómalo si valida es true pero no hay datosReferencia.
-      console.error("Error lógico: Referencia marcada como válida pero sin datos de referencia.");
-      errorMsg.textContent = "Error interno al validar la referencia. Intente de nuevo.";
-      errorMsg.style.display = 'block';
-      return;
-    }
-    
-    // Verificar cédula duplicada en Supabase
-    const { data: existingResponse, error:查Error } = await supabase
-      .from('respuestas')
-      .select('cedula')
-      .eq('formulario_id', currentFormDbId)
-      .eq('cedula', cedula)
-      .maybeSingle(); 
-
-    if (查Error) {
-      console.error("Error detallado verificando cédula duplicada en Supabase:", 查Error);
-      errorMsg.textContent = "Error al verificar la cédula. Intente de nuevo.";
-      errorMsg.style.display = 'block';
-      confirmacionDatos.style.display = 'none';
-      if (formData) formData.style.display = 'block';
-      return;
-    }
-
-    if (existingResponse) {
-      errorMsg.textContent = "Esta cédula ya ha sido registrada para este formulario.";
-      errorMsg.style.display = 'block';
-      confirmacionDatos.style.display = 'none';
-      if (formData) formData.style.display = 'block';
-      return;
-    }
-
-    let nuevoCodigoSecuencial;
-    let nuevoCodigoSecuencialFormateado;
-
-    try {
-      let { data: contadorData, error: contadorError } = await supabase
-        .from('contadores_formularios')
-        .select('ultimo_codigo')
-        .eq('formulario_id', currentFormDbId)
-        .single();
-
-      if (contadorError && contadorError.code !== 'PGRST116') { 
-        throw contadorError; 
       }
 
-      if (contadorData) {
-        nuevoCodigoSecuencial = contadorData.ultimo_codigo + 1;
+      let idReferenciaParaDecrementar = null;
+      const validacionRef = await validarYObtenerReferencia(referencia, currentFormDbId);
+      if (!validacionRef.valida) {
+        errorMsg.textContent = validacionRef.mensaje;
+        errorMsg.style.display = 'block';
+        isSubmitting = false;
+        btnConfirmar.disabled = false;
+        btnConfirmar.textContent = originalButtonText;
+        return;
+      }
+    
+      if (validacionRef.datosReferencia) {
+        idReferenciaParaDecrementar = validacionRef.datosReferencia.id;
       } else {
-        nuevoCodigoSecuencial = 1;
+        console.error("Error lógico: Referencia marcada como válida pero sin datos de referencia.");
+        errorMsg.textContent = "Error interno al validar la referencia. Intente de nuevo.";
+        errorMsg.style.display = 'block';
+        isSubmitting = false;
+        btnConfirmar.disabled = false;
+        btnConfirmar.textContent = originalButtonText;
+        return;
       }
-
-      const { error: upsertError } = await supabase
-        .from('contadores_formularios')
-        .upsert({ formulario_id: currentFormDbId, ultimo_codigo: nuevoCodigoSecuencial }, { onConflict: 'formulario_id' });
-
-      if (upsertError) {
-        throw upsertError;
-      }
-      nuevoCodigoSecuencialFormateado = formatSequentialCode(nuevoCodigoSecuencial);
-
-    } catch (e) {
-      console.error("Error en la lógica del contador con Supabase:", e);
-      errorMsg.textContent = "Error crítico al generar el código. Contacte al administrador.";
-      errorMsg.style.display = 'block';
-      confirmacionDatos.style.display = 'none';
-      if (formData) formData.style.display = 'block';
-      return;
-    }
-
-    const nuevaRespuesta = {
-      formulario_id: currentFormDbId,
-      codigo_secuencial: nuevoCodigoSecuencialFormateado,
-      nombre_completo: toTitleCase(nombre),
-      cedula: cedula,
-      edad: edadInt,
-      referencia_usada: referencia // Guardar la referencia usada (ahora siempre habrá una)
-    };
-
-    try {
-      const { data: insertData, error: insertError } = await supabase
+    
+      const { data: existingResponse, error:查Error } = await supabase
         .from('respuestas')
-        .insert([nuevaRespuesta])
-        .select()
-        .single();
+        .select('cedula')
+        .eq('formulario_id', currentFormDbId)
+        .eq('cedula', cedula)
+        .maybeSingle(); 
 
-      if (insertError) {
-        console.error("Error guardando respuesta en Supabase:", insertError);
-        errorMsg.textContent = "Error al guardar los datos. Intente de nuevo. (Ver consola)";
+      if (查Error) {
+        console.error("Error detallado verificando cédula duplicada en Supabase:", 查Error);
+        errorMsg.textContent = "Error al verificar la cédula. Intente de nuevo.";
         errorMsg.style.display = 'block';
         confirmacionDatos.style.display = 'none';
-        if (formData) formData.style.display = 'block'; 
+        if (formData) formData.style.display = 'block';
+        isSubmitting = false;
+        btnConfirmar.disabled = false;
+        btnConfirmar.textContent = originalButtonText;
         return;
       }
 
+      if (existingResponse) {
+        errorMsg.textContent = "Esta cédula ya ha sido registrada para este formulario.";
+        errorMsg.style.display = 'block';
+        confirmacionDatos.style.display = 'none';
+        if (formData) formData.style.display = 'block';
+        isSubmitting = false; 
+        btnConfirmar.disabled = false; 
+        btnConfirmar.textContent = originalButtonText;
+        return;
+      }
+
+      let nuevoCodigoSecuencial;
+      let nuevoCodigoSecuencialFormateado;
+
+      try {
+        let { data: contadorData, error: contadorError } = await supabase
+          .from('contadores_formularios')
+          .select('ultimo_codigo')
+          .eq('formulario_id', currentFormDbId)
+          .single();
+
+        if (contadorError && contadorError.code !== 'PGRST116') { 
+          throw contadorError; 
+        }
+
+        if (contadorData) {
+          nuevoCodigoSecuencial = contadorData.ultimo_codigo + 1;
+        } else {
+          nuevoCodigoSecuencial = 1;
+        }
+
+        const { error: upsertError } = await supabase
+          .from('contadores_formularios')
+          .upsert({ formulario_id: currentFormDbId, ultimo_codigo: nuevoCodigoSecuencial }, { onConflict: 'formulario_id' });
+
+        if (upsertError) {
+          throw upsertError;
+        }
+        nuevoCodigoSecuencialFormateado = formatSequentialCode(nuevoCodigoSecuencial);
+
+      } catch (e) {
+        console.error("Error en la lógica del contador con Supabase:", e);
+        errorMsg.textContent = "Error crítico al generar el código. Contacte al administrador.";
+        errorMsg.style.display = 'block';
+        confirmacionDatos.style.display = 'none';
+        if (formData) formData.style.display = 'block';
+        isSubmitting = false;
+        btnConfirmar.disabled = false;
+        btnConfirmar.textContent = originalButtonText;
+        return;
+      }
+
+      const nuevaRespuesta = {
+        formulario_id: currentFormDbId,
+        codigo_secuencial: nuevoCodigoSecuencialFormateado,
+        nombre_completo: toTitleCase(nombre),
+        cedula: cedula,
+        edad: edadInt,
+        referencia_usada: referencia
+      };
+      
+      let insertDataResponse;
+      try {
+        insertDataResponse = await supabase
+          .from('respuestas')
+          .insert([nuevaRespuesta])
+          .select()
+          .single();
+
+        if (insertDataResponse.error) {
+          console.error("Error guardando respuesta en Supabase:", insertDataResponse.error);
+          errorMsg.textContent = "Error al guardar los datos. Intente de nuevo. (Ver consola)";
+          errorMsg.style.display = 'block';
+          // No volvemos al formulario aquí, dejamos al usuario en la pantalla de confirmación para reintentar
+          isSubmitting = false;
+          btnConfirmar.disabled = false;
+          btnConfirmar.textContent = originalButtonText;
+          return;
+        }
+      } catch (err) { 
+        console.error("Error general en la inserción a Supabase DB:", err);
+        errorMsg.textContent = "Error de conexión al guardar los datos. Intente de nuevo.";
+        errorMsg.style.display = 'block';
+        isSubmitting = false;
+        btnConfirmar.disabled = false;
+        btnConfirmar.textContent = originalButtonText;
+        return;
+      }
+
+      const { data: insertData } = insertDataResponse;
+
       if (insertData) {
-        // Si se usó una referencia y se guardó la respuesta, decrementar el uso
-        // idReferenciaParaDecrementar debe estar seteado si llegamos aquí con una referencia válida
         if (idReferenciaParaDecrementar) {
           await decrementarUsoReferencia(idReferenciaParaDecrementar);
         }
@@ -362,8 +389,6 @@ if (btnConfirmar) {
         outCedula.textContent = formatCedula(insertData.cedula);
         outEdad.textContent = `${insertData.edad} años`;
         outCodigo.textContent = insertData.codigo_secuencial;
-
-        // La referencia usada siempre se mostrará ahora
         outReferencia.textContent = insertData.referencia_usada;
         outReferenciaContenedor.style.display = 'block';
         
@@ -371,11 +396,9 @@ if (btnConfirmar) {
 
         const qrCanvasElement = document.getElementById('qrCanvas');
         let datosQR = `${formDisplayName}\nNombre: ${insertData.nombre_completo}\nCédula: ${insertData.cedula}\nEdad: ${insertData.edad}\nCódigo: ${insertData.codigo_secuencial}`;
-        // Siempre habrá referencia_usada en insertData si la lógica es correcta
         if (insertData.referencia_usada) {
             datosQR += `\nRef: ${insertData.referencia_usada}`;
         }
-
 
         if (qrCanvasElement) {
           QRCode.toCanvas(qrCanvasElement, datosQR, {
@@ -388,24 +411,40 @@ if (btnConfirmar) {
         }
         confirmacionDatos.style.display = 'none';
         entradaGenerada.style.display = 'block';
+        // En caso de éxito, isSubmitting permanece true y el botón deshabilitado
+        // ya que la pantalla cambia y el botón de confirmar ya no está.
+        // Se reseteará si el usuario navega de vuelta o recarga.
       } else {
-        errorMsg.textContent = "No se pudo confirmar el guardado de los datos.";
+        errorMsg.textContent = "No se pudo confirmar el guardado de los datos después de la inserción.";
         errorMsg.style.display = 'block';
-        confirmacionDatos.style.display = 'none';
-        if (formData) formData.style.display = 'block';
+        isSubmitting = false; 
+        btnConfirmar.disabled = false;
+        btnConfirmar.textContent = originalButtonText;
       }
-    } catch (err) { 
-      console.error("Error general guardando en Supabase DB:", err);
-      errorMsg.textContent = "Error al guardar los datos (inesperado). Intente de nuevo.";
+    } catch (generalError) { 
+      console.error("Error general en el proceso de confirmación:", generalError);
+      errorMsg.textContent = "Ocurrió un error inesperado. Intente de nuevo.";
       errorMsg.style.display = 'block';
-      confirmacionDatos.style.display = 'none';
-      if (formData) formData.style.display = 'block';
+      isSubmitting = false;
+      btnConfirmar.disabled = false;
+      btnConfirmar.textContent = originalButtonText;
     }
+    // No es necesario un finally explícito si todos los paths de error resetean el estado.
+    // En caso de éxito, el botón de confirmación ya no está visible.
   });
 }
 
 if (btnCorregir) {
   btnCorregir.addEventListener('click', () => {
+    isSubmitting = false; 
+    if (btnConfirmar) { // Asegurarse que btnConfirmar existe
+        btnConfirmar.disabled = false;
+        // Asumimos que el texto original es 'Sí, son correctos' o similar.
+        // Sería mejor guardar el texto original en una variable si cambia dinámicamente.
+        // Por ahora, lo reseteamos a un valor fijo.
+        btnConfirmar.textContent = 'Sí, son correctos'; 
+    }
+
     confirmacionDatos.style.display = 'none';
     if (formData) {
       if (formId && formId.trim() !== "" && formData.style.display === 'none') {
@@ -549,4 +588,4 @@ if (guardarBtn) {
     }
   });
 }
-console.log("form.js cargado con lógica de referencias obligatorias.");
+console.log("form.js cargado con lógica de referencias obligatorias y prevención de doble clic.");
