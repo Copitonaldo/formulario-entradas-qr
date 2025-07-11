@@ -184,108 +184,39 @@ tbody tr:hover {
   margin-top: 20px;
 }
 
-@media (max-width: 768px) { /* Ajustes para tabletas */
+@media (max-width: 700px) {
   main {
-    padding: 20px 15px; /* Ajustar padding de main */
-    border-radius: 0;
+    padding: 16px 4px 16px 4px;
   }
   header {
-    padding: 15px 20px; /* Ajustar padding de header */
-    border-radius: 0;
-  }
-  header h1 {
-    font-size: 1.5rem; /* Reducir tamaño de H1 */
-  }
-  input#searchInput {
-    max-width: 100%; /* Permitir que la barra de búsqueda ocupe más ancho */
-  }
-  #printBtn, #excelBtn {
-    padding: 8px 15px;
-    font-size: 0.9rem;
+    padding: 12px 10px;
+    font-size: 1rem;
   }
   table, thead, tbody, th, td, tr {
     display: block;
     width: 100%;
   }
   thead tr {
-    display: none; /* Ocultar encabezados de tabla tradicionales */
+    display: none;
   }
   tr {
-    margin-bottom: 15px; /* Espacio entre "tarjetas" de respuesta */
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background: #f9f9f9; /* Un fondo ligeramente diferente para cada item */
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    margin-bottom: 18px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 2px 8px #0001;
   }
   td {
-    /* text-align: right; */ /* Eliminado para control con flex */
-    padding: 10px 15px; 
+    text-align: left;
+    padding: 10px 8px;
     border: none;
-    border-bottom: 1px solid #eee; 
-    position: relative; /* Mantenido por si se necesita para otros elementos absolutos */
-    display: flex; /* Convertir td en flex container */
-    justify-content: space-between; /* Distribuir espacio entre etiqueta y valor */
-    align-items: center; /* Centrar verticalmente */
-  }
-  td:last-child {
-    border-bottom: none; 
+    position: relative;
   }
   td:before {
     content: attr(data-label);
     font-weight: bold;
-    /* display: block; */ /* Eliminado */
-    margin-bottom: 0;
-    color: #333; 
-    /* position: absolute; */ /* Eliminado */
-    /* left: 15px; */ /* Eliminado */
-    /* top: 50%; */ /* Eliminado */
-    /* transform: translateY(-50%); */ /* Eliminado */
-    white-space: nowrap; 
-    margin-right: 10px; /* Añadir un pequeño margen a la derecha de la etiqueta */
-  }
-  .action-btn { 
-    display: inline-block;
-    margin: 2px;
-  }
-  #pagination button {
-    padding: 5px 10px;
-    font-size: 0.9rem;
-  }
-}
-
-@media (max-width: 480px) { /* Ajustes para móviles pequeños */
-  header h1 {
-    font-size: 1.3rem;
-  }
-  main {
-    padding: 15px 10px;
-  }
-  #dashboard {
-    font-size: 1.05rem;
-  }
-  input#searchInput {
-    font-size: 0.9rem;
-  }
-  #printBtn, #excelBtn {
-    padding: 7px 12px;
-    font-size: 0.85rem;
-    margin-bottom: 15px; /* Más espacio debajo de los botones */
-  }
-  td {
-    padding: 8px 10px; /* Se mantiene el padding general */
-    /* padding-left: 45%; */ /* Eliminado, ya no es necesario con flex */
-  }
-  td:before {
-    /* left: 10px; */ /* Eliminado */
-    font-size: 0.85rem; 
-    margin-right: 8px; /* Ajustar margen para pantallas más pequeñas */
-  }
-  .action-btn {
-    padding: 3px 8px;
-    font-size: 0.8rem;
-  }
-  #pagination button {
-    padding: 4px 8px;
-    font-size: 0.85rem;
+    display: block;
+    margin-bottom: 4px;
+    color: #007bff;
   }
 }
