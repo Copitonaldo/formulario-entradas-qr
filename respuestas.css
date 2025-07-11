@@ -184,39 +184,104 @@ tbody tr:hover {
   margin-top: 20px;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 768px) { /* Ajustes para tabletas */
   main {
-    padding: 16px 4px 16px 4px;
+    padding: 20px 15px; /* Ajustar padding de main */
+    border-radius: 0;
   }
   header {
-    padding: 12px 10px;
-    font-size: 1rem;
+    padding: 15px 20px; /* Ajustar padding de header */
+    border-radius: 0;
+  }
+  header h1 {
+    font-size: 1.5rem; /* Reducir tamaño de H1 */
+  }
+  input#searchInput {
+    max-width: 100%; /* Permitir que la barra de búsqueda ocupe más ancho */
+  }
+  #printBtn, #excelBtn {
+    padding: 8px 15px;
+    font-size: 0.9rem;
   }
   table, thead, tbody, th, td, tr {
     display: block;
     width: 100%;
   }
   thead tr {
-    display: none;
+    display: none; /* Ocultar encabezados de tabla tradicionales */
   }
   tr {
-    margin-bottom: 18px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    background: #fff;
-    box-shadow: 0 2px 8px #0001;
+    margin-bottom: 15px; /* Espacio entre "tarjetas" de respuesta */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background: #f9f9f9; /* Un fondo ligeramente diferente para cada item */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   }
   td {
-    text-align: left;
-    padding: 10px 8px;
+    text-align: right; /* Alineación de los datos a la derecha */
+    padding: 10px 15px; /* Ajustar padding de celdas */
     border: none;
+    border-bottom: 1px solid #eee; /* Separador sutil entre campos */
     position: relative;
+    padding-left: 50%; /* Espacio para la etiqueta (data-label) */
+  }
+  td:last-child {
+    border-bottom: none; /* Sin borde para el último campo */
   }
   td:before {
     content: attr(data-label);
     font-weight: bold;
     display: block;
-    margin-bottom: 4px;
-    color: #007bff;
+    margin-bottom: 0;
+    color: #333; /* Color de etiqueta más oscuro */
+    position: absolute;
+    left: 15px; /* Alineación de la etiqueta a la izquierda */
+    top: 50%;
+    transform: translateY(-50%);
+    white-space: nowrap; /* Evitar que la etiqueta se rompa */
+  }
+  .action-btn { /* Asegurar que los botones de acción sean visibles y usables */
+    display: inline-block;
+    margin: 2px;
+  }
+  #pagination button {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) { /* Ajustes para móviles pequeños */
+  header h1 {
+    font-size: 1.3rem;
+  }
+  main {
+    padding: 15px 10px;
+  }
+  #dashboard {
+    font-size: 1.05rem;
+  }
+  input#searchInput {
+    font-size: 0.9rem;
+  }
+  #printBtn, #excelBtn {
+    padding: 7px 12px;
+    font-size: 0.85rem;
+    margin-bottom: 15px; /* Más espacio debajo de los botones */
+  }
+  td {
+    padding: 8px 10px;
+    padding-left: 45%; /* Ajustar espacio para data-label */
+  }
+  td:before {
+    left: 10px;
+    font-size: 0.85rem; /* Reducir tamaño de etiqueta */
+  }
+  .action-btn {
+    padding: 3px 8px;
+    font-size: 0.8rem;
+  }
+  #pagination button {
+    padding: 4px 8px;
+    font-size: 0.85rem;
   }
 }
