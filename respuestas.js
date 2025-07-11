@@ -21,11 +21,11 @@ const excelBtn = document.getElementById('excelBtn');
 const printBtn = document.getElementById('printBtn');
 const noDataMsg = document.getElementById('noDataMsg');
 
-let todasLasRespuestas = []; // Almacenará todas las respuestas cargadas desde Supabase
-let filteredRespuestas = []; // Para la búsqueda y paginación
+let todasLasRespuestas = []; 
+let filteredRespuestas = []; 
 let currentPage = 1;
 const PAGE_SIZE = 50;
-let currentFormDbId = null; // Para almacenar el UUID del formulario de Supabase
+let currentFormDbId = null; 
 
 // --- INICIO: Validación de formId y carga de datos ---
 if (!formId || formId.trim() === "") {
@@ -36,33 +36,29 @@ if (!formId || formId.trim() === "") {
     noDataMsg.textContent = 'Error: No se ha proporcionado un ID de formulario en la URL (parámetro `?id=`). No se pueden cargar respuestas.';
     noDataMsg.style.display = 'block';
   }
-  // Ocultar elementos de la interfaz si no hay formId
   if (searchInput) searchInput.style.display = 'none';
   if (respuestasTable) respuestasTable.style.display = 'none';
   if (paginationDiv) paginationDiv.style.display = 'none';
   if (printBtn) printBtn.style.display = 'none';
   if (excelBtn) excelBtn.style.display = 'none';
   if (dashboardCount) dashboardCount.parentElement.style.display = 'none';
-
   console.error("formId (codigo_form) es nulo, está vacío o solo contiene espacios. No se cargarán respuestas.");
 } else {
   if (formTitleElement) {
     formTitleElement.textContent = `Respuestas del Formulario: ${formId}`;
   }
   if (noDataMsg) {
-    noDataMsg.textContent = 'Cargando respuestas...'; // Mensaje inicial
+    noDataMsg.textContent = 'Cargando respuestas...'; 
     noDataMsg.style.display = 'block';
   }
-  // Cargar respuestas desde Supabase
-  await cargarRespuestas(); // Hacerlo await para que se complete antes de continuar
+  await cargarRespuestas(); 
 }
 // --- FIN: Validación de formId y carga de datos ---
 
 async function cargarRespuestas() {
-  // 1. Obtener el ID del formulario (UUID) basado en el codigo_form (formId de la URL)
   const { data: formInfo, error: formInfoError } = await supabase
     .from('formularios')
-    .select('id, nombre') // Solo necesitamos el id, pero el nombre puede ser útil para el título
+    .select('id, nombre') 
     .eq('codigo_form', formId)
     .single();
 
@@ -84,12 +80,11 @@ async function cargarRespuestas() {
   currentFormDbId = formInfo.id;
   if (formTitleElement) formTitleElement.textContent = `Respuestas del Formulario: ${formInfo.nombre || formId}`;
 
-  // 2. Cargar las respuestas para ese formulario_id
   const { data, error } = await supabase
     .from('respuestas')
-    .select('id, codigo_secuencial, nombre_completo, cedula, edad, fecha_registro') // Incluir 'id' para futuras funciones de editar/borrar
+    .select('id, codigo_secuencial, nombre_completo, cedula, edad, fecha_registro, referencia_usada') // Seleccionar referencia_usada
     .eq('formulario_id', currentFormDbId)
-    .order('fecha_registro', { ascending: false }); // O por codigo_secuencial
+    .order('fecha_registro', { ascending: false }); 
 
   if (error) {
     console.error("Error cargando respuestas de Supabase:", error);
@@ -101,12 +96,12 @@ async function cargarRespuestas() {
     todasLasRespuestas = [];
   } else {
     todasLasRespuestas = data.map(r => ({ 
-        id_db: r.id, // Guardar el id de la respuesta para posible edición/borrado
+        id_db: r.id, 
         codigo: r.codigo_secuencial,
         nombre: r.nombre_completo,
         cedula: r.cedula,
-        edad: r.edad
-        // fecha_registro no se usa directamente en la tabla visible, pero podría ser útil
+        edad: r.edad,
+        referencia_usada: r.referencia_usada || null // Mapear referencia_usada
     }));
   }
 
@@ -117,7 +112,7 @@ async function cargarRespuestas() {
     if (printBtn) printBtn.style.display = 'inline-block';
     if (excelBtn) excelBtn.style.display = 'inline-block';
   } else {
-    if (noDataMsg && !noDataMsg.textContent.startsWith("Error:")) { // No sobrescribir error de formId
+    if (noDataMsg && !noDataMsg.textContent.startsWith("Error:")) { 
         noDataMsg.textContent = 'No hay respuestas para este formulario.';
         noDataMsg.style.display = 'block';
     }
@@ -132,7 +127,6 @@ async function cargarRespuestas() {
   currentPage = 1;
   renderTableAndPagination();
 }
-
 
 function formatCedula(cedula) {
   if (typeof cedula !== 'string') cedula = String(cedula || '');
@@ -159,25 +153,22 @@ function renderTableAndPagination() {
         noDataMsg.textContent = 'No hay resultados para la búsqueda o filtro actual.';
         noDataMsg.style.display = 'block';
       }
-      // No ocultar la tabla aquí necesariamente, podría ser que el filtro no arroje resultados
-      // if (respuestasTable) respuestasTable.style.display = 'none';
   } else if (dataToShow.length > 0) {
       if (noDataMsg) noDataMsg.style.display = 'none';
       if (respuestasTable) respuestasTable.style.display = '';
   }
 
-
   dataToShow.forEach((r, index) => {
     const tr = document.createElement('tr');
-    // Los campos de 'r' deben coincidir con lo que se mapea en cargarRespuestas
     tr.innerHTML = `
       <td>${escapeHtml(r.codigo)}</td>
       <td>${escapeHtml(r.nombre)}</td>
       <td>${escapeHtml(formatCedula(r.cedula))}</td>
       <td>${escapeHtml(r.edad)}</td>
+      <td>${escapeHtml(r.referencia_usada || '-')}</td> 
       <td>
-        <button class="action-btn edit-btn" data-id="${r.id_db || index}" disabled>Editar</button> <!-- Se necesitaría id_db para editar -->
-        <button class="action-btn delete-btn" data-id="${r.id_db || index}" disabled>Borrar</button> <!-- Se necesitaría id_db para borrar -->
+        <button class="action-btn edit-btn" data-id="${r.id_db || index}" disabled>Editar</button>
+        <button class="action-btn delete-btn" data-id="${r.id_db || index}" disabled>Borrar</button>
       </td>
     `;
     respuestasTableBody.appendChild(tr);
@@ -206,12 +197,12 @@ function renderTableAndPagination() {
 if (searchInput) {
   searchInput.addEventListener('input', () => {
     const term = searchInput.value.toLowerCase();
-    // Usar todasLasRespuestas como fuente para filtrar, no filteredRespuestas
     filteredRespuestas = todasLasRespuestas.filter(r =>
       (r.nombre && r.nombre.toLowerCase().includes(term)) ||
       (r.cedula && formatCedula(r.cedula).toLowerCase().includes(term)) ||
       (r.edad && r.edad.toString().includes(term)) ||
-      (r.codigo && r.codigo.toLowerCase().includes(term))
+      (r.codigo && r.codigo.toLowerCase().includes(term)) ||
+      (r.referencia_usada && r.referencia_usada.toLowerCase().includes(term)) // Búsqueda por referencia
     );
     currentPage = 1;
     renderTableAndPagination();
@@ -221,15 +212,15 @@ if (searchInput) {
 if (printBtn) {
   printBtn.onclick = function () {
     if (!formId || filteredRespuestas.length === 0) return;
-    const dataToPrint = filteredRespuestas; // Usar los datos filtrados actualmente visibles
+    const dataToPrint = filteredRespuestas; 
     let html = `<html><head><title>Imprimir Respuestas - ${formTitleElement.textContent.replace('Respuestas del Formulario: ','')}</title><style>
       body { font-family: Arial; margin: 20px; }
       table { border-collapse: collapse; width: 100%; }
       th, td { border: 1px solid #333; padding: 8px; text-align: center; }
       th { background: #007bff; color: white; }
-    </style></head><body><h2>${formTitleElement.textContent}</h2><table><thead><tr><th>Código</th><th>Nombre</th><th>Cédula</th><th>Edad</th></tr></thead><tbody>`;
+    </style></head><body><h2>${formTitleElement.textContent}</h2><table><thead><tr><th>Código</th><th>Nombre</th><th>Cédula</th><th>Edad</th><th>Referencia</th></tr></thead><tbody>`;
     dataToPrint.forEach(r => {
-      html += `<tr><td>${escapeHtml(r.codigo)}</td><td>${escapeHtml(r.nombre)}</td><td>${escapeHtml(formatCedula(r.cedula))}</td><td>${escapeHtml(r.edad)}</td></tr>`;
+      html += `<tr><td>${escapeHtml(r.codigo)}</td><td>${escapeHtml(r.nombre)}</td><td>${escapeHtml(formatCedula(r.cedula))}</td><td>${escapeHtml(r.edad)}</td><td>${escapeHtml(r.referencia_usada || '-')}</td></tr>`;
     });
     html += '</tbody></table></body></html>';
     const win = window.open('', '', 'width=900,height=700');
@@ -247,12 +238,12 @@ if (excelBtn) {
       alert("Error: La funcionalidad de exportar a Excel no está disponible.");
       return;
     }
-    // Usar los datos filtrados actualmente visibles
     const dataToExport = filteredRespuestas.map(r => ({
       'Código': r.codigo,
       'Nombre': r.nombre,
       'Cédula': formatCedula(r.cedula),
-      'Edad': r.edad
+      'Edad': r.edad,
+      'Referencia': r.referencia_usada || '' // Añadir referencia a Excel
     }));
     const ws = XLSX.utils.json_to_sheet(dataToExport);
     const wb = XLSX.utils.book_new();
@@ -260,3 +251,4 @@ if (excelBtn) {
     XLSX.writeFile(wb, `Respuestas_${formId}.xlsx`);
   };
 }
+console.log("respuestas.js cargado con lógica de referencias.");
