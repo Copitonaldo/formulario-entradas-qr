@@ -22,6 +22,9 @@
     <label>Edad:
       <input type="number" id="edad" required min="0" />
     </label>
+    <label>Referencia (obligatorio):
+      <input type="text" id="referencia" autocomplete="off" maxlength="4" pattern="\\d{4}" title="Código de 4 dígitos si posee uno." />
+    </label>
     <button type="submit">Generar QR</button>
   </form>
 
@@ -33,6 +36,7 @@
       <p><b>Nombre:</b> <span id="confNombre"></span></p>
       <p><b>Cédula:</b> <span id="confCedula"></span></p>
       <p><b>Edad:</b> <span id="confEdad"></span></p>
+      <p><b>Referencia:</b> <span id="confReferencia">-</span></p> <!-- Nuevo campo para confirmación -->
     </div>
     <div style="display:flex; justify-content: space-between; margin-top: 20px;">
       <button id="btnConfirmar" style="background-color: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Sí</button>
@@ -54,6 +58,7 @@
       <div><b>Cédula:</b> <span id="outCedula"></span></div>
       <div><b>Edad:</b> <span id="outEdad"></span></div>
       <div><b>CÓDIGO:</b> <span id="outCodigo"></span></div>
+      <div id="outReferenciaContenedor" style="display:none;"><b>Referencia:</b> <span id="outReferencia"></span></div> <!-- Nuevo campo para ticket -->
     </div>
     <button id="guardarBtn">Guardar entrada</button>
   </div>
