@@ -39,17 +39,14 @@ header h1 {
 
 main {
   width: 100%;
-  max-width: 1000px; /* Ajustar el ancho máximo del main */
+  max-width: 1000px;
   background: white;
   padding: 40px 40px 32px 40px;
   border-radius: 0 0 8px 8px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 20px rgba(0,0,0,0.10);
   box-sizing: border-box;
   text-align: left;
   margin-top: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* Centrar el contenido dentro del main */
 }
 
 #dashboard {
@@ -57,15 +54,6 @@ main {
   font-size: 1.15rem;
   font-weight: bold;
   color: #007bff;
-}
-
-/* Contenedor para la barra de búsqueda y los botones */
-.search-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  margin-bottom: 20px;
 }
 
 input#searchInput {
@@ -85,7 +73,23 @@ input#searchInput:focus {
   outline: none;
 }
 
-#excelBtn, #printBtn {
+#excelBtn {
+  margin-bottom: 20px;
+  margin-left: 10px;
+  background: #1d6f42;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 18px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+#excelBtn:hover {
+  background: #13833a;
+}
+
+#printBtn {
   margin-bottom: 20px;
   background: #007bff;
   color: #fff;
@@ -96,11 +100,6 @@ input#searchInput:focus {
   cursor: pointer;
   transition: background 0.2s;
 }
-
-#excelBtn:hover {
-  background: #0056b3;
-}
-
 #printBtn:hover {
   background: #0056b3;
 }
@@ -109,7 +108,6 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-family: Arial, sans-serif;
-  margin-top: 20px;
 }
 
 thead {
@@ -217,7 +215,7 @@ tbody tr:hover {
     border: 1px solid #ddd;
     border-radius: 5px;
     background: #f9f9f9; /* Un fondo ligeramente diferente para cada item */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   }
   td {
     /* text-align: right; */ /* Eliminado para control con flex */
