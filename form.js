@@ -16,17 +16,21 @@ const formData = document.getElementById('formData');
 const inputNombre = document.getElementById('nombre');
 const inputCedula = document.getElementById('cedula');
 const inputEdad = document.getElementById('edad');
+const inputReferencia = document.getElementById('referencia'); // Nuevo campo
 const errorMsg = document.getElementById('errorMsg');
 const confirmacionDatos = document.getElementById('confirmacionDatos');
 const confNombre = document.getElementById('confNombre');
 const confCedula = document.getElementById('confCedula');
 const confEdad = document.getElementById('confEdad');
+const confReferencia = document.getElementById('confReferencia'); // Para mostrar en confirmación
 const btnConfirmar = document.getElementById('btnConfirmar');
 const btnCorregir = document.getElementById('btnCorregir');
 const outNombre = document.getElementById('outNombre');
 const outCedula = document.getElementById('outCedula');
 const outEdad = document.getElementById('outEdad');
 const outCodigo = document.getElementById('outCodigo');
+const outReferencia = document.getElementById('outReferencia'); // Para mostrar en el ticket
+const outReferenciaContenedor = document.getElementById('outReferenciaContenedor'); // Contenedor para mostrar/ocultar
 const codigoQR = document.getElementById('codigoQR'); // Este es el div .qr-code-label
 const qrCanvas = document.getElementById('qrCanvas'); // El canvas original para mostrar QR
 const entradaGenerada = document.getElementById('entradaGenerada');
@@ -39,12 +43,12 @@ let currentFormDbId = null; // Para almacenar el UUID del formulario de Supabase
 
 // --- Carga de datos del formulario (incluida imagen de fondo) ---
 async function cargarDatosFormulario() {
-  if (!formId) return; // formId aquí es el 'codigo_form'
+  if (!formId) return; 
 
   const { data: formDataResult, error: formError } = await supabase
     .from('formularios')
     .select('id, nombre, imagen_url, min_age, max_age')
-    .eq('codigo_form', formId) // formId de la URL es codigo_form
+    .eq('codigo_form', formId) 
     .single();
 
   if (formError) {
@@ -58,12 +62,12 @@ async function cargarDatosFormulario() {
   }
 
   if (formDataResult) {
-    currentFormDbId = formDataResult.id; // Guardar el UUID del formulario para usarlo después
+    currentFormDbId = formDataResult.id; 
     if (formTitleElement) {
       formTitleElement.textContent = `Formulario: ${formDataResult.nombre || formId}`;
     }
     if (ticketBg && formDataResult.imagen_url) {
-      ticketBg.src = formDataResult.imagen_url; // Asumimos que esta es la URL pública completa
+      ticketBg.src = formDataResult.imagen_url; 
       ticketBg.style.display = 'block';
     } else if (ticketBg) {
       ticketBg.style.display = 'none';
@@ -112,6 +116,7 @@ if (formData) {
     const nombre = inputNombre.value.trim();
     const cedulaRaw = inputCedula.value.replace(/\D/g, '');
     const edadValue = inputEdad.value.trim();
+    const referenciaValue = inputReferencia.value.trim();
 
     if (!nombre || !/^\d{8}$/.test(cedulaRaw) || !edadValue) {
       if (!nombre) errorMsg.textContent = 'Debe ingresar un nombre.';
@@ -127,8 +132,13 @@ if (formData) {
         errorMsg.style.display = 'block';
         return;
     }
+    
+    if (referenciaValue && !/^\d{4}$/.test(referenciaValue)) {
+      errorMsg.textContent = 'El código de referencia debe ser de 4 dígitos (si se proporciona).';
+      errorMsg.style.display = 'block';
+      return;
+    }
 
-    // Age validation against form's minAge and maxAge (cargados desde Supabase)
     if (currentMinAge !== null && edad < currentMinAge) {
       errorMsg.textContent = `Error: Su edad no es válida. Debe ser mayor o igual a ${currentMinAge}.`;
       errorMsg.style.display = 'block';
@@ -143,24 +153,76 @@ if (formData) {
     confNombre.textContent = toTitleCase(nombre);
     confCedula.textContent = formatCedula(cedulaRaw);
     confEdad.textContent = `${edad} años`;
+    if (confReferencia) confReferencia.textContent = referenciaValue ? referenciaValue : '-';
 
     formData.style.display = 'none';
     entradaGenerada.style.display = 'none';
     confirmacionDatos.style.display = 'block';
-    window.datosParaConfirmar = { nombre, cedula: cedulaRaw, edad: edadValue, edadInt: edad };
+    window.datosParaConfirmar = { nombre, cedula: cedulaRaw, edad: edadValue, edadInt: edad, referencia: referenciaValue || null };
   });
+}
+
+async function validarYObtenerReferencia(codigoReferencia, formDbId) {
+  if (!codigoReferencia) return { valida: true, datosReferencia: null }; // No se proporcionó referencia, es válido continuar
+
+  const { data, error } = await supabase
+    .from('referencias_usos')
+    .select('id, usos_disponibles')
+    .eq('formulario_id', formDbId)
+    .eq('codigo_referencia', codigoReferencia)
+    .single();
+
+  if (error || !data) {
+    console.warn("Error al buscar referencia o no encontrada:", error);
+    return { valida: false, mensaje: "Su referencia no ha sido creada o es incorrecta." };
+  }
+
+  if (data.usos_disponibles <= 0) {
+    return { valida: false, mensaje: "Esta referencia ya no tiene usos disponibles." };
+  }
+
+  return { valida: true, datosReferencia: data };
+}
+
+async function decrementarUsoReferencia(idReferencia) {
+  const { error } = await supabase
+    .from('referencias_usos')
+    .update({ usos_disponibles: supabase.sql('usos_disponibles - 1') })
+    .eq('id', idReferencia);
+
+  if (error) {
+    console.error("Error al decrementar uso de referencia:", error);
+    // Considerar cómo manejar este error, ¿quizás reintentar o notificar al admin?
+  }
 }
 
 if (btnConfirmar) {
   btnConfirmar.addEventListener('click', async function () {
-    if (!formId || formId.trim() === "" || !currentFormDbId) { // Verificar también currentFormDbId
+    if (!formId || formId.trim() === "" || !currentFormDbId) {
       errorMsg.innerHTML = "<b>Error Crítico:</b> ID de formulario ausente o no válido.";
       errorMsg.style.display = 'block';
       return;
     }
 
-    const { nombre, cedula, edadInt } = window.datosParaConfirmar; // Usar edadInt
+    const { nombre, cedula, edadInt, referencia } = window.datosParaConfirmar;
     const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
+
+    // Validar referencia si existe
+    let idReferenciaParaDecrementar = null;
+    if (referencia) {
+      const validacionRef = await validarYObtenerReferencia(referencia, currentFormDbId);
+      if (!validacionRef.valida) {
+        errorMsg.textContent = validacionRef.mensaje;
+        errorMsg.style.display = 'block';
+        // No ocultar confirmacionDatos aquí, permitir al usuario corregir o quitar la referencia.
+        // Para ello, debería haber una forma de volver al formulario principal desde la confirmación si hay error de referencia.
+        // Por ahora, simplemente mostramos el error. El usuario tendría que recargar o usar el botón "No" (Corregir).
+        return;
+      }
+      if (validacionRef.datosReferencia) {
+        idReferenciaParaDecrementar = validacionRef.datosReferencia.id;
+      }
+    }
 
     // Verificar cédula duplicada en Supabase
     const { data: existingResponse, error:查Error } = await supabase
@@ -168,7 +230,7 @@ if (btnConfirmar) {
       .select('cedula')
       .eq('formulario_id', currentFormDbId)
       .eq('cedula', cedula)
-      .maybeSingle(); // .maybeSingle() porque podría no existir o existir uno
+      .maybeSingle(); 
 
     if (查Error) {
       console.error("Error detallado verificando cédula duplicada en Supabase:", 查Error);
@@ -191,25 +253,22 @@ if (btnConfirmar) {
     let nuevoCodigoSecuencialFormateado;
 
     try {
-      // Intentar obtener el contador actual
       let { data: contadorData, error: contadorError } = await supabase
         .from('contadores_formularios')
         .select('ultimo_codigo')
         .eq('formulario_id', currentFormDbId)
         .single();
 
-      if (contadorError && contadorError.code !== 'PGRST116') { // PGRST116: 'single row not found'
-        throw contadorError; // Otro error diferente a "no encontrado"
+      if (contadorError && contadorError.code !== 'PGRST116') { 
+        throw contadorError; 
       }
 
       if (contadorData) {
         nuevoCodigoSecuencial = contadorData.ultimo_codigo + 1;
       } else {
-        // No existe contador para este formulario, empezamos en 1
         nuevoCodigoSecuencial = 1;
       }
 
-      // Actualizar o insertar el nuevo valor del contador
       const { error: upsertError } = await supabase
         .from('contadores_formularios')
         .upsert({ formulario_id: currentFormDbId, ultimo_codigo: nuevoCodigoSecuencial }, { onConflict: 'formulario_id' });
@@ -233,8 +292,8 @@ if (btnConfirmar) {
       codigo_secuencial: nuevoCodigoSecuencialFormateado,
       nombre_completo: toTitleCase(nombre),
       cedula: cedula,
-      edad: edadInt, // Guardar la edad como número
-      // fecha_registro se establece por defecto en Supabase
+      edad: edadInt,
+      referencia_usada: referencia // Guardar la referencia usada (puede ser null)
     };
 
     try {
@@ -245,34 +304,40 @@ if (btnConfirmar) {
         .single();
 
       if (insertError) {
-        // Si el error es por la constraint unique de (formulario_id, cedula), ya lo manejamos arriba.
-        // Podríamos verificar el código de error específico si quisiéramos ser más precisos.
-        // Por ejemplo, PostgreSQL error code 23505 es para unique_violation.
-        // if (insertError.code === '23505' && insertError.message.includes('uq_respuesta_formulario_cedula')) {
-        //   // Este error ya debería haber sido capturado por la verificación previa.
-        //   // Pero si llega aquí, es una doble seguridad.
-        //    errorMsg.textContent = "Esta cédula ya ha sido registrada para este formulario (error DB).";
-        // } else {
-        //    errorMsg.textContent = "Error al guardar los datos. Intente de nuevo.";
-        // }
         console.error("Error guardando respuesta en Supabase:", insertError);
         errorMsg.textContent = "Error al guardar los datos. Intente de nuevo. (Ver consola)";
         errorMsg.style.display = 'block';
         confirmacionDatos.style.display = 'none';
-        if (formData) formData.style.display = 'block'; // Mostrar el formulario de nuevo
+        if (formData) formData.style.display = 'block'; 
         return;
       }
 
       if (insertData) {
-        outNombre.textContent = insertData.nombre_completo; // Usar datos de la respuesta insertada
+        // Si se usó una referencia y se guardó la respuesta, decrementar el uso
+        if (idReferenciaParaDecrementar) {
+          await decrementarUsoReferencia(idReferenciaParaDecrementar);
+        }
+
+        outNombre.textContent = insertData.nombre_completo; 
         outCedula.textContent = formatCedula(insertData.cedula);
         outEdad.textContent = `${insertData.edad} años`;
         outCodigo.textContent = insertData.codigo_secuencial;
 
+        if (insertData.referencia_usada) {
+          outReferencia.textContent = insertData.referencia_usada;
+          outReferenciaContenedor.style.display = 'block';
+        } else {
+          outReferenciaContenedor.style.display = 'none';
+        }
+
         if (codigoQR) codigoQR.textContent = "Código: " + insertData.codigo_secuencial;
 
         const qrCanvasElement = document.getElementById('qrCanvas');
-        const datosQR = `${formDisplayName}\nNombre: ${insertData.nombre_completo}\nCédula: ${insertData.cedula}\nEdad: ${insertData.edad}\nCódigo: ${insertData.codigo_secuencial}`;
+        let datosQR = `${formDisplayName}\nNombre: ${insertData.nombre_completo}\nCédula: ${insertData.cedula}\nEdad: ${insertData.edad}\nCódigo: ${insertData.codigo_secuencial}`;
+        if (insertData.referencia_usada) {
+            datosQR += `\nRef: ${insertData.referencia_usada}`;
+        }
+
 
         if (qrCanvasElement) {
           QRCode.toCanvas(qrCanvasElement, datosQR, {
@@ -286,13 +351,12 @@ if (btnConfirmar) {
         confirmacionDatos.style.display = 'none';
         entradaGenerada.style.display = 'block';
       } else {
-        // No debería ocurrir si no hubo error, pero por si acaso.
         errorMsg.textContent = "No se pudo confirmar el guardado de los datos.";
         errorMsg.style.display = 'block';
         confirmacionDatos.style.display = 'none';
         if (formData) formData.style.display = 'block';
       }
-    } catch (err) { // Catch para errores inesperados no de Supabase directamente
+    } catch (err) { 
       console.error("Error general guardando en Supabase DB:", err);
       errorMsg.textContent = "Error al guardar los datos (inesperado). Intente de nuevo.";
       errorMsg.style.display = 'block';
@@ -306,11 +370,13 @@ if (btnCorregir) {
   btnCorregir.addEventListener('click', () => {
     confirmacionDatos.style.display = 'none';
     if (formData) {
+      // Asegurarse de que el formulario se muestre si estaba oculto
+      // y si el formId es válido (evita mostrarlo si hubo error crítico al inicio)
       if (formId && formId.trim() !== "" && formData.style.display === 'none') {
          formData.style.display = 'block';
       }
     }
-    errorMsg.style.display = 'none';
+    errorMsg.style.display = 'none'; // Ocultar mensajes de error previos
   });
 }
 
@@ -388,8 +454,10 @@ if (guardarBtn) {
       clone.style.position = 'absolute';
       clone.style.left = '-9999px';
       document.body.appendChild(clone);
-      await new Promise(resolve => setTimeout(resolve, 250));
+      await new Promise(resolve => setTimeout(resolve, 250)); // Esperar a que el clon se renderice
+      
       const scaleFactor = targetOutputWidthPx / cloneBaseWidth;
+
       html2canvas(clone, {
         useCORS: true,
         scale: scaleFactor,
@@ -399,8 +467,12 @@ if (guardarBtn) {
           const clonedCanvasEl = clonedElement.querySelector('#qrCanvas');
           if (clonedCanvasEl) {
             const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
-            const datosQR = `${formDisplayName}\nNombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}`;
-            QRCode.toCanvas(clonedCanvasEl, datosQR, { width: parseInt(clonedCanvasEl.style.width) || 70, height: parseInt(clonedCanvasEl.style.height) || 70, margin: 1 }, function (error) {
+            // Re-generar datos QR incluyendo la referencia si existe en el ticket mostrado
+            let datosQRClone = `${formDisplayName}\nNombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}`;
+            if (outReferenciaContenedor.style.display !== 'none' && outReferencia.textContent) {
+                datosQRClone += `\nRef: ${outReferencia.textContent}`;
+            }
+            QRCode.toCanvas(clonedCanvasEl, datosQRClone, { width: parseInt(clonedCanvasEl.style.width) || 70, height: parseInt(clonedCanvasEl.style.height) || 70, margin: 1 }, function (error) {
               if (error) console.error('Error re-dibujando QR en clon:', error);
             });
           }
@@ -414,17 +486,17 @@ if (guardarBtn) {
         finalCanvas.width = targetOutputWidthPx;
         finalCanvas.height = targetOutputHeightPx;
         const finalCtx = finalCanvas.getContext('2d');
-        if (clone.style.backgroundColor === 'transparent') {
+        if (clone.style.backgroundColor === 'transparent') { // Si el fondo era transparente, rellenar con blanco
             finalCtx.fillStyle = '#ffffff';
             finalCtx.fillRect(0, 0, targetOutputWidthPx, targetOutputHeightPx);
         }
         finalCtx.drawImage(
           canvasFromHtml2Canvas,
-          0, 0, canvasFromHtml2Canvas.width, canvasFromHtml2Canvas.height,
-          0, 0, targetOutputWidthPx, targetOutputHeightPx
+          0, 0, canvasFromHtml2Canvas.width, canvasFromHtml2Canvas.height, // source
+          0, 0, targetOutputWidthPx, targetOutputHeightPx // destination
         );
         const link = document.createElement('a');
-        const nombreArchivo = `${outCodigo.textContent || 'TICKET'}${(outNombre.textContent || 'nombre')}.jpg`;
+        const nombreArchivo = `${outCodigo.textContent || 'TICKET'}_${(outNombre.textContent || 'nombre').replace(/\s+/g, '_')}.jpg`;
         link.download = nombreArchivo;
         link.href = finalCanvas.toDataURL('image/jpeg', 0.9);
         link.click();
@@ -442,3 +514,4 @@ if (guardarBtn) {
     }
   });
 }
+console.log("form.js cargado con lógica de referencias.");
