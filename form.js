@@ -118,10 +118,12 @@ if (formData) {
     const edadValue = inputEdad.value.trim();
     const referenciaValue = inputReferencia.value.trim();
 
-    if (!nombre || !/^\d{8}$/.test(cedulaRaw) || !edadValue) {
+    // Modificado para incluir referencia obligatoria
+    if (!nombre || !/^\d{8}$/.test(cedulaRaw) || !edadValue || !referenciaValue) {
       if (!nombre) errorMsg.textContent = 'Debe ingresar un nombre.';
       else if (!/^\d{8}$/.test(cedulaRaw)) errorMsg.textContent = 'La cédula debe tener exactamente 8 dígitos.';
-      else errorMsg.textContent = 'Debe ingresar una edad.';
+      else if (!edadValue) errorMsg.textContent = 'Debe ingresar una edad.';
+      else if (!referenciaValue) errorMsg.textContent = 'Debe ingresar un código de referencia.'; // Nuevo mensaje
       errorMsg.style.display = 'block';
       return;
     }
@@ -133,8 +135,9 @@ if (formData) {
         return;
     }
     
-    if (referenciaValue && !/^\d{4}$/.test(referenciaValue)) {
-      errorMsg.textContent = 'El código de referencia debe ser de 4 dígitos (si se proporciona).';
+    // Modificado: si está aquí, es porque referenciaValue no está vacío y debe ser de 4 dígitos.
+    if (!/^\d{4}$/.test(referenciaValue)) {
+      errorMsg.textContent = 'El código de referencia debe ser de 4 dígitos.';
       errorMsg.style.display = 'block';
       return;
     }
@@ -153,18 +156,18 @@ if (formData) {
     confNombre.textContent = toTitleCase(nombre);
     confCedula.textContent = formatCedula(cedulaRaw);
     confEdad.textContent = `${edad} años`;
-    if (confReferencia) confReferencia.textContent = referenciaValue ? referenciaValue : '-';
+    if (confReferencia) confReferencia.textContent = referenciaValue ? referenciaValue : '-'; // Se mantiene para la confirmación visual
 
     formData.style.display = 'none';
     entradaGenerada.style.display = 'none';
     confirmacionDatos.style.display = 'block';
-    window.datosParaConfirmar = { nombre, cedula: cedulaRaw, edad: edadValue, edadInt: edad, referencia: referenciaValue || null };
+    window.datosParaConfirmar = { nombre, cedula: cedulaRaw, edad: edadValue, edadInt: edad, referencia: referenciaValue }; // referenciaValue ya no es `|| null`
   });
 }
 
 async function validarYObtenerReferencia(codigoReferencia, formDbId) {
-  if (!codigoReferencia) return { valida: true, datosReferencia: null }; // No se proporcionó referencia, es válido continuar
-
+  // Asumimos que codigoReferencia SIEMPRE se pasa porque es obligatorio.
+  // La validación de si se proporcionó o no, y su formato, ya se hizo en el 'submit'.
   const { data, error } = await supabase
     .from('referencias_usos')
     .select('id, usos_disponibles')
@@ -174,11 +177,12 @@ async function validarYObtenerReferencia(codigoReferencia, formDbId) {
 
   if (error || !data) {
     console.warn("Error al buscar referencia o no encontrada:", error);
-    return { valida: false, mensaje: "Su referencia no ha sido creada o es incorrecta." };
+    // Mensaje más específico según el nuevo requisito
+    return { valida: false, mensaje: "El código de referencia proporcionado no existe o es incorrecto." };
   }
 
   if (data.usos_disponibles <= 0) {
-    return { valida: false, mensaje: "Esta referencia ya no tiene usos disponibles." };
+    return { valida: false, mensaje: "Este código de referencia ya ha sido utilizado y no tiene usos disponibles." };
   }
 
   return { valida: true, datosReferencia: data };
@@ -207,23 +211,39 @@ if (btnConfirmar) {
     const { nombre, cedula, edadInt, referencia } = window.datosParaConfirmar;
     const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
 
-    // Validar referencia si existe
-    let idReferenciaParaDecrementar = null;
-    if (referencia) {
-      const validacionRef = await validarYObtenerReferencia(referencia, currentFormDbId);
-      if (!validacionRef.valida) {
-        errorMsg.textContent = validacionRef.mensaje;
+    // Como la referencia ahora es obligatoria, 'referencia' SIEMPRE debería tener un valor aquí.
+    // La validación de formato y existencia ya ocurrió en el 'submit' y se re-valida aquí.
+    if (!referencia) { 
+        // Este caso no debería ocurrir si la lógica del submit es correcta, pero es una salvaguarda.
+        errorMsg.textContent = "Error: Falta el código de referencia. Por favor, corrija sus datos.";
         errorMsg.style.display = 'block';
-        // No ocultar confirmacionDatos aquí, permitir al usuario corregir o quitar la referencia.
-        // Para ello, debería haber una forma de volver al formulario principal desde la confirmación si hay error de referencia.
-        // Por ahora, simplemente mostramos el error. El usuario tendría que recargar o usar el botón "No" (Corregir).
+        confirmacionDatos.style.display = 'none'; 
+        if (formData) formData.style.display = 'block'; 
         return;
-      }
-      if (validacionRef.datosReferencia) {
-        idReferenciaParaDecrementar = validacionRef.datosReferencia.id;
-      }
     }
 
+    let idReferenciaParaDecrementar = null;
+    // Validar referencia (ya no es opcional)
+    const validacionRef = await validarYObtenerReferencia(referencia, currentFormDbId);
+    if (!validacionRef.valida) {
+      errorMsg.textContent = validacionRef.mensaje; // Mensaje de validarYObtenerReferencia
+      errorMsg.style.display = 'block';
+      // Mantener confirmacionDatos visible para que btnCorregir funcione, 
+      // o el usuario puede usar "No" para volver al formulario.
+      return;
+    }
+    
+    // Si validacionRef.valida es true, entonces validacionRef.datosReferencia debería existir.
+    if (validacionRef.datosReferencia) {
+      idReferenciaParaDecrementar = validacionRef.datosReferencia.id;
+    } else {
+      // Caso anómalo si valida es true pero no hay datosReferencia.
+      console.error("Error lógico: Referencia marcada como válida pero sin datos de referencia.");
+      errorMsg.textContent = "Error interno al validar la referencia. Intente de nuevo.";
+      errorMsg.style.display = 'block';
+      return;
+    }
+    
     // Verificar cédula duplicada en Supabase
     const { data: existingResponse, error:查Error } = await supabase
       .from('respuestas')
@@ -293,7 +313,7 @@ if (btnConfirmar) {
       nombre_completo: toTitleCase(nombre),
       cedula: cedula,
       edad: edadInt,
-      referencia_usada: referencia // Guardar la referencia usada (puede ser null)
+      referencia_usada: referencia // Guardar la referencia usada (ahora siempre habrá una)
     };
 
     try {
@@ -314,6 +334,7 @@ if (btnConfirmar) {
 
       if (insertData) {
         // Si se usó una referencia y se guardó la respuesta, decrementar el uso
+        // idReferenciaParaDecrementar debe estar seteado si llegamos aquí con una referencia válida
         if (idReferenciaParaDecrementar) {
           await decrementarUsoReferencia(idReferenciaParaDecrementar);
         }
@@ -323,17 +344,15 @@ if (btnConfirmar) {
         outEdad.textContent = `${insertData.edad} años`;
         outCodigo.textContent = insertData.codigo_secuencial;
 
-        if (insertData.referencia_usada) {
-          outReferencia.textContent = insertData.referencia_usada;
-          outReferenciaContenedor.style.display = 'block';
-        } else {
-          outReferenciaContenedor.style.display = 'none';
-        }
-
+        // La referencia usada siempre se mostrará ahora
+        outReferencia.textContent = insertData.referencia_usada;
+        outReferenciaContenedor.style.display = 'block';
+        
         if (codigoQR) codigoQR.textContent = "Código: " + insertData.codigo_secuencial;
 
         const qrCanvasElement = document.getElementById('qrCanvas');
         let datosQR = `${formDisplayName}\nNombre: ${insertData.nombre_completo}\nCédula: ${insertData.cedula}\nEdad: ${insertData.edad}\nCódigo: ${insertData.codigo_secuencial}`;
+        // Siempre habrá referencia_usada en insertData si la lógica es correcta
         if (insertData.referencia_usada) {
             datosQR += `\nRef: ${insertData.referencia_usada}`;
         }
@@ -370,13 +389,11 @@ if (btnCorregir) {
   btnCorregir.addEventListener('click', () => {
     confirmacionDatos.style.display = 'none';
     if (formData) {
-      // Asegurarse de que el formulario se muestre si estaba oculto
-      // y si el formId es válido (evita mostrarlo si hubo error crítico al inicio)
       if (formId && formId.trim() !== "" && formData.style.display === 'none') {
          formData.style.display = 'block';
       }
     }
-    errorMsg.style.display = 'none'; // Ocultar mensajes de error previos
+    errorMsg.style.display = 'none'; 
   });
 }
 
@@ -454,7 +471,7 @@ if (guardarBtn) {
       clone.style.position = 'absolute';
       clone.style.left = '-9999px';
       document.body.appendChild(clone);
-      await new Promise(resolve => setTimeout(resolve, 250)); // Esperar a que el clon se renderice
+      await new Promise(resolve => setTimeout(resolve, 250)); 
       
       const scaleFactor = targetOutputWidthPx / cloneBaseWidth;
 
@@ -467,7 +484,6 @@ if (guardarBtn) {
           const clonedCanvasEl = clonedElement.querySelector('#qrCanvas');
           if (clonedCanvasEl) {
             const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
-            // Re-generar datos QR incluyendo la referencia si existe en el ticket mostrado
             let datosQRClone = `${formDisplayName}\nNombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}`;
             if (outReferenciaContenedor.style.display !== 'none' && outReferencia.textContent) {
                 datosQRClone += `\nRef: ${outReferencia.textContent}`;
@@ -486,14 +502,14 @@ if (guardarBtn) {
         finalCanvas.width = targetOutputWidthPx;
         finalCanvas.height = targetOutputHeightPx;
         const finalCtx = finalCanvas.getContext('2d');
-        if (clone.style.backgroundColor === 'transparent') { // Si el fondo era transparente, rellenar con blanco
+        if (clone.style.backgroundColor === 'transparent') { 
             finalCtx.fillStyle = '#ffffff';
             finalCtx.fillRect(0, 0, targetOutputWidthPx, targetOutputHeightPx);
         }
         finalCtx.drawImage(
           canvasFromHtml2Canvas,
-          0, 0, canvasFromHtml2Canvas.width, canvasFromHtml2Canvas.height, // source
-          0, 0, targetOutputWidthPx, targetOutputHeightPx // destination
+          0, 0, canvasFromHtml2Canvas.width, canvasFromHtml2Canvas.height, 
+          0, 0, targetOutputWidthPx, targetOutputHeightPx 
         );
         const link = document.createElement('a');
         const nombreArchivo = `${outCodigo.textContent || 'TICKET'}_${(outNombre.textContent || 'nombre').replace(/\s+/g, '_')}.jpg`;
@@ -514,4 +530,4 @@ if (guardarBtn) {
     }
   });
 }
-console.log("form.js cargado con lógica de referencias.");
+console.log("form.js cargado con lógica de referencias obligatorias.");
