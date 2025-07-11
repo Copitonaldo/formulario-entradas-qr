@@ -10,9 +10,9 @@ html, body {
   flex-direction: column;
   align-items: center;
   margin-top: 40px;
-  padding-left: 10px; /* Added padding for small screens */
-  padding-right: 10px; /* Added padding for small screens */
-  box-sizing: border-box; /* Ensure padding is included in width */
+  padding-left: 10px; 
+  padding-right: 10px; 
+  box-sizing: border-box; 
 }
 
 form#formData {
@@ -21,7 +21,7 @@ form#formData {
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
   width: 350px;
-  max-width: 100%; /* Ensure form does not overflow */
+  max-width: 100%; 
   box-sizing: border-box;
 }
 
@@ -40,7 +40,7 @@ form#formData input[type="number"] {
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 4px;
-  box-sizing: border-box; /* Ensure padding and border are included in width */
+  box-sizing: border-box; 
 }
 
 form#formData button {
@@ -63,7 +63,7 @@ form#formData button:hover {
   font-weight: bold;
   margin-bottom: 16px;
   display: none;
-  width: 350px; /* Match form width */
+  width: 350px; 
   max-width: 100%;
   box-sizing: border-box;
 }
@@ -74,7 +74,7 @@ form#formData button:hover {
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
   width: 350px;
-  max-width: 100%; /* Ensure it does not overflow */
+  max-width: 100%; 
   box-sizing: border-box;
   margin-top: 20px;
 }
@@ -85,8 +85,8 @@ form#formData button:hover {
   border-radius: 10px;
   box-shadow: 0 2px 12px #0002;
   margin-top: 40px;
-  max-width: 550px; /* Adjusted for better display */
-  width: 100%; /* Responsive width */
+  max-width: 550px; 
+  width: 100%; 
   box-sizing: border-box;
 }
 
@@ -113,7 +113,7 @@ form#formData button:hover {
   width: 100%;
   height: 100%;
   object-fit: cover; 
-  border-radius: 0; /* Image itself should not have border radius if wrap has overflow:hidden */
+  border-radius: 0; 
   display: block; 
 }
 
@@ -184,85 +184,109 @@ form#formData button:hover {
   background-color: #218838; 
 }
 
-
-/* Responsive adjustments for Android and smaller screens */
-@media (max-width: 600px) {
+/* Responsive adjustments */
+@media (max-width: 768px) { /* Ajustes para tabletas y móviles grandes */
   .center {
-    margin-top: 20px; 
-    padding-left: 5px;
-    padding-right: 5px;
+    margin-top: 20px;
+    padding-left: 15px; 
+    padding-right: 15px;
   }
-
-  form#formData, #confirmacionDatos, #errorMsg {
-    width: 95%; 
-    padding: 20px 5%; 
-  }
-
+  form#formData, 
+  #confirmacionDatos, 
+  #errorMsg, 
   #entradaGenerada {
-    padding: 15px 3% 25px 3%; 
-    max-width: 95%;
+    width: 100%; 
+    max-width: 480px; 
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 20px; 
+    padding-right: 20px;
   }
-
+  #entradaGenerada {
+    padding-top: 20px;
+    padding-bottom: 30px;
+  }
   .ticket-img-wrap {
-     max-width: 95%; 
-     padding: 0; 
+    max-width: 100%; 
   }
-
   .qr-absolute {
-    left: 15px; /* Adjust QR position for smaller screens */
-    padding: 4px;
+    left: 20px; 
+    padding: 5px;
   }
-
   #qrCanvas {
-    width: 60px; /* Smaller QR for mobile */
-    height: 60px; /* Smaller QR for mobile */
+    width: 65px; 
+    height: 65px; 
   }
   .qr-code-label {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
   }
-
   .datos {
-    font-size: 1rem;
-    padding: 0 5px;
+    font-size: 1rem; 
   }
   .datos b {
-    width: 65px; /* Adjust label width */
+    width: 70px; 
   }
-  .datos div {
-    margin-bottom: 4px;
-  }
-
-  #guardarBtn {
+  #guardarBtn { /* Ajuste para el botón de guardar en este breakpoint */
     font-size: 1rem;
     padding: 10px 20px;
   }
 }
 
-@media (max-width: 400px) {
+@media (max-width: 480px) { /* Ajustes para móviles pequeños */
   .center {
-    margin-top: 10px;
+    margin-top: 15px;
+    padding-left: 10px; 
+    padding-right: 10px;
   }
-  form#formData, #confirmacionDatos, #errorMsg {
-    padding: 15px 4%;
+  form#formData, 
+  #confirmacionDatos, 
+  #errorMsg {
+    padding: 20px 15px; 
   }
-   #entradaGenerada {
-    padding: 10px 2% 20px 2%;
+  form#formData label {
+    font-size: 1rem; 
+  }
+  form#formData input[type="text"],
+  form#formData input[type="number"] {
+    font-size: 0.95rem; 
+    padding: 10px 8px; 
+  }
+  form#formData button {
+    font-size: 1rem; 
+    padding: 12px; 
+  }
+  #entradaGenerada {
+    padding: 15px 15px 25px 15px;
   }
   .qr-absolute {
-    left: 10px; /* QR further to the left on very small screens */
-    padding: 3px;
+    left: 15px; 
+    padding: 4px;
   }
   #qrCanvas {
-    width: 50px; /* Even smaller QR */
-    height: 50px; /* Even smaller QR */
+    width: 50px; 
+    height: 50px; 
   }
-   .qr-code-label {
+  .qr-code-label {
     font-size: 0.7rem;
-   }
+  }
   .datos {
-    font-size: 0.9rem;
+    font-size: 0.9rem; 
   }
   .datos b {
-    width: 55px; /* Adjust label width */
+    width: 60px; 
+  }
+  #guardarBtn {
+    font-size: 0.95rem;
+    padding: 10px 18px;
+  }
+  #confirmacionDatos h3 {
+    font-size: 1.1rem; 
+  }
+  #confirmacionDatos p {
+    font-size: 0.9rem; 
+  }
+  #confirmacionDatos button {
+    padding: 8px 15px; 
+    font-size: 0.9rem;
   }
 }
