@@ -68,6 +68,7 @@ function renderFormularios() {
       <td>
         <a href="form.html?id=${f.codigo}" target="_blank">Formulario Público</a> |
         <a href="respuestas.html?id=${f.codigo}" target="_blank">Lista de Datos</a> |
+        <a href="referencia.html?id_formulario=${f.codigo}" target="_blank">Formulario de Referencia</a> |
         <button class="delete-btn" onclick="borrarFormulario('${f.codigo}', '${f.db_id}')">Borrar</button>
       </td>
     `;
