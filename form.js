@@ -531,7 +531,7 @@ if (guardarBtn) {
           0, 0, targetOutputWidthPx, targetOutputHeightPx 
         );
         const link = document.createElement('a');
-        const nombreArchivo = `${outCodigo.textContent || 'TICKET'}_${(outNombre.textContent || 'nombre').replace(/\s+/g, '_')}.jpg`;
+        const nombreArchivo = ${outCodigo.textContent || 'TICKET'}${(outNombre.textContent || 'nombre')}.jpg;
         link.download = nombreArchivo;
         link.href = finalCanvas.toDataURL('image/jpeg', 0.9);
         link.click();
