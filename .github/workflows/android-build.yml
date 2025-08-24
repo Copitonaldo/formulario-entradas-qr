@@ -2,8 +2,8 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main ]  # Cambia a 'master' si tu rama es esa
-  workflow_dispatch:  # Permite ejecutar manualmente
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -22,7 +22,7 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install
 
-      - name: 🔧 Sync Capacitor (safe npx)
+      - name: 🔧 Sync Capacitor
         run: npx @capacitor/cli sync android
 
       - name: 🏗️ Build Android APK
@@ -31,7 +31,9 @@ jobs:
           ./gradlew assembleDebug
 
       - name: 📎 Upload APK as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: app-debug.apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: |
+            android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 7
