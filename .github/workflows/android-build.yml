@@ -1,0 +1,41 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]  # Cambia a 'master' si tu rama principal se llama así
+  workflow_dispatch:  # Permite ejecutar manualmente desde GitHub
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📦 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: 📦 Install dependencies
+        run: |
+          npm install
+
+      - name: 🔧 Setup Capacitor
+        run: |
+          npx cap add android --no-confirm
+          npx cap sync
+
+      - name: 🏗️ Build Android APK (Debug)
+        run: |
+          npx cap open android
+          cd android
+          ./gradlew assembleDebug
+
+      - name: 📎 Upload APK as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-debug.apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
