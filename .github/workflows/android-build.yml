@@ -2,8 +2,8 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main ]  # Cambia a 'master' si tu rama principal se llama así
-  workflow_dispatch:  # Permite ejecutar manualmente desde GitHub
+    branches: [ main ]  # Cambia a 'master' si tu rama es esa
+  workflow_dispatch:  # Permite ejecutar manualmente
 
 jobs:
   build:
@@ -20,17 +20,13 @@ jobs:
           node-version: '18'
 
       - name: 📦 Install dependencies
-        run: |
-          npm install
+        run: npm install
 
-      - name: 🔧 Setup Capacitor
-        run: |
-          npx cap add android --no-confirm
-          npx cap sync
+      - name: 🔧 Sync Capacitor (safe npx)
+        run: npx @capacitor/cli sync android
 
-      - name: 🏗️ Build Android APK (Debug)
+      - name: 🏗️ Build Android APK
         run: |
-          npx cap open android
           cd android
           ./gradlew assembleDebug
 
