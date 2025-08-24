@@ -2,8 +2,8 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    branches: [ main ]  # Cambia a 'master' si tu rama se llama así
+  workflow_dispatch:  # Permite ejecutar manualmente
 
 jobs:
   build:
@@ -22,19 +22,21 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install
 
+      - name: 🔧 Initialize Capacitor (create android folder)
+        run: npx @capacitor/cli init
+        # Esto crea capacitor.config.ts si no existe, pero en tu caso ya existe
+
       - name: 🔧 Add Android platform
         run: npx @capacitor/cli add android
 
-      - name: 🔧 Sync Capacitor
+      - name: 🔧 Sync web code to Android
         run: npx @capacitor/cli sync android
 
       - name: ✅ Make gradlew executable
         run: chmod +x android/gradlew
 
-      - name: 🏗️ Build Android APK
-        run: |
-          cd android
-          ./gradlew assembleDebug
+      - name: 🏗️ Build APK (Debug)
+        run: cd android && ./gradlew assembleDebug
 
       - name: 📎 Upload APK as artifact
         uses: actions/upload-artifact@v4
