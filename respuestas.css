@@ -39,7 +39,7 @@ header h1 {
 
 main {
   width: 100%;
-  max-width: 1000px;
+  max-width: 1000px; /* Ajustado para acomodar más columnas */
   background: white;
   padding: 40px 40px 32px 40px;
   border-radius: 0 0 8px 8px;
@@ -117,7 +117,7 @@ thead {
 }
 
 th, td {
-  padding: 12px 15px;
+  padding: 12px 15px; /* Ajustado para mejor espaciado */
   text-align: center;
   border: 1px solid #ddd;
 }
@@ -184,6 +184,7 @@ tbody tr:hover {
   margin-top: 20px;
 }
 
+/* Media Query Responsiva */
 @media (max-width: 700px) {
   main {
     padding: 16px 4px 16px 4px;
@@ -211,12 +212,33 @@ tbody tr:hover {
     padding: 10px 8px;
     border: none;
     position: relative;
+    /* Añadir un separador visual entre filas */
+    border-bottom: 1px solid #eee;
   }
+  /* Añadir etiquetas antes de cada celda */
+  td:nth-of-type(1):before { content: "Código: "; }
+  td:nth-of-type(2):before { content: "Nombre: "; }
+  td:nth-of-type(3):before { content: "Cédula: "; }
+  td:nth-of-type(4):before { content: "Edad: "; }
+  td:nth-of-type(5):before { content: "Número: "; }
+  td:nth-of-type(6):before { content: "Correo: "; }
+  td:nth-of-type(7):before { content: "Referencia: "; }
+  td:nth-of-type(8):before { content: "Acciones: "; }
+
   td:before {
-    content: attr(data-label);
     font-weight: bold;
     display: block;
     margin-bottom: 4px;
     color: #007bff;
+  }
+  /* Ajustar botones de acción */
+  .action-btn {
+    margin: 2px 4px; /* Espaciado consistente */
+  }
+  #pagination {
+    flex-wrap: wrap;
+  }
+  #pagination button {
+    margin: 2px 4px;
   }
 }
