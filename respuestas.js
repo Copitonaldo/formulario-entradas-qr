@@ -1,9 +1,9 @@
 // Importar Supabase
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-// Configuración de Supabase
-const SUPABASE_URL = 'https://wiyejeeiehwfkdcbpomp.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpeWVqZWVpZWh3ZmtkY2Jwb21wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NjQwOTYsImV4cCI6MjA2NzE0MDA5Nn0.yDq4eOHujKH2nmg-F-DVnqCHGwdfEmf4Z968KXl1SDc';
+// Configuración de Supabase (manteniendo los valores originales)
+const SUPABASE_URL = 'https://zopnkmqythglllxjkgfh.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvcG5rbXF5dGhnbGxseGprZ2ZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA1NjI1MTQsImV4cCI6MjA0NjEzODUxNH0.3i6f87Q3s5c6y2Z5x9v8w7R4t1E3u2Y6v5n8m9P7q4A'; // Clave original
 
 // Inicializar Supabase
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -21,11 +21,11 @@ const excelBtn = document.getElementById('excelBtn');
 const printBtn = document.getElementById('printBtn');
 const noDataMsg = document.getElementById('noDataMsg');
 
-let todasLasRespuestas = []; 
-let filteredRespuestas = []; 
+let todasLasRespuestas = [];
+let filteredRespuestas = [];
 let currentPage = 1;
 const PAGE_SIZE = 50;
-let currentFormDbId = null; 
+let currentFormDbId = null;
 
 // --- INICIO: Validación de formId y carga de datos ---
 if (!formId || formId.trim() === "") {
@@ -48,17 +48,18 @@ if (!formId || formId.trim() === "") {
     formTitleElement.textContent = `Respuestas del Formulario: ${formId}`;
   }
   if (noDataMsg) {
-    noDataMsg.textContent = 'Cargando respuestas...'; 
+    noDataMsg.textContent = 'Cargando respuestas...';
     noDataMsg.style.display = 'block';
   }
-  await cargarRespuestas(); 
+  await cargarRespuestas();
 }
+
 // --- FIN: Validación de formId y carga de datos ---
 
 async function cargarRespuestas() {
   const { data: formInfo, error: formInfoError } = await supabase
     .from('formularios')
-    .select('id, nombre') 
+    .select('id, nombre')
     .eq('codigo_form', formId)
     .single();
 
@@ -82,9 +83,9 @@ async function cargarRespuestas() {
 
   const { data, error } = await supabase
     .from('respuestas')
-    .select('id, codigo_secuencial, nombre_completo, cedula, edad, fecha_registro, referencia_usada') // Seleccionar referencia_usada
+    .select('id, codigo_secuencial, nombre_completo, cedula, edad, fecha_registro, referencia_usada, numero_telefono, correo_electronico') // Añadir los nuevos campos
     .eq('formulario_id', currentFormDbId)
-    .order('fecha_registro', { ascending: false }); 
+    .order('fecha_registro', { ascending: false });
 
   if (error) {
     console.error("Error cargando respuestas de Supabase:", error);
@@ -95,13 +96,15 @@ async function cargarRespuestas() {
     if (respuestasTable) respuestasTable.style.display = 'none';
     todasLasRespuestas = [];
   } else {
-    todasLasRespuestas = data.map(r => ({ 
-        id_db: r.id, 
+    todasLasRespuestas = data.map(r => ({
+        id_db: r.id,
         codigo: r.codigo_secuencial,
         nombre: r.nombre_completo,
         cedula: r.cedula,
         edad: r.edad,
-        referencia_usada: r.referencia_usada || null // Mapear referencia_usada
+        referencia_usada: r.referencia_usada || null,
+        numero_telefono: r.numero_telefono || null, // Mapear nuevo campo
+        correo_electronico: r.correo_electronico || null // Mapear nuevo campo
     }));
   }
 
@@ -112,7 +115,7 @@ async function cargarRespuestas() {
     if (printBtn) printBtn.style.display = 'inline-block';
     if (excelBtn) excelBtn.style.display = 'inline-block';
   } else {
-    if (noDataMsg && !noDataMsg.textContent.startsWith("Error:")) { 
+    if (noDataMsg && !noDataMsg.textContent.startsWith("Error:")) {
         noDataMsg.textContent = 'No hay respuestas para este formulario.';
         noDataMsg.style.display = 'block';
     }
@@ -148,6 +151,7 @@ function renderTableAndPagination() {
   const dataToShow = filteredRespuestas.slice(start, end);
 
   respuestasTableBody.innerHTML = '';
+
   if (dataToShow.length === 0 && (formId && formId.trim() !== "")) {
       if (noDataMsg && !noDataMsg.textContent.startsWith("Error:")) {
         noDataMsg.textContent = 'No hay resultados para la búsqueda o filtro actual.';
@@ -165,7 +169,9 @@ function renderTableAndPagination() {
       <td>${escapeHtml(r.nombre)}</td>
       <td>${escapeHtml(formatCedula(r.cedula))}</td>
       <td>${escapeHtml(r.edad)}</td>
-      <td>${escapeHtml(r.referencia_usada || '-')}</td> 
+      <td>${escapeHtml(r.numero_telefono || '-')}</td>
+      <td>${escapeHtml(r.correo_electronico || '-')}</td>
+      <td>${escapeHtml(r.referencia_usada || '-')}</td>
       <td>
         <button class="action-btn edit-btn" data-id="${r.id_db || index}" disabled>Editar</button>
         <button class="action-btn delete-btn" data-id="${r.id_db || index}" disabled>Borrar</button>
@@ -202,7 +208,9 @@ if (searchInput) {
       (r.cedula && formatCedula(r.cedula).toLowerCase().includes(term)) ||
       (r.edad && r.edad.toString().includes(term)) ||
       (r.codigo && r.codigo.toLowerCase().includes(term)) ||
-      (r.referencia_usada && r.referencia_usada.toLowerCase().includes(term)) // Búsqueda por referencia
+      (r.numero_telefono && r.numero_telefono.toLowerCase().includes(term)) || // Búsqueda por número
+      (r.correo_electronico && r.correo_electronico.toLowerCase().includes(term)) || // Búsqueda por correo
+      (r.referencia_usada && r.referencia_usada.toLowerCase().includes(term))
     );
     currentPage = 1;
     renderTableAndPagination();
@@ -212,15 +220,15 @@ if (searchInput) {
 if (printBtn) {
   printBtn.onclick = function () {
     if (!formId || filteredRespuestas.length === 0) return;
-    const dataToPrint = filteredRespuestas; 
+    const dataToPrint = filteredRespuestas;
     let html = `<html><head><title>Imprimir Respuestas - ${formTitleElement.textContent.replace('Respuestas del Formulario: ','')}</title><style>
       body { font-family: Arial; margin: 20px; }
       table { border-collapse: collapse; width: 100%; }
       th, td { border: 1px solid #333; padding: 8px; text-align: center; }
       th { background: #007bff; color: white; }
-    </style></head><body><h2>${formTitleElement.textContent}</h2><table><thead><tr><th>Código</th><th>Nombre</th><th>Cédula</th><th>Edad</th><th>Referencia</th></tr></thead><tbody>`;
+    </style></head><body><h2>${formTitleElement.textContent}</h2><table><thead><tr><th>Código</th><th>Nombre</th><th>Cédula</th><th>Edad</th><th>Número</th><th>Correo</th><th>Referencia</th></tr></thead><tbody>`;
     dataToPrint.forEach(r => {
-      html += `<tr><td>${escapeHtml(r.codigo)}</td><td>${escapeHtml(r.nombre)}</td><td>${escapeHtml(formatCedula(r.cedula))}</td><td>${escapeHtml(r.edad)}</td><td>${escapeHtml(r.referencia_usada || '-')}</td></tr>`;
+      html += `<tr><td>${escapeHtml(r.codigo)}</td><td>${escapeHtml(r.nombre)}</td><td>${escapeHtml(formatCedula(r.cedula))}</td><td>${escapeHtml(r.edad)}</td><td>${escapeHtml(r.numero_telefono || '-')}</td><td>${escapeHtml(r.correo_electronico || '-')}</td><td>${escapeHtml(r.referencia_usada || '-')}</td></tr>`;
     });
     html += '</tbody></table></body></html>';
     const win = window.open('', '', 'width=900,height=700');
@@ -243,7 +251,9 @@ if (excelBtn) {
       'Nombre': r.nombre,
       'Cédula': formatCedula(r.cedula),
       'Edad': r.edad,
-      'Referencia': r.referencia_usada || '' // Añadir referencia a Excel
+      'Número': r.numero_telefono || '', // Añadir número a Excel
+      'Correo': r.correo_electronico || '', // Añadir correo a Excel
+      'Referencia': r.referencia_usada || ''
     }));
     const ws = XLSX.utils.json_to_sheet(dataToExport);
     const wb = XLSX.utils.book_new();
@@ -251,4 +261,5 @@ if (excelBtn) {
     XLSX.writeFile(wb, `Respuestas_${formId}.xlsx`);
   };
 }
-console.log("respuestas.js cargado con lógica de referencias.");
+
+console.log("respuestas.js cargado con lógica de referencias y nuevos campos.");
