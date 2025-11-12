@@ -1,9 +1,10 @@
 // Importar Supabase
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-// Configuración de Supabase
-const SUPABASE_URL = 'https://zopnkmqythglllxjkgfh.supabase.co'; // Reemplaza con tu URL
-const SUPABASE_ANON_KEY = 'TU_SUPABASE_ANON_KEY'; // Reemplaza con tu ANON KEY
+// Configuración de Supabase (manteniendo los valores originales)
+const SUPABASE_URL = 'https://zopnkmqythglllxjkgfh.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvcG5rbXF5dGhnbGxseGprZ2ZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA1NjI1MTQsImV4cCI6MjA0NjEzODUxNH0.3i6f87Q3s5c6y2Z5x9v8w7R4t1E3u2Y6v5n8m9P7q4A'; // Clave original
+
 // Inicializar Supabase
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -359,3 +360,285 @@ if (btnConfirmar) {
       }
 
       const nuevaRespuesta = {
+        formulario_id: currentFormDbId,
+        codigo_secuencial: nuevoCodigoSecuencialFormateado,
+        nombre_completo: toTitleCase(nombre),
+        cedula: cedula,
+        edad: edadInt,
+        referencia_usada: referencia
+        // Añadir los nuevos campos si existen
+        ...(numero && { numero_telefono: numero }),
+        ...(correo && { correo_electronico: correo })
+      };
+
+      let insertDataResponse;
+      try {
+        insertDataResponse = await supabase
+          .from('respuestas')
+          .insert([nuevaRespuesta])
+          .select()
+          .single();
+
+        if (insertDataResponse.error) {
+          console.error("Error guardando respuesta en Supabase:", insertDataResponse.error);
+          errorMsg.textContent = "Error al guardar los datos. Intente de nuevo. (Ver consola)";
+          errorMsg.style.display = 'block';
+          isSubmitting = false;
+          btnConfirmar.disabled = false;
+          btnConfirmar.textContent = originalButtonText;
+          return;
+        }
+      } catch (err) {
+        console.error("Error general en la inserción a Supabase DB:", err);
+        errorMsg.textContent = "Error de conexión al guardar los datos. Intente de nuevo.";
+        errorMsg.style.display = 'block';
+        isSubmitting = false;
+        btnConfirmar.disabled = false;
+        btnConfirmar.textContent = originalButtonText;
+        return;
+      }
+
+      const { data: insertData } = insertDataResponse;
+
+      if (insertData) {
+        if (idReferenciaParaDecrementar) {
+          await decrementarUsoReferencia(idReferenciaParaDecrementar);
+        }
+
+        outNombre.textContent = insertData.nombre_completo;
+        outCedula.textContent = formatCedula(insertData.cedula);
+        outEdad.textContent = `${insertData.edad} años`;
+        outNumero.textContent = insertData.numero_telefono || '-';
+        outCorreo.textContent = insertData.correo_electronico || '-';
+        outCodigo.textContent = insertData.codigo_secuencial;
+        outReferencia.textContent = insertData.referencia_usada;
+        outReferenciaContenedor.style.display = 'block';
+
+        if (codigoQR) codigoQR.textContent = "Código: " + insertData.codigo_secuencial;
+
+        const qrCanvasElement = document.getElementById('qrCanvas');
+        let datosQR = `${formDisplayName}
+Nombre: ${insertData.nombre_completo}
+Cédula: ${insertData.cedula}
+Edad: ${insertData.edad}
+Código: ${insertData.codigo_secuencial}`;
+        if (insertData.numero_telefono) {
+            datosQR += `
+Número: ${insertData.numero_telefono}`;
+        }
+        if (insertData.correo_electronico) {
+            datosQR += `
+Correo: ${insertData.correo_electronico}`;
+        }
+        if (insertData.referencia_usada) {
+            datosQR += `
+Ref: ${insertData.referencia_usada}`;
+        }
+
+        if (qrCanvasElement) {
+          QRCode.toCanvas(qrCanvasElement, datosQR, {
+            width: parseInt(qrCanvasElement.style.width) || 70,
+            height: parseInt(qrCanvasElement.style.height) || 70,
+            margin: 1
+          }, error => {
+            if (error) console.error("Error generando QR para visualización:", error);
+          });
+        }
+
+        confirmacionDatos.style.display = 'none';
+        entradaGenerada.style.display = 'block';
+      } else {
+        errorMsg.textContent = "No se pudo confirmar el guardado de los datos después de la inserción.";
+        errorMsg.style.display = 'block';
+        isSubmitting = false;
+        btnConfirmar.disabled = false;
+        btnConfirmar.textContent = originalButtonText;
+      }
+    } catch (generalError) {
+      console.error("Error general en el proceso de confirmación:", generalError);
+      errorMsg.textContent = "Ocurrió un error inesperado. Intente de nuevo.";
+      errorMsg.style.display = 'block';
+      isSubmitting = false;
+      btnConfirmar.disabled = false;
+      btnConfirmar.textContent = originalButtonText;
+    }
+  });
+}
+
+if (btnCorregir) {
+  btnCorregir.addEventListener('click', () => {
+    isSubmitting = false;
+    if (btnConfirmar) {
+        btnConfirmar.disabled = false;
+        btnConfirmar.textContent = 'Sí, son correctos';
+    }
+    confirmacionDatos.style.display = 'none';
+    if (formData) {
+      if (formId && formId.trim() !== "" && formData.style.display === 'none') {
+         formData.style.display = 'block';
+      }
+    }
+    errorMsg.style.display = 'none';
+  });
+}
+
+if (guardarBtn) {
+  guardarBtn.addEventListener('click', async () => {
+    try {
+      const html2canvas = (await import('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.esm.min.js')).default;
+      const elementToCapture = document.querySelector('#entradaGenerada .ticket-img-wrap');
+
+      if (!elementToCapture) {
+        console.error("Elemento '.ticket-img-wrap' no encontrado para captura.");
+        alert("Error: No se pudo encontrar el contenido del ticket para guardar.");
+        return;
+      }
+
+      const clone = elementToCapture.cloneNode(true);
+      const targetOutputWidthPx = 2500;
+      const targetOutputHeightPx = 960;
+      const cloneBaseWidth = elementToCapture.offsetWidth;
+      const cloneBaseHeight = elementToCapture.offsetHeight;
+
+      clone.style.width = `${cloneBaseWidth}px`;
+      clone.style.height = `${cloneBaseHeight}px`;
+      clone.style.boxSizing = 'border-box';
+      clone.style.boxShadow = 'none';
+      clone.style.borderRadius = '0px';
+      clone.querySelectorAll('*').forEach(el => {
+        el.style.boxShadow = 'none';
+      });
+      clone.style.backgroundColor = '#ffffff';
+
+      const clonedTicketBg = clone.querySelector('#ticketBg');
+      if (clonedTicketBg) {
+        clonedTicketBg.style.width = '100%';
+        clonedTicketBg.style.height = '100%';
+        clonedTicketBg.style.objectFit = 'cover';
+        if (!clonedTicketBg.src || getComputedStyle(clonedTicketBg).display === 'none') {
+          clone.style.backgroundColor = '#ffffff';
+        } else {
+          clone.style.backgroundColor = 'transparent';
+        }
+      } else {
+        clone.style.backgroundColor = '#ffffff';
+      }
+
+      const qrAbsoluteDivInClone = clone.querySelector('.qr-absolute');
+      if (qrAbsoluteDivInClone) {
+        qrAbsoluteDivInClone.style.position = 'absolute';
+        qrAbsoluteDivInClone.style.top = '50%';
+        qrAbsoluteDivInClone.style.left = '30px';
+        qrAbsoluteDivInClone.style.transform = 'translateY(-50%)';
+        qrAbsoluteDivInClone.style.background = '#ffffff';
+        qrAbsoluteDivInClone.style.padding = getComputedStyle(elementToCapture.querySelector('.qr-absolute')).padding;
+        qrAbsoluteDivInClone.style.borderRadius = getComputedStyle(elementToCapture.querySelector('.qr-absolute')).borderRadius;
+        qrAbsoluteDivInClone.style.boxShadow = 'none';
+        qrAbsoluteDivInClone.style.display = 'flex';
+        qrAbsoluteDivInClone.style.flexDirection = 'column';
+        qrAbsoluteDivInClone.style.alignItems = 'center';
+        qrAbsoluteDivInClone.style.zIndex = '10';
+      }
+
+      const qrCanvasInClone = clone.querySelector('#qrCanvas');
+      if (qrCanvasInClone) {
+        const originalQrCanvas = document.getElementById('qrCanvas');
+        qrCanvasInClone.style.width = originalQrCanvas.style.width || '70px';
+        qrCanvasInClone.style.height = originalQrCanvas.style.height || '70px';
+        qrCanvasInClone.style.borderRadius = originalQrCanvas.style.borderRadius || '4px';
+        qrCanvasInClone.style.boxShadow = 'none';
+        qrCanvasInClone.style.display = 'block';
+      }
+
+      const qrCodeLabelInClone = clone.querySelector('.qr-code-label');
+      if (qrCodeLabelInClone) {
+        const originalQrLabel = document.getElementById('codigoQR');
+        qrCodeLabelInClone.style.fontSize = getComputedStyle(originalQrLabel).fontSize;
+        qrCodeLabelInClone.style.marginTop = getComputedStyle(originalQrLabel).marginTop;
+        qrCodeLabelInClone.style.color = getComputedStyle(originalQrLabel).color;
+        qrCodeLabelInClone.style.textAlign = getComputedStyle(originalQrLabel).textAlign;
+        qrCodeLabelInClone.style.fontWeight = getComputedStyle(originalQrLabel).fontWeight;
+        qrCodeLabelInClone.textContent = "Código: " + outCodigo.textContent;
+      }
+
+      clone.style.position = 'absolute';
+      clone.style.left = '-9999px';
+      document.body.appendChild(clone);
+
+      await new Promise(resolve => setTimeout(resolve, 250));
+
+      const scaleFactor = targetOutputWidthPx / cloneBaseWidth;
+      html2canvas(clone, {
+        useCORS: true,
+        scale: scaleFactor,
+        backgroundColor: clone.style.backgroundColor === 'transparent' ? null : clone.style.backgroundColor,
+        logging: true,
+        onclone: (documentCloned, clonedElement) => {
+          const clonedCanvasEl = clonedElement.querySelector('#qrCanvas');
+          if (clonedCanvasEl) {
+            const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
+            let datosQRClone = `${formDisplayName}
+Nombre: ${outNombre.textContent}
+Cédula: ${outCedula.textContent}
+Edad: ${outEdad.textContent}
+Código: ${outCodigo.textContent}`;
+            if (outNumero.textContent && outNumero.textContent !== '-') {
+                datosQRClone += `
+Número: ${outNumero.textContent}`;
+            }
+            if (outCorreo.textContent && outCorreo.textContent !== '-') {
+                datosQRClone += `
+Correo: ${outCorreo.textContent}`;
+            }
+            if (outReferenciaContenedor.style.display !== 'none' && outReferencia.textContent) {
+                datosQRClone += `
+Ref: ${outReferencia.textContent}`;
+            }
+
+            QRCode.toCanvas(clonedCanvasEl, datosQRClone, { width: parseInt(clonedCanvasEl.style.width) || 70, height: parseInt(clonedCanvasEl.style.height) || 70, margin: 1 }, function (error) {
+              if (error) console.error('Error re-dibujando QR en clon:', error);
+            });
+          }
+          const clonedQrLabel = clonedElement.querySelector('.qr-code-label');
+          if (clonedQrLabel) {
+            clonedQrLabel.textContent = "Código: " + outCodigo.textContent;
+          }
+        }
+      }).then(canvasFromHtml2Canvas => {
+        const finalCanvas = document.createElement('canvas');
+        finalCanvas.width = targetOutputWidthPx;
+        finalCanvas.height = targetOutputHeightPx;
+        const finalCtx = finalCanvas.getContext('2d');
+
+        if (clone.style.backgroundColor === 'transparent') {
+            finalCtx.fillStyle = '#ffffff';
+            finalCtx.fillRect(0, 0, targetOutputWidthPx, targetOutputHeightPx);
+        }
+
+        finalCtx.drawImage(
+          canvasFromHtml2Canvas,
+          0, 0, canvasFromHtml2Canvas.width, canvasFromHtml2Canvas.height,
+          0, 0, targetOutputWidthPx, targetOutputHeightPx
+        );
+
+        const link = document.createElement('a');
+        const nombreArchivo = `${outCodigo.textContent || 'TICKET'}${(outNombre.textContent || 'nombre')}.jpg`;
+        link.download = nombreArchivo;
+        link.href = finalCanvas.toDataURL('image/jpeg', 0.9);
+        link.click();
+        document.body.removeChild(clone);
+      }).catch(err => {
+        console.error("Error al generar la imagen con html2canvas:", err);
+        alert("Error al generar la imagen. Intente de nuevo.");
+        if (document.body.contains(clone)) {
+          document.body.removeChild(clone);
+        }
+      });
+    } catch (error) {
+      console.error("Error al cargar html2canvas o en la lógica de guardado:", error);
+      alert("No se pudo cargar la funcionalidad para guardar la imagen o hubo un error. Verifique su conexión o intente más tarde.");
+    }
+  });
+}
+
+console.log("form.js cargado con lógica de referencias obligatorias y prevención de doble clic.");
