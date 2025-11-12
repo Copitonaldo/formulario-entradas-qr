@@ -325,34 +325,42 @@ if (btnConfirmar) {
       let nuevoCodigoSecuencialFormateado;
 
       try {
-        let {  contadorData, error: contadorError } = await supabase
+        console.log(`[DEBUG-CONTADOR] Iniciando lógica del contador para el formulario_id: ${currentFormDbId}`);
+
+        // --- CORRECCIÓN ---
+        // Se corrige la desestructuración para que coincida con la respuesta de Supabase v2 { data, error }
+        let { data: contadorData, error: contadorError } = await supabase
           .from('contadores_formularios')
           .select('ultimo_codigo')
           .eq('formulario_id', currentFormDbId)
           .single();
 
-        if (contadorError && contadorError.code !== 'PGRST116') {
+        if (contadorError && contadorError.code !== 'PGRST116') { // PGRST116 significa "no rows returned"
+          console.error('[DEBUG-CONTADOR] Error al LEER el contador:', JSON.stringify(contadorError, null, 2));
           throw contadorError;
         }
+        
+        console.log(`[DEBUG-CONTADOR] Datos leídos de la BD:`, contadorData);
 
-        if (contadorData) {
+        if (contadorData && typeof contadorData.ultimo_codigo === 'number') {
           nuevoCodigoSecuencial = contadorData.ultimo_codigo + 1;
+          console.log(`[DEBUG-CONTADOR] El contador existe. Nuevo código calculado: ${nuevoCodigoSecuencial}`);
         } else {
           nuevoCodigoSecuencial = 1;
+          console.log(`[DEBUG-CONTADOR] El contador NO existe o está vacío. Iniciando en: ${nuevoCodigoSecuencial}`);
         }
 
-        console.log("[DEBUG] Actualizando contador para formulario_id:", currentFormDbId, "con nuevo valor:", nuevoCodigoSecuencial); // Registro de depuración
-
+        console.log(`[DEBUG-CONTADOR] Intentando GUARDAR el nuevo valor: ${nuevoCodigoSecuencial} para el formulario_id: ${currentFormDbId}`);
         const { error: upsertError } = await supabase
           .from('contadores_formularios')
           .upsert({ formulario_id: currentFormDbId, ultimo_codigo: nuevoCodigoSecuencial }, { onConflict: 'formulario_id' });
 
         if (upsertError) {
-          console.error("Error al actualizar el contador:", upsertError);
-          throw upsertError; // Lanza el error para que sea capturado por el bloque catch general
-        } else {
-          console.log("Contador actualizado correctamente a:", nuevoCodigoSecuencial); // Confirmación de éxito
+          console.error('[DEBUG-CONTADOR] Error al GUARDAR el contador:', JSON.stringify(upsertError, null, 2));
+          throw upsertError;
         }
+        
+        console.log(`[DEBUG-CONTADOR] Guardado exitoso.`);
 
         nuevoCodigoSecuencialFormateado = formatSequentialCode(nuevoCodigoSecuencial);
       } catch (e) {
