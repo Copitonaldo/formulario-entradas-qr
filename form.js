@@ -51,7 +51,7 @@ let isSubmitting = false;
 // --- Carga de datos del formulario ---
 async function cargarDatosFormulario() {
   if (!formId) return;
-  const { data: formDataResult, error: formError } = await supabase
+  const {  formDataResult, error: formError } = await supabase
     .from('formularios')
     .select('id, nombre, imagen_url, min_age, max_age')
     .eq('codigo_form', formId)
@@ -201,7 +201,7 @@ async function validarYObtenerReferencia(codigoReferencia, formDbId) {
 }
 
 async function decrementarUsoReferencia(idReferencia) {
-  const { data: refData, error: fetchError } = await supabase
+  const {  refData, error: fetchError } = await supabase
     .from('referencias_usos')
     .select('usos_disponibles')
     .eq('id', idReferencia)
@@ -322,7 +322,7 @@ if (btnConfirmar) {
       let nuevoCodigoSecuencialFormateado;
 
       try {
-        let { data: contadorData, error: contadorError } = await supabase
+        let {  contadorData, error: contadorError } = await supabase
           .from('contadores_formularios')
           .select('ultimo_codigo')
           .eq('formulario_id', currentFormDbId)
@@ -359,6 +359,7 @@ if (btnConfirmar) {
         return;
       }
 
+      // --- CORRECCIÓN AQUÍ ---
       const nuevaRespuesta = {
         formulario_id: currentFormDbId,
         codigo_secuencial: nuevoCodigoSecuencialFormateado,
@@ -366,10 +367,16 @@ if (btnConfirmar) {
         cedula: cedula,
         edad: edadInt,
         referencia_usada: referencia
-        // Añadir los nuevos campos si existen
-        ...(numero && { numero_telefono: numero }),
-        ...(correo && { correo_electronico: correo })
       };
+
+      // Añadir los nuevos campos si existen
+      if (numero) {
+        nuevaRespuesta.numero_telefono = numero;
+      }
+      if (correo) {
+        nuevaRespuesta.correo_electronico = correo;
+      }
+      // --- FIN CORRECCIÓN ---
 
       let insertDataResponse;
       try {
