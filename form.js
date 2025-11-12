@@ -341,12 +341,17 @@ if (btnConfirmar) {
           nuevoCodigoSecuencial = 1;
         }
 
+        console.log("[DEBUG] Actualizando contador para formulario_id:", currentFormDbId, "con nuevo valor:", nuevoCodigoSecuencial); // Registro de depuración
+
         const { error: upsertError } = await supabase
           .from('contadores_formularios')
           .upsert({ formulario_id: currentFormDbId, ultimo_codigo: nuevoCodigoSecuencial }, { onConflict: 'formulario_id' });
 
         if (upsertError) {
-          throw upsertError;
+          console.error("Error al actualizar el contador:", upsertError);
+          throw upsertError; // Lanza el error para que sea capturado por el bloque catch general
+        } else {
+          console.log("Contador actualizado correctamente a:", nuevoCodigoSecuencial); // Confirmación de éxito
         }
 
         nuevoCodigoSecuencialFormateado = formatSequentialCode(nuevoCodigoSecuencial);
