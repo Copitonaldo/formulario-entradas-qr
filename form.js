@@ -51,7 +51,10 @@ let isSubmitting = false;
 // --- Carga de datos del formulario ---
 async function cargarDatosFormulario() {
   if (!formId) return;
-  const {  formDataResult, error: formError } = await supabase
+
+  console.log(`[DEBUG] Buscando formulario con codigo_form: "${formId}"`); // Registro de depuración
+
+  const {  data: formDataResult, error: formError } = await supabase
     .from('formularios')
     .select('id, nombre, imagen_url, min_age, max_age')
     .eq('codigo_form', formId)
