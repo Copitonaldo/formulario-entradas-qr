@@ -391,6 +391,7 @@ if (btnConfirmar) {
 
         if (insertDataResponse.error) {
           console.error("Error guardando respuesta en Supabase:", insertDataResponse.error);
+          console.log("[DEBUG] Objeto de error completo de Supabase al insertar:", JSON.stringify(insertDataResponse.error, null, 2)); // Registro de depuración
           errorMsg.textContent = "Error al guardar los datos. Intente de nuevo. (Ver consola)";
           errorMsg.style.display = 'block';
           isSubmitting = false;
