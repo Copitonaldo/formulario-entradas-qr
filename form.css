@@ -4,15 +4,16 @@ html, body {
   font-family: Arial, sans-serif;
   background: #f9f9f9;
 }
+
 .center {
   display: flex;
   flex-direction: column;
   align-items: center;
   margin-top: 40px;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding: 0 10px;
   box-sizing: border-box;
 }
+
 form#formData {
   background: white;
   padding: 30px 40px;
@@ -22,6 +23,7 @@ form#formData {
   max-width: 100%;
   box-sizing: border-box;
 }
+
 form#formData label {
   display: flex;
   flex-direction: column;
@@ -29,6 +31,7 @@ form#formData label {
   margin-bottom: 20px;
   font-size: 1.1rem;
 }
+
 form#formData input[type="text"],
 form#formData input[type="number"],
 form#formData input[type="tel"],
@@ -40,6 +43,7 @@ form#formData input[type="email"] {
   border-radius: 4px;
   box-sizing: border-box;
 }
+
 form#formData button {
   width: 100%;
   padding: 12px;
@@ -50,9 +54,11 @@ form#formData button {
   border-radius: 5px;
   cursor: pointer;
 }
+
 form#formData button:hover {
   background-color: #0056b3;
 }
+
 #errorMsg {
   color: #dc3545;
   font-weight: bold;
@@ -62,6 +68,7 @@ form#formData button:hover {
   max-width: 100%;
   box-sizing: border-box;
 }
+
 #confirmacionDatos {
   background: white;
   padding: 30px 40px;
@@ -72,29 +79,38 @@ form#formData button:hover {
   box-sizing: border-box;
   margin-top: 20px;
 }
+
 #confirmacionDatos h3 {
   margin-top: 0;
   text-align: center;
 }
+
 #confirmacionDatos p {
   margin: 8px 0;
 }
-#confirmacionDatos div {
+
+.confirm-buttons {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  margin-top: 20px;
 }
-#confirmacionDatos div b {
-  display: inline-block;
-  width: 100px; /* Ajusta según sea necesario */
-  font-weight: bold;
-  margin-right: 8px;
+
+.confirm-buttons button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
 }
-#confirmacionDatos button {
-  margin-top: 10px;
+
+.confirm-buttons button:last-child {
+  background-color: #dc3545;
 }
+
 #entradaGenerada {
   background: white;
-  padding: 24px 24px 40px 24px;
+  padding: 24px;
   border-radius: 10px;
   box-shadow: 0 2px 12px #0002;
   margin-top: 40px;
@@ -102,10 +118,12 @@ form#formData button:hover {
   width: 100%;
   box-sizing: border-box;
 }
+
 #entradaGenerada h3 {
   margin-top: 0;
   text-align: center;
 }
+
 .ticket-img-wrap {
   position: relative;
   display: block;
@@ -119,179 +137,15 @@ form#formData button:hover {
   box-sizing: border-box;
   overflow: hidden;
 }
+
 .ticket-bg {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 0;
   display: block;
 }
-.qr-absolute {
-  position: absolute;
-  top: 50%;
-  left: 30px;
-  transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.9);
-  padding: 6px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  z-index: 10;
-}
-#qrCanvas {
-  border-radius: 4px;
-  width: 70px;
-  height: 70px;
-  display: block;
-}
-.qr-code-label {
-  font-size: 0.85rem;
-  margin-top: 3px;
-  color: #333;
-  text-align: center;
-  font-weight: bold;
-}
-.datos {
-  margin-top: 15px;
-  font-size: 1.1rem;
-  padding: 0 10px;
-  box-sizing: border-box;
-}
-.datos b {
-  display: inline-block;
-  width: 85px; /* Ajustado para incluir Número y Correo */
-  font-weight: bold;
-}
-.datos div {
-  margin-bottom: 5px;
-  line-height: 1.4;
-}
-#guardarBtn {
-  margin-top: 25px;
-  padding: 12px 28px;
-  font-size: 1.05rem;
-  background: #28a745;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  transition: background-color 0.3s ease;
-}
-#guardarBtn:hover {
-  background-color: #218838;
-}
-/* Responsive adjustments */
-@media (max-width: 768px) { /* Ajustes para tabletas y móviles grandes */
-  .center {
-    margin-top: 20px;
-    padding-left: 15px;
-    padding-right: 15px;
-  }
-  form#formData,
-  #confirmacionDatos,
-  #errorMsg,
-  #entradaGenerada {
-    width: 100%;
-    max-width: 480px;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: 20px;
-    padding-right: 20px;
-  }
-  #entradaGenerada {
-    padding-top: 20px;
-    padding-bottom: 30px;
-  }
-  .ticket-img-wrap {
-    max-width: 100%;
-  }
-  .qr-absolute {
-    left: 20px;
-    padding: 5px;
-  }
-  #qrCanvas {
-    width: 65px;
-    height: 65px;
-  }
-  .qr-code-label {
-    font-size: 0.8rem;
-  }
-  .datos {
-    font-size: 1rem;
-  }
-  .datos b {
-    width: 75px; /* Ajustado */
-  }
-  #guardarBtn { /* Ajuste para el botón de guardar en este breakpoint */
-    font-size: 1rem;
-    padding: 10px 20px;
-  }
-}
-@media (max-width: 480px) { /* Ajustes para móviles pequeños */
-  .center {
-    margin-top: 15px;
-    padding-left: 10px;
-    padding-right: 10px;
-  }
-  form#formData,
-  #confirmacionDatos,
-  #errorMsg {
-    padding: 20px 15px;
-  }
-  form#formData label {
-    font-size: 1rem;
-  }
-  form#formData input[type="text"],
-  form#formData input[type="number"],
-  form#formData input[type="tel"],
-  form#formData input[type="email"] {
-    font-size: 0.95rem;
-    padding: 10px 8px;
-  }
-  form#formData button {
-    font-size: 1rem;
-    padding: 12px;
-  }
-  #entradaGenerada {
-    padding: 15px 15px 25px 15px;
-  }
-  .qr-absolute {
-    left: 15px;
-    padding: 4px;
-  }
-  #qrCanvas {
-    width: 50px;
-    height: 50px;
-  }
-  .qr-code-label {
-    font-size: 0.7rem;
-  }
-  .datos {
-    font-size: 0.9rem;
-  }
-  .datos b {
-    width: 65px; /* Ajustado */
-  }
-  #guardarBtn {
-    font-size: 0.95rem;
-    padding: 10px 18px;
-  }
-  #confirmacionDatos h3 {
-    font-size: 1.1rem;
-  }
-  #confirmacionDatos p {
-    font-size: 0.9rem;
-  }
-  #confirmacionDatos button {
-    padding: 8px 15px;
-    font-size: 0.9rem;
-  }
-  .qr-centered {
+
+.qr-centered {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -306,6 +160,13 @@ form#formData button:hover {
   z-index: 10;
 }
 
+#qrCanvas {
+  border-radius: 4px;
+  width: 70px;
+  height: 70px;
+  display: block;
+}
+
 .qr-code-label {
   font-size: 0.85rem;
   margin-top: 3px;
@@ -314,5 +175,16 @@ form#formData button:hover {
   font-weight: bold;
 }
 
+.datos {
+  margin-top: 15px;
+  font-size: 1.1rem;
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+
+.datos b {
+  display: inline-block;
+  width: 85px;
+  font-weight: bold;
 }
 
