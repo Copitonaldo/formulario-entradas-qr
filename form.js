@@ -461,13 +461,9 @@ Ref: ${insertData.referencia_usada}`;
         }
 
         if (qrCanvasElement) {
-          // Obtenemos el tamaño del canvas desde el CSS, pero si es muy pequeño, usamos un mínimo.
-          const canvasWidth = parseInt(qrCanvasElement.style.width) || 150;
-          const canvasHeight = parseInt(qrCanvasElement.style.height) || 150;
-
           QRCode.toCanvas(qrCanvasElement, datosQR, {
-            width: canvasWidth,
-            height: canvasHeight,
+            width: parseInt(qrCanvasElement.style.width) || 70,
+            height: parseInt(qrCanvasElement.style.height) || 70,
             margin: 1
           }, error => {
             if (error) console.error("Error generando QR para visualización:", error);
@@ -557,14 +553,14 @@ if (guardarBtn) {
 
       const qrAbsoluteDivInClone = clone.querySelector('.qr-absolute');
       if (qrAbsoluteDivInClone) {
-        // Aplicar estilos del CSS original para la captura
         qrAbsoluteDivInClone.style.position = 'absolute';
-        qrAbsoluteDivInClone.style.top = '200px'; // Usar el valor CSS original
-        qrAbsoluteDivInClone.style.left = '80px'; // Usar el valor CSS original
-        qrAbsoluteDivInClone.style.background = '#ffffff'; // Usar el valor CSS original
-        qrAbsoluteDivInClone.style.padding = '15px'; // Usar el valor CSS original
-        qrAbsoluteDivInClone.style.borderRadius = '12px'; // Usar el valor CSS original
-        qrAbsoluteDivInClone.style.boxShadow = 'none'; // Quitar sombra para la captura
+        qrAbsoluteDivInClone.style.top = '50%';
+        qrAbsoluteDivInClone.style.left = '30px';
+        qrAbsoluteDivInClone.style.transform = 'translateY(-50%)';
+        qrAbsoluteDivInClone.style.background = '#ffffff';
+        qrAbsoluteDivInClone.style.padding = getComputedStyle(elementToCapture.querySelector('.qr-absolute')).padding;
+        qrAbsoluteDivInClone.style.borderRadius = getComputedStyle(elementToCapture.querySelector('.qr-absolute')).borderRadius;
+        qrAbsoluteDivInClone.style.boxShadow = 'none';
         qrAbsoluteDivInClone.style.display = 'flex';
         qrAbsoluteDivInClone.style.flexDirection = 'column';
         qrAbsoluteDivInClone.style.alignItems = 'center';
@@ -574,23 +570,21 @@ if (guardarBtn) {
       const qrCanvasInClone = clone.querySelector('#qrCanvas');
       if (qrCanvasInClone) {
         const originalQrCanvas = document.getElementById('qrCanvas');
-        // Aplicar estilos del CSS original
-        qrCanvasInClone.style.width = originalQrCanvas.style.width || '150px';
-        qrCanvasInClone.style.height = originalQrCanvas.style.height || '150px';
-        qrCanvasInClone.style.borderRadius = originalQrCanvas.style.borderRadius || '6px';
-        qrCanvasInClone.style.boxShadow = 'none'; // Quitar sombra para la captura
+        qrCanvasInClone.style.width = originalQrCanvas.style.width || '70px';
+        qrCanvasInClone.style.height = originalQrCanvas.style.height || '70px';
+        qrCanvasInClone.style.borderRadius = originalQrCanvas.style.borderRadius || '4px';
+        qrCanvasInClone.style.boxShadow = 'none';
         qrCanvasInClone.style.display = 'block';
       }
 
       const qrCodeLabelInClone = clone.querySelector('.qr-code-label');
       if (qrCodeLabelInClone) {
         const originalQrLabel = document.getElementById('codigoQR');
-        // Aplicar estilos del CSS original
-        qrCodeLabelInClone.style.fontSize = '1.1rem';
-        qrCodeLabelInClone.style.marginTop = '10px';
-        qrCodeLabelInClone.style.color = '#333';
-        qrCodeLabelInClone.style.textAlign = 'center';
-        qrCodeLabelInClone.style.fontWeight = 'bold';
+        qrCodeLabelInClone.style.fontSize = getComputedStyle(originalQrLabel).fontSize;
+        qrCodeLabelInClone.style.marginTop = getComputedStyle(originalQrLabel).marginTop;
+        qrCodeLabelInClone.style.color = getComputedStyle(originalQrLabel).color;
+        qrCodeLabelInClone.style.textAlign = getComputedStyle(originalQrLabel).textAlign;
+        qrCodeLabelInClone.style.fontWeight = getComputedStyle(originalQrLabel).fontWeight;
         qrCodeLabelInClone.textContent = "Código: " + outCodigo.textContent;
       }
 
@@ -628,10 +622,7 @@ Correo: ${outCorreo.textContent}`;
                 datosQRClone += `
 Ref: ${outReferencia.textContent}`;
             }
-            // Asegurar tamaño correcto en la imagen guardada
-            const canvasWidth = parseInt(clonedCanvasEl.style.width) || 150;
-            const canvasHeight = parseInt(clonedCanvasEl.style.height) || 150;
-            QRCode.toCanvas(clonedCanvasEl, datosQRClone, { width: canvasWidth, height: canvasHeight, margin: 1 }, function (error) {
+            QRCode.toCanvas(clonedCanvasEl, datosQRClone, { width: parseInt(clonedCanvasEl.style.width) || 70, height: parseInt(clonedCanvasEl.style.height) || 70, margin: 1 }, function (error) {
               if (error) console.error('Error re-dibujando QR en clon:', error);
             });
           }
