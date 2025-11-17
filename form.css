@@ -126,36 +126,32 @@ form#formData button:hover {
   border-radius: 0;
   display: block;
 }
-/* --- MODIFICACIONES PARA EL QR SEGÚN LA IMAGEN DE REFERENCIA --- */
 .qr-absolute {
   position: absolute;
-  /* Posicionamos el QR a la izquierda, debajo del título */
-  top: 200px; /* Ajusta este valor si necesitas moverlo más arriba o abajo */
-  left: 80px; /* Ajusta este valor para moverlo hacia la derecha o izquierda */
-  /* Eliminamos el transform ya que no queremos centrarlo verticalmente */
-  background: white; /* Fondo blanco como en la imagen */
-  padding: 15px; /* Un poco más de padding para que se vea más espacioso */
-  border-radius: 12px; /* Bordes más redondeados */
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* Sombra suave */
+  top: 50%;
+  left: 30px;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 6px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   display: flex;
   flex-direction: column;
   align-items: center;
   z-index: 10;
 }
 #qrCanvas {
-  border-radius: 6px; /* Bordes redondeados para el QR */
-  width: 150px; /* Tamaño mucho más grande */
-  height: 150px;
+  border-radius: 4px;
+  width: 70px;
+  height: 70px;
   display: block;
 }
-/* Estilo para el texto "Código: XXX" */
 .qr-code-label {
-  font-size: 1.1rem; /* Fuente más grande */
-  margin-top: 10px;
+  font-size: 0.85rem;
+  margin-top: 3px;
   color: #333;
   text-align: center;
   font-weight: bold;
-  /* No es necesario cambiar el color, ya que el fondo es blanco */
 }
 .datos {
   margin-top: 15px;
@@ -214,19 +210,16 @@ form#formData button:hover {
   .ticket-img-wrap {
     max-width: 100%;
   }
-  /* Ajustes responsivos para el QR */
   .qr-absolute {
-    top: 180px; /* Ajuste para móviles */
-    left: 60px; /* Ajuste para móviles */
-    padding: 12px;
-    border-radius: 10px;
+    left: 20px;
+    padding: 5px;
   }
   #qrCanvas {
-    width: 120px;
-    height: 120px;
+    width: 65px;
+    height: 65px;
   }
   .qr-code-label {
-    font-size: 1rem;
+    font-size: 0.8rem;
   }
   .datos {
     font-size: 1rem;
@@ -267,19 +260,16 @@ form#formData button:hover {
   #entradaGenerada {
     padding: 15px 15px 25px 15px;
   }
-  /* Ajustes responsivos para el QR en móviles pequeños */
   .qr-absolute {
-    top: 150px; /* Ajuste para móviles pequeños */
-    left: 20px; /* Ajuste para móviles pequeños */
-    padding: 8px;
-    border-radius: 8px;
+    left: 15px;
+    padding: 4px;
   }
   #qrCanvas {
-    width: 80px;
-    height: 80px;
+    width: 50px;
+    height: 50px;
   }
   .qr-code-label {
-    font-size: 0.85rem;
+    font-size: 0.7rem;
   }
   .datos {
     font-size: 0.9rem;
