@@ -483,7 +483,7 @@ if (guardarBtn) {
       const qrAbsoluteDivInClone = clone.querySelector('.qr-absolute');
       if (qrAbsoluteDivInClone) {
         qrAbsoluteDivInClone.style.position = 'absolute';
-        qrAbsoluteDivInClone.style.top = '55%'; // Misma posición que en el CSS
+        qrAbsoluteDivInClone.style.top = '60%'; // Misma posición que en el CSS
         qrAbsoluteDivInClone.style.left = '150px'; // Misma posición que en el CSS
         // El transform del CSS original (translate(-50%, -50%)) se mantiene aquí para alinear el centro del QR en la posición.
         // Si el CSS cambia a translateX(-50%) translateY(-50%), se debe mantener aquí.
@@ -591,3 +591,4 @@ Ref: ${outReferencia.textContent}`;
   });
 }
 console.log("form.js cargado con lógica de referencias obligatorias y prevención de doble clic.");
+
