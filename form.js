@@ -11,6 +11,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // Variables del DOM
 const urlParams = new URLSearchParams(window.location.search);
 const formId = urlParams.get('id'); // Este es el 'codigo_form' en Supabase
+
 const formTitleElement = document.getElementById('formTitle');
 const formData = document.getElementById('formData');
 const inputNombre = document.getElementById('nombre');
@@ -19,6 +20,7 @@ const inputEdad = document.getElementById('edad');
 const inputNumero = document.getElementById('numero');
 const inputCorreo = document.getElementById('correo');
 const inputReferencia = document.getElementById('referencia');
+
 const errorMsg = document.getElementById('errorMsg');
 const confirmacionDatos = document.getElementById('confirmacionDatos');
 const confNombre = document.getElementById('confNombre');
@@ -29,6 +31,7 @@ const confCorreo = document.getElementById('confCorreo');
 const confReferencia = document.getElementById('confReferencia');
 const btnConfirmar = document.getElementById('btnConfirmar');
 const btnCorregir = document.getElementById('btnCorregir');
+
 const outNombre = document.getElementById('outNombre');
 const outCedula = document.getElementById('outCedula');
 const outEdad = document.getElementById('outEdad');
@@ -37,6 +40,7 @@ const outCorreo = document.getElementById('outCorreo');
 const outCodigo = document.getElementById('outCodigo');
 const outReferencia = document.getElementById('outReferencia');
 const outReferenciaContenedor = document.getElementById('outReferenciaContenedor');
+
 const codigoQR = document.getElementById('codigoQR');
 const qrCanvas = document.getElementById('qrCanvas');
 const entradaGenerada = document.getElementById('entradaGenerada');
@@ -51,7 +55,6 @@ let isSubmitting = false;
 // --- Carga de datos del formulario ---
 async function cargarDatosFormulario() {
   if (!formId) return;
-
   console.log(`[DEBUG] Buscando formulario con codigo_form: "${formId}"`); // Registro de depuración
 
   const {  data: formDataResult, error: formError } = await supabase
@@ -157,6 +160,7 @@ if (formData) {
         errorMsg.style.display = 'block';
         return;
     }
+
     if (currentMinAge !== null && edad < currentMinAge) {
       errorMsg.textContent = `Error: Su edad no es válida. Debe ser mayor o igual a ${currentMinAge}.`;
       errorMsg.style.display = 'block';
@@ -239,7 +243,6 @@ if (btnConfirmar) {
     btnConfirmar.disabled = true;
     const originalButtonText = btnConfirmar.textContent;
     btnConfirmar.textContent = 'Procesando...';
-
     errorMsg.style.display = 'none';
 
     try {
@@ -253,7 +256,6 @@ if (btnConfirmar) {
       }
 
       const { nombre, cedula, edadInt, numero, correo, referencia } = window.datosParaConfirmar;
-
       const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
 
       if (!referencia) {
@@ -269,7 +271,6 @@ if (btnConfirmar) {
 
       let idReferenciaParaDecrementar = null;
       const validacionRef = await validarYObtenerReferencia(referencia, currentFormDbId);
-
       if (!validacionRef.valida) {
         errorMsg.textContent = validacionRef.mensaje;
         errorMsg.style.display = 'block';
@@ -326,7 +327,6 @@ if (btnConfirmar) {
 
       try {
         console.log(`[DEBUG-CONTADOR] Iniciando lógica del contador para el formulario_id: ${currentFormDbId}`);
-
         // --- CORRECCIÓN ---
         // Se corrige la desestructuración para que coincida con la respuesta de Supabase v2 { data, error }
         let { data: contadorData, error: contadorError } = await supabase
@@ -339,7 +339,7 @@ if (btnConfirmar) {
           console.error('[DEBUG-CONTADOR] Error al LEER el contador:', JSON.stringify(contadorError, null, 2));
           throw contadorError;
         }
-        
+
         console.log(`[DEBUG-CONTADOR] Datos leídos de la BD:`, contadorData);
 
         if (contadorData && typeof contadorData.ultimo_codigo === 'number') {
@@ -351,6 +351,7 @@ if (btnConfirmar) {
         }
 
         console.log(`[DEBUG-CONTADOR] Intentando GUARDAR el nuevo valor: ${nuevoCodigoSecuencial} para el formulario_id: ${currentFormDbId}`);
+
         const { error: upsertError } = await supabase
           .from('contadores_formularios')
           .upsert({ formulario_id: currentFormDbId, ultimo_codigo: nuevoCodigoSecuencial }, { onConflict: 'formulario_id' });
@@ -359,7 +360,7 @@ if (btnConfirmar) {
           console.error('[DEBUG-CONTADOR] Error al GUARDAR el contador:', JSON.stringify(upsertError, null, 2));
           throw upsertError;
         }
-        
+
         console.log(`[DEBUG-CONTADOR] Guardado exitoso.`);
 
         nuevoCodigoSecuencialFormateado = formatSequentialCode(nuevoCodigoSecuencial);
@@ -460,9 +461,13 @@ Ref: ${insertData.referencia_usada}`;
         }
 
         if (qrCanvasElement) {
+          // Obtenemos el tamaño del canvas desde el CSS, pero si es muy pequeño, usamos un mínimo.
+          const canvasWidth = parseInt(qrCanvasElement.style.width) || 150;
+          const canvasHeight = parseInt(qrCanvasElement.style.height) || 150;
+
           QRCode.toCanvas(qrCanvasElement, datosQR, {
-            width: parseInt(qrCanvasElement.style.width) || 70,
-            height: parseInt(qrCanvasElement.style.height) || 70,
+            width: canvasWidth,
+            height: canvasHeight,
             margin: 1
           }, error => {
             if (error) console.error("Error generando QR para visualización:", error);
@@ -529,9 +534,11 @@ if (guardarBtn) {
       clone.style.boxSizing = 'border-box';
       clone.style.boxShadow = 'none';
       clone.style.borderRadius = '0px';
+
       clone.querySelectorAll('*').forEach(el => {
         el.style.boxShadow = 'none';
       });
+
       clone.style.backgroundColor = '#ffffff';
 
       const clonedTicketBg = clone.querySelector('#ticketBg');
@@ -550,14 +557,14 @@ if (guardarBtn) {
 
       const qrAbsoluteDivInClone = clone.querySelector('.qr-absolute');
       if (qrAbsoluteDivInClone) {
+        // Aplicar estilos del CSS original para la captura
         qrAbsoluteDivInClone.style.position = 'absolute';
-        qrAbsoluteDivInClone.style.top = '50%';
-        qrAbsoluteDivInClone.style.left = '30px';
-        qrAbsoluteDivInClone.style.transform = 'translateY(-50%)';
-        qrAbsoluteDivInClone.style.background = '#ffffff';
-        qrAbsoluteDivInClone.style.padding = getComputedStyle(elementToCapture.querySelector('.qr-absolute')).padding;
-        qrAbsoluteDivInClone.style.borderRadius = getComputedStyle(elementToCapture.querySelector('.qr-absolute')).borderRadius;
-        qrAbsoluteDivInClone.style.boxShadow = 'none';
+        qrAbsoluteDivInClone.style.top = '200px'; // Usar el valor CSS original
+        qrAbsoluteDivInClone.style.left = '80px'; // Usar el valor CSS original
+        qrAbsoluteDivInClone.style.background = '#ffffff'; // Usar el valor CSS original
+        qrAbsoluteDivInClone.style.padding = '15px'; // Usar el valor CSS original
+        qrAbsoluteDivInClone.style.borderRadius = '12px'; // Usar el valor CSS original
+        qrAbsoluteDivInClone.style.boxShadow = 'none'; // Quitar sombra para la captura
         qrAbsoluteDivInClone.style.display = 'flex';
         qrAbsoluteDivInClone.style.flexDirection = 'column';
         qrAbsoluteDivInClone.style.alignItems = 'center';
@@ -567,21 +574,23 @@ if (guardarBtn) {
       const qrCanvasInClone = clone.querySelector('#qrCanvas');
       if (qrCanvasInClone) {
         const originalQrCanvas = document.getElementById('qrCanvas');
-        qrCanvasInClone.style.width = originalQrCanvas.style.width || '70px';
-        qrCanvasInClone.style.height = originalQrCanvas.style.height || '70px';
-        qrCanvasInClone.style.borderRadius = originalQrCanvas.style.borderRadius || '4px';
-        qrCanvasInClone.style.boxShadow = 'none';
+        // Aplicar estilos del CSS original
+        qrCanvasInClone.style.width = originalQrCanvas.style.width || '150px';
+        qrCanvasInClone.style.height = originalQrCanvas.style.height || '150px';
+        qrCanvasInClone.style.borderRadius = originalQrCanvas.style.borderRadius || '6px';
+        qrCanvasInClone.style.boxShadow = 'none'; // Quitar sombra para la captura
         qrCanvasInClone.style.display = 'block';
       }
 
       const qrCodeLabelInClone = clone.querySelector('.qr-code-label');
       if (qrCodeLabelInClone) {
         const originalQrLabel = document.getElementById('codigoQR');
-        qrCodeLabelInClone.style.fontSize = getComputedStyle(originalQrLabel).fontSize;
-        qrCodeLabelInClone.style.marginTop = getComputedStyle(originalQrLabel).marginTop;
-        qrCodeLabelInClone.style.color = getComputedStyle(originalQrLabel).color;
-        qrCodeLabelInClone.style.textAlign = getComputedStyle(originalQrLabel).textAlign;
-        qrCodeLabelInClone.style.fontWeight = getComputedStyle(originalQrLabel).fontWeight;
+        // Aplicar estilos del CSS original
+        qrCodeLabelInClone.style.fontSize = '1.1rem';
+        qrCodeLabelInClone.style.marginTop = '10px';
+        qrCodeLabelInClone.style.color = '#333';
+        qrCodeLabelInClone.style.textAlign = 'center';
+        qrCodeLabelInClone.style.fontWeight = 'bold';
         qrCodeLabelInClone.textContent = "Código: " + outCodigo.textContent;
       }
 
@@ -592,6 +601,7 @@ if (guardarBtn) {
       await new Promise(resolve => setTimeout(resolve, 250));
 
       const scaleFactor = targetOutputWidthPx / cloneBaseWidth;
+
       html2canvas(clone, {
         useCORS: true,
         scale: scaleFactor,
@@ -618,8 +628,10 @@ Correo: ${outCorreo.textContent}`;
                 datosQRClone += `
 Ref: ${outReferencia.textContent}`;
             }
-
-            QRCode.toCanvas(clonedCanvasEl, datosQRClone, { width: parseInt(clonedCanvasEl.style.width) || 70, height: parseInt(clonedCanvasEl.style.height) || 70, margin: 1 }, function (error) {
+            // Asegurar tamaño correcto en la imagen guardada
+            const canvasWidth = parseInt(clonedCanvasEl.style.width) || 150;
+            const canvasHeight = parseInt(clonedCanvasEl.style.height) || 150;
+            QRCode.toCanvas(clonedCanvasEl, datosQRClone, { width: canvasWidth, height: canvasHeight, margin: 1 }, function (error) {
               if (error) console.error('Error re-dibujando QR en clon:', error);
             });
           }
