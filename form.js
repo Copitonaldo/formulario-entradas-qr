@@ -1,17 +1,13 @@
 // Importar Supabase
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
 // Configuración de Supabase (manteniendo los valores originales)
 const SUPABASE_URL = 'https://wiyejeeiehwfkdcbpomp.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpeWVqZWVpZWh3ZmtkY2Jwb21wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NjQwOTYsImV4cCI6MjA2NzE0MDA5Nn0.yDq4eOHujKH2nmg-F-DVnqCHGwdfEmf4Z968KXl1SDc'; // Clave original
-
 // Inicializar Supabase
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 // Variables del DOM
 const urlParams = new URLSearchParams(window.location.search);
 const formId = urlParams.get('id'); // Este es el 'codigo_form' en Supabase
-
 const formTitleElement = document.getElementById('formTitle');
 const formData = document.getElementById('formData');
 const inputNombre = document.getElementById('nombre');
@@ -20,7 +16,6 @@ const inputEdad = document.getElementById('edad');
 const inputNumero = document.getElementById('numero');
 const inputCorreo = document.getElementById('correo');
 const inputReferencia = document.getElementById('referencia');
-
 const errorMsg = document.getElementById('errorMsg');
 const confirmacionDatos = document.getElementById('confirmacionDatos');
 const confNombre = document.getElementById('confNombre');
@@ -31,7 +26,6 @@ const confCorreo = document.getElementById('confCorreo');
 const confReferencia = document.getElementById('confReferencia');
 const btnConfirmar = document.getElementById('btnConfirmar');
 const btnCorregir = document.getElementById('btnCorregir');
-
 const outNombre = document.getElementById('outNombre');
 const outCedula = document.getElementById('outCedula');
 const outEdad = document.getElementById('outEdad');
@@ -40,29 +34,24 @@ const outCorreo = document.getElementById('outCorreo');
 const outCodigo = document.getElementById('outCodigo');
 const outReferencia = document.getElementById('outReferencia');
 const outReferenciaContenedor = document.getElementById('outReferenciaContenedor');
-
 const codigoQR = document.getElementById('codigoQR');
 const qrCanvas = document.getElementById('qrCanvas');
 const entradaGenerada = document.getElementById('entradaGenerada');
 const ticketBg = document.getElementById('ticketBg');
 const guardarBtn = document.getElementById('guardarBtn');
-
 let currentMinAge = null;
 let currentMaxAge = null;
 let currentFormDbId = null;
 let isSubmitting = false;
-
 // --- Carga de datos del formulario ---
 async function cargarDatosFormulario() {
   if (!formId) return;
   console.log(`[DEBUG] Buscando formulario con codigo_form: "${formId}"`); // Registro de depuración
-
   const {  data: formDataResult, error: formError } = await supabase
     .from('formularios')
     .select('id, nombre, imagen_url, min_age, max_age')
     .eq('codigo_form', formId)
     .single();
-
   if (formError) {
     console.error("Error al cargar datos del formulario desde Supabase:", formError);
     if (formTitleElement) formTitleElement.textContent = 'Error al cargar formulario';
@@ -72,7 +61,6 @@ async function cargarDatosFormulario() {
     errorMsg.style.display = 'block';
     return;
   }
-
   if (formDataResult) {
     currentFormDbId = formDataResult.id;
     if (formTitleElement) {
@@ -95,7 +83,6 @@ async function cargarDatosFormulario() {
     errorMsg.style.display = 'block';
   }
 }
-
 if (!formId || formId.trim() === "") {
   if (formTitleElement) formTitleElement.textContent = 'Error: Formulario no especificado';
   if (errorMsg) {
@@ -108,31 +95,25 @@ if (!formId || formId.trim() === "") {
 } else {
   cargarDatosFormulario();
 }
-
 function toTitleCase(str) {
   return str.toLowerCase().replace(/(^|\s)\S/g, l => l.toUpperCase());
 }
-
 function formatCedula(cedula) {
   return cedula.replace(/\D/g, '').replace(/(\d{2})(\d{3})(\d{3})/, '$1.$2.$3');
 }
-
 function formatSequentialCode(number) {
   return number.toString().padStart(3, '0');
 }
-
 if (formData) {
   formData.addEventListener('submit', async (event) => {
     event.preventDefault();
     errorMsg.style.display = 'none';
-
     const nombre = inputNombre.value.trim();
     const cedulaRaw = inputCedula.value.replace(/\D/g, '');
     const edadValue = inputEdad.value.trim();
     const numeroValue = inputNumero.value.trim();
     const correoValue = inputCorreo.value.trim();
     const referenciaValue = inputReferencia.value.trim();
-
     if (!nombre || !/^\d{8}$/.test(cedulaRaw) || !edadValue || !referenciaValue) {
       if (!nombre) errorMsg.textContent = 'Debe ingresar un nombre.';
       else if (!/^\d{8}$/.test(cedulaRaw)) errorMsg.textContent = 'La cédula debe tener exactamente 8 dígitos.';
@@ -141,7 +122,6 @@ if (formData) {
       errorMsg.style.display = 'block';
       return;
     }
-
     // Validaciones opcionales para número y correo
     if (numeroValue && !/^\d+$/.test(numeroValue.replace(/\D/g, ''))) {
         errorMsg.textContent = 'Número de teléfono inválido.';
@@ -153,14 +133,12 @@ if (formData) {
         errorMsg.style.display = 'block';
         return;
     }
-
     const edad = parseInt(edadValue);
     if (isNaN(edad) || edad < 0) {
         errorMsg.textContent = 'Edad inválida.';
         errorMsg.style.display = 'block';
         return;
     }
-
     if (currentMinAge !== null && edad < currentMinAge) {
       errorMsg.textContent = `Error: Su edad no es válida. Debe ser mayor o igual a ${currentMinAge}.`;
       errorMsg.style.display = 'block';
@@ -171,22 +149,18 @@ if (formData) {
       errorMsg.style.display = 'block';
       return;
     }
-
     confNombre.textContent = toTitleCase(nombre);
     confCedula.textContent = formatCedula(cedulaRaw);
     confEdad.textContent = `${edad} años`;
     confNumero.textContent = numeroValue || '-';
     confCorreo.textContent = correoValue || '-';
     confReferencia.textContent = referenciaValue;
-
     formData.style.display = 'none';
     entradaGenerada.style.display = 'none';
     confirmacionDatos.style.display = 'block';
-
     window.datosParaConfirmar = { nombre, cedula: cedulaRaw, edad: edadValue, edadInt: edad, numero: numeroValue, correo: correoValue, referencia: referenciaValue };
   });
 }
-
 async function validarYObtenerReferencia(codigoReferencia, formDbId) {
   const { data, error } = await supabase
     .from('referencias_usos')
@@ -194,45 +168,36 @@ async function validarYObtenerReferencia(codigoReferencia, formDbId) {
     .eq('formulario_id', formDbId)
     .eq('codigo_referencia', codigoReferencia)
     .single();
-
   if (error || !data) {
     console.warn("Error al buscar referencia o no encontrada:", error);
     return { valida: false, mensaje: "El código de referencia proporcionado no existe o es incorrecto." };
   }
-
   if (data.usos_disponibles <= 0) {
     return { valida: false, mensaje: "Este código de referencia ya ha sido utilizado y no tiene usos disponibles." };
   }
-
   return { valida: true, datosReferencia: data };
 }
-
 async function decrementarUsoReferencia(idReferencia) {
   const {  refData, error: fetchError } = await supabase
     .from('referencias_usos')
     .select('usos_disponibles')
     .eq('id', idReferencia)
     .single();
-
   if (fetchError || !refData) {
     console.error("Error al obtener la referencia para decrementar o no encontrada:", fetchError);
     return;
   }
-
   const nuevosUsosDisponibles = refData.usos_disponibles - 1;
-
   const { error: updateError } = await supabase
     .from('referencias_usos')
     .update({ usos_disponibles: nuevosUsosDisponibles })
     .eq('id', idReferencia);
-
   if (updateError) {
     console.error("Error al decrementar uso de referencia:", updateError);
   } else {
     console.log(`Referencia ${idReferencia} decrementada a ${nuevosUsosDisponibles} usos.`);
   }
 }
-
 if (btnConfirmar) {
   btnConfirmar.addEventListener('click', async function () {
     if (isSubmitting) {
@@ -244,7 +209,6 @@ if (btnConfirmar) {
     const originalButtonText = btnConfirmar.textContent;
     btnConfirmar.textContent = 'Procesando...';
     errorMsg.style.display = 'none';
-
     try {
       if (!formId || formId.trim() === "" || !currentFormDbId) {
         errorMsg.innerHTML = "<b>Error Crítico:</b> ID de formulario ausente o no válido.";
@@ -254,10 +218,8 @@ if (btnConfirmar) {
         btnConfirmar.textContent = originalButtonText;
         return;
       }
-
       const { nombre, cedula, edadInt, numero, correo, referencia } = window.datosParaConfirmar;
       const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
-
       if (!referencia) {
         errorMsg.textContent = "Error: Falta el código de referencia. Por favor, corrija sus datos.";
         errorMsg.style.display = 'block';
@@ -268,7 +230,6 @@ if (btnConfirmar) {
         btnConfirmar.textContent = originalButtonText;
         return;
       }
-
       let idReferenciaParaDecrementar = null;
       const validacionRef = await validarYObtenerReferencia(referencia, currentFormDbId);
       if (!validacionRef.valida) {
@@ -279,7 +240,6 @@ if (btnConfirmar) {
         btnConfirmar.textContent = originalButtonText;
         return;
       }
-
       if (validacionRef.datosReferencia) {
         idReferenciaParaDecrementar = validacionRef.datosReferencia.id;
       } else {
@@ -291,14 +251,12 @@ if (btnConfirmar) {
         btnConfirmar.textContent = originalButtonText;
         return;
       }
-
       const { data: existingResponse, error: checkError } = await supabase
         .from('respuestas')
         .select('cedula')
         .eq('formulario_id', currentFormDbId)
         .eq('cedula', cedula)
         .maybeSingle();
-
       if (checkError) {
         console.error("Error detallado verificando cédula duplicada en Supabase:", checkError);
         errorMsg.textContent = "Error al verificar la cédula. Intente de nuevo.";
@@ -310,7 +268,6 @@ if (btnConfirmar) {
         btnConfirmar.textContent = originalButtonText;
         return;
       }
-
       if (existingResponse) {
         errorMsg.textContent = "Esta cédula ya ha sido registrada para este formulario.";
         errorMsg.style.display = 'block';
@@ -321,10 +278,8 @@ if (btnConfirmar) {
         btnConfirmar.textContent = originalButtonText;
         return;
       }
-
       let nuevoCodigoSecuencial;
       let nuevoCodigoSecuencialFormateado;
-
       try {
         console.log(`[DEBUG-CONTADOR] Iniciando lógica del contador para el formulario_id: ${currentFormDbId}`);
         // --- CORRECCIÓN ---
@@ -334,14 +289,11 @@ if (btnConfirmar) {
           .select('ultimo_codigo')
           .eq('formulario_id', currentFormDbId)
           .single();
-
         if (contadorError && contadorError.code !== 'PGRST116') { // PGRST116 significa "no rows returned"
           console.error('[DEBUG-CONTADOR] Error al LEER el contador:', JSON.stringify(contadorError, null, 2));
           throw contadorError;
         }
-
         console.log(`[DEBUG-CONTADOR] Datos leídos de la BD:`, contadorData);
-
         if (contadorData && typeof contadorData.ultimo_codigo === 'number') {
           nuevoCodigoSecuencial = contadorData.ultimo_codigo + 1;
           console.log(`[DEBUG-CONTADOR] El contador existe. Nuevo código calculado: ${nuevoCodigoSecuencial}`);
@@ -349,20 +301,15 @@ if (btnConfirmar) {
           nuevoCodigoSecuencial = 1;
           console.log(`[DEBUG-CONTADOR] El contador NO existe o está vacío. Iniciando en: ${nuevoCodigoSecuencial}`);
         }
-
         console.log(`[DEBUG-CONTADOR] Intentando GUARDAR el nuevo valor: ${nuevoCodigoSecuencial} para el formulario_id: ${currentFormDbId}`);
-
         const { error: upsertError } = await supabase
           .from('contadores_formularios')
           .upsert({ formulario_id: currentFormDbId, ultimo_codigo: nuevoCodigoSecuencial }, { onConflict: 'formulario_id' });
-
         if (upsertError) {
           console.error('[DEBUG-CONTADOR] Error al GUARDAR el contador:', JSON.stringify(upsertError, null, 2));
           throw upsertError;
         }
-
         console.log(`[DEBUG-CONTADOR] Guardado exitoso.`);
-
         nuevoCodigoSecuencialFormateado = formatSequentialCode(nuevoCodigoSecuencial);
       } catch (e) {
         console.error("Error en la lógica del contador con Supabase:", e);
@@ -375,7 +322,6 @@ if (btnConfirmar) {
         btnConfirmar.textContent = originalButtonText;
         return;
       }
-
       // --- CORRECCIÓN AQUÍ ---
       const nuevaRespuesta = {
         formulario_id: currentFormDbId,
@@ -385,7 +331,6 @@ if (btnConfirmar) {
         edad: edadInt,
         referencia_usada: referencia
       };
-
       // Añadir los nuevos campos si existen
       if (numero) {
         nuevaRespuesta.numero_telefono = numero;
@@ -394,7 +339,6 @@ if (btnConfirmar) {
         nuevaRespuesta.correo_electronico = correo;
       }
       // --- FIN CORRECCIÓN ---
-
       let insertDataResponse;
       try {
         insertDataResponse = await supabase
@@ -402,7 +346,6 @@ if (btnConfirmar) {
           .insert([nuevaRespuesta])
           .select()
           .single();
-
         if (insertDataResponse.error) {
           console.error("Error guardando respuesta en Supabase:", insertDataResponse.error);
           console.log("[DEBUG] Objeto de error completo de Supabase al insertar:", JSON.stringify(insertDataResponse.error, null, 2)); // Registro de depuración
@@ -422,14 +365,11 @@ if (btnConfirmar) {
         btnConfirmar.textContent = originalButtonText;
         return;
       }
-
       const { data: insertData } = insertDataResponse;
-
       if (insertData) {
         if (idReferenciaParaDecrementar) {
           await decrementarUsoReferencia(idReferenciaParaDecrementar);
         }
-
         outNombre.textContent = insertData.nombre_completo;
         outCedula.textContent = formatCedula(insertData.cedula);
         outEdad.textContent = `${insertData.edad} años`;
@@ -438,9 +378,7 @@ if (btnConfirmar) {
         outCodigo.textContent = insertData.codigo_secuencial;
         outReferencia.textContent = insertData.referencia_usada;
         outReferenciaContenedor.style.display = 'block';
-
         if (codigoQR) codigoQR.textContent = "Código: " + insertData.codigo_secuencial;
-
         const qrCanvasElement = document.getElementById('qrCanvas');
         let datosQR = `${formDisplayName}
 Nombre: ${insertData.nombre_completo}
@@ -459,7 +397,6 @@ Correo: ${insertData.correo_electronico}`;
             datosQR += `
 Ref: ${insertData.referencia_usada}`;
         }
-
         if (qrCanvasElement) {
           QRCode.toCanvas(qrCanvasElement, datosQR, {
             width: parseInt(qrCanvasElement.style.width) || 70,
@@ -469,7 +406,6 @@ Ref: ${insertData.referencia_usada}`;
             if (error) console.error("Error generando QR para visualización:", error);
           });
         }
-
         confirmacionDatos.style.display = 'none';
         entradaGenerada.style.display = 'block';
       } else {
@@ -489,7 +425,6 @@ Ref: ${insertData.referencia_usada}`;
     }
   });
 }
-
 if (btnCorregir) {
   btnCorregir.addEventListener('click', () => {
     isSubmitting = false;
@@ -506,37 +441,30 @@ if (btnCorregir) {
     errorMsg.style.display = 'none';
   });
 }
-
 if (guardarBtn) {
   guardarBtn.addEventListener('click', async () => {
     try {
       const html2canvas = (await import('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.esm.min.js')).default;
       const elementToCapture = document.querySelector('#entradaGenerada .ticket-img-wrap');
-
       if (!elementToCapture) {
         console.error("Elemento '.ticket-img-wrap' no encontrado para captura.");
         alert("Error: No se pudo encontrar el contenido del ticket para guardar.");
         return;
       }
-
       const clone = elementToCapture.cloneNode(true);
       const targetOutputWidthPx = 2500;
       const targetOutputHeightPx = 960;
       const cloneBaseWidth = elementToCapture.offsetWidth;
       const cloneBaseHeight = elementToCapture.offsetHeight;
-
       clone.style.width = `${cloneBaseWidth}px`;
       clone.style.height = `${cloneBaseHeight}px`;
       clone.style.boxSizing = 'border-box';
       clone.style.boxShadow = 'none';
       clone.style.borderRadius = '0px';
-
       clone.querySelectorAll('*').forEach(el => {
         el.style.boxShadow = 'none';
       });
-
       clone.style.backgroundColor = '#ffffff';
-
       const clonedTicketBg = clone.querySelector('#ticketBg');
       if (clonedTicketBg) {
         clonedTicketBg.style.width = '100%';
@@ -550,13 +478,12 @@ if (guardarBtn) {
       } else {
         clone.style.backgroundColor = '#ffffff';
       }
-
       const qrAbsoluteDivInClone = clone.querySelector('.qr-absolute');
       if (qrAbsoluteDivInClone) {
         qrAbsoluteDivInClone.style.position = 'absolute';
-        qrAbsoluteDivInClone.style.top = '50%';
-        qrAbsoluteDivInClone.style.left = '30px';
-        qrAbsoluteDivInClone.style.transform = 'translateY(-50%)';
+        qrAbsoluteDivInClone.style.top = '50%'; // Centrado verticalmente
+        qrAbsoluteDivInClone.style.left = '50%'; // Centrado horizontalmente
+        qrAbsoluteDivInClone.style.transform = 'translate(-50%, -50%)'; // Ajuste final
         qrAbsoluteDivInClone.style.background = '#ffffff';
         qrAbsoluteDivInClone.style.padding = getComputedStyle(elementToCapture.querySelector('.qr-absolute')).padding;
         qrAbsoluteDivInClone.style.borderRadius = getComputedStyle(elementToCapture.querySelector('.qr-absolute')).borderRadius;
@@ -566,7 +493,6 @@ if (guardarBtn) {
         qrAbsoluteDivInClone.style.alignItems = 'center';
         qrAbsoluteDivInClone.style.zIndex = '10';
       }
-
       const qrCanvasInClone = clone.querySelector('#qrCanvas');
       if (qrCanvasInClone) {
         const originalQrCanvas = document.getElementById('qrCanvas');
@@ -576,7 +502,6 @@ if (guardarBtn) {
         qrCanvasInClone.style.boxShadow = 'none';
         qrCanvasInClone.style.display = 'block';
       }
-
       const qrCodeLabelInClone = clone.querySelector('.qr-code-label');
       if (qrCodeLabelInClone) {
         const originalQrLabel = document.getElementById('codigoQR');
@@ -587,15 +512,11 @@ if (guardarBtn) {
         qrCodeLabelInClone.style.fontWeight = getComputedStyle(originalQrLabel).fontWeight;
         qrCodeLabelInClone.textContent = "Código: " + outCodigo.textContent;
       }
-
       clone.style.position = 'absolute';
       clone.style.left = '-9999px';
       document.body.appendChild(clone);
-
       await new Promise(resolve => setTimeout(resolve, 250));
-
       const scaleFactor = targetOutputWidthPx / cloneBaseWidth;
-
       html2canvas(clone, {
         useCORS: true,
         scale: scaleFactor,
@@ -636,18 +557,15 @@ Ref: ${outReferencia.textContent}`;
         finalCanvas.width = targetOutputWidthPx;
         finalCanvas.height = targetOutputHeightPx;
         const finalCtx = finalCanvas.getContext('2d');
-
         if (clone.style.backgroundColor === 'transparent') {
             finalCtx.fillStyle = '#ffffff';
             finalCtx.fillRect(0, 0, targetOutputWidthPx, targetOutputHeightPx);
         }
-
         finalCtx.drawImage(
           canvasFromHtml2Canvas,
           0, 0, canvasFromHtml2Canvas.width, canvasFromHtml2Canvas.height,
           0, 0, targetOutputWidthPx, targetOutputHeightPx
         );
-
         const link = document.createElement('a');
         const nombreArchivo = `${outCodigo.textContent || 'TICKET'}${(outNombre.textContent || 'nombre')}.jpg`;
         link.download = nombreArchivo;
@@ -667,5 +585,4 @@ Ref: ${outReferencia.textContent}`;
     }
   });
 }
-
 console.log("form.js cargado con lógica de referencias obligatorias y prevención de doble clic.");
