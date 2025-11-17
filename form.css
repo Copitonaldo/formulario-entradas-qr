@@ -128,8 +128,8 @@ form#formData button:hover {
 }
 .qr-absolute {
   position: absolute;
-  top: 55%;
-  left: 15%; /* Modificado: de '30px' a '50%' */
+  top: 60%;
+  left: 35%; /* Modificado: de '30px' a '50%' */
   transform: translate(-50%, -50%); /* Modificado: para centrar perfectamente */
   background: rgba(255, 255, 255, 0.9);
   padding: 6px;
@@ -292,4 +292,5 @@ form#formData button:hover {
     font-size: 0.9rem;
   }
 }
+
 
