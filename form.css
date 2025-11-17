@@ -4,7 +4,6 @@ html, body {
   font-family: Arial, sans-serif;
   background: #f9f9f9;
 }
-
 .center {
   display: flex;
   flex-direction: column;
@@ -14,7 +13,6 @@ html, body {
   padding-right: 10px;
   box-sizing: border-box;
 }
-
 form#formData {
   background: white;
   padding: 30px 40px;
@@ -24,7 +22,6 @@ form#formData {
   max-width: 100%;
   box-sizing: border-box;
 }
-
 form#formData label {
   display: flex;
   flex-direction: column;
@@ -32,7 +29,6 @@ form#formData label {
   margin-bottom: 20px;
   font-size: 1.1rem;
 }
-
 form#formData input[type="text"],
 form#formData input[type="number"],
 form#formData input[type="tel"],
@@ -44,7 +40,6 @@ form#formData input[type="email"] {
   border-radius: 4px;
   box-sizing: border-box;
 }
-
 form#formData button {
   width: 100%;
   padding: 12px;
@@ -55,11 +50,9 @@ form#formData button {
   border-radius: 5px;
   cursor: pointer;
 }
-
 form#formData button:hover {
   background-color: #0056b3;
 }
-
 #errorMsg {
   color: #dc3545;
   font-weight: bold;
@@ -69,7 +62,6 @@ form#formData button:hover {
   max-width: 100%;
   box-sizing: border-box;
 }
-
 #confirmacionDatos {
   background: white;
   padding: 30px 40px;
@@ -80,32 +72,26 @@ form#formData button:hover {
   box-sizing: border-box;
   margin-top: 20px;
 }
-
 #confirmacionDatos h3 {
   margin-top: 0;
   text-align: center;
 }
-
 #confirmacionDatos p {
   margin: 8px 0;
 }
-
 #confirmacionDatos div {
   display: flex;
   flex-direction: column;
 }
-
 #confirmacionDatos div b {
   display: inline-block;
   width: 100px; /* Ajusta según sea necesario */
   font-weight: bold;
   margin-right: 8px;
 }
-
 #confirmacionDatos button {
   margin-top: 10px;
 }
-
 #entradaGenerada {
   background: white;
   padding: 24px 24px 40px 24px;
@@ -116,12 +102,10 @@ form#formData button:hover {
   width: 100%;
   box-sizing: border-box;
 }
-
 #entradaGenerada h3 {
   margin-top: 0;
   text-align: center;
 }
-
 .ticket-img-wrap {
   position: relative;
   display: block;
@@ -135,7 +119,6 @@ form#formData button:hover {
   box-sizing: border-box;
   overflow: hidden;
 }
-
 .ticket-bg {
   width: 100%;
   height: 100%;
@@ -143,55 +126,52 @@ form#formData button:hover {
   border-radius: 0;
   display: block;
 }
-
+/* --- MODIFICACIONES PARA EL QR SEGÚN LA IMAGEN DE REFERENCIA --- */
 .qr-absolute {
   position: absolute;
-  top: 50%;
-  left: 30px;
-  transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.9);
-  padding: 6px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  /* Posicionamos el QR a la izquierda, debajo del título */
+  top: 200px; /* Ajusta este valor si necesitas moverlo más arriba o abajo */
+  left: 80px; /* Ajusta este valor para moverlo hacia la derecha o izquierda */
+  /* Eliminamos el transform ya que no queremos centrarlo verticalmente */
+  background: white; /* Fondo blanco como en la imagen */
+  padding: 15px; /* Un poco más de padding para que se vea más espacioso */
+  border-radius: 12px; /* Bordes más redondeados */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* Sombra suave */
   display: flex;
   flex-direction: column;
   align-items: center;
   z-index: 10;
 }
-
 #qrCanvas {
-  border-radius: 4px;
-  width: 70px;
-  height: 70px;
+  border-radius: 6px; /* Bordes redondeados para el QR */
+  width: 150px; /* Tamaño mucho más grande */
+  height: 150px;
   display: block;
 }
-
+/* Estilo para el texto "Código: XXX" */
 .qr-code-label {
-  font-size: 0.85rem;
-  margin-top: 3px;
+  font-size: 1.1rem; /* Fuente más grande */
+  margin-top: 10px;
   color: #333;
   text-align: center;
   font-weight: bold;
+  /* No es necesario cambiar el color, ya que el fondo es blanco */
 }
-
 .datos {
   margin-top: 15px;
   font-size: 1.1rem;
   padding: 0 10px;
   box-sizing: border-box;
 }
-
 .datos b {
   display: inline-block;
   width: 85px; /* Ajustado para incluir Número y Correo */
   font-weight: bold;
 }
-
 .datos div {
   margin-bottom: 5px;
   line-height: 1.4;
 }
-
 #guardarBtn {
   margin-top: 25px;
   padding: 12px 28px;
@@ -206,11 +186,9 @@ form#formData button:hover {
   margin-right: auto;
   transition: background-color 0.3s ease;
 }
-
 #guardarBtn:hover {
   background-color: #218838;
 }
-
 /* Responsive adjustments */
 @media (max-width: 768px) { /* Ajustes para tabletas y móviles grandes */
   .center {
@@ -236,16 +214,19 @@ form#formData button:hover {
   .ticket-img-wrap {
     max-width: 100%;
   }
+  /* Ajustes responsivos para el QR */
   .qr-absolute {
-    left: 20px;
-    padding: 5px;
+    top: 180px; /* Ajuste para móviles */
+    left: 60px; /* Ajuste para móviles */
+    padding: 12px;
+    border-radius: 10px;
   }
   #qrCanvas {
-    width: 65px;
-    height: 65px;
+    width: 120px;
+    height: 120px;
   }
   .qr-code-label {
-    font-size: 0.8rem;
+    font-size: 1rem;
   }
   .datos {
     font-size: 1rem;
@@ -258,7 +239,6 @@ form#formData button:hover {
     padding: 10px 20px;
   }
 }
-
 @media (max-width: 480px) { /* Ajustes para móviles pequeños */
   .center {
     margin-top: 15px;
@@ -287,16 +267,19 @@ form#formData button:hover {
   #entradaGenerada {
     padding: 15px 15px 25px 15px;
   }
+  /* Ajustes responsivos para el QR en móviles pequeños */
   .qr-absolute {
-    left: 15px;
-    padding: 4px;
+    top: 150px; /* Ajuste para móviles pequeños */
+    left: 20px; /* Ajuste para móviles pequeños */
+    padding: 8px;
+    border-radius: 8px;
   }
   #qrCanvas {
-    width: 50px;
-    height: 50px;
+    width: 80px;
+    height: 80px;
   }
   .qr-code-label {
-    font-size: 0.7rem;
+    font-size: 0.85rem;
   }
   .datos {
     font-size: 0.9rem;
