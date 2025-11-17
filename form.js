@@ -409,7 +409,7 @@ Ref: ${insertData.referencia_usada}`;
         confirmacionDatos.style.display = 'none';
         entradaGenerada.style.display = 'block';
       } else {
-        errorMsg.textContent = "No se pudo confirmar el guardado de los datos después de la inserción.";
+        errorMsg.textContent = "No se pudo confirmar el guardado de los datos después de la insercción.";
         errorMsg.style.display = 'block';
         isSubmitting = false;
         btnConfirmar.disabled = false;
@@ -478,6 +478,8 @@ if (guardarBtn) {
       } else {
         clone.style.backgroundColor = '#ffffff';
       }
+      // --- MODIFICACIÓN CLAVE ---
+      // Cambiamos el estilo del contenedor QR en el clon para que esté centrado.
       const qrAbsoluteDivInClone = clone.querySelector('.qr-absolute');
       if (qrAbsoluteDivInClone) {
         qrAbsoluteDivInClone.style.position = 'absolute';
@@ -493,6 +495,7 @@ if (guardarBtn) {
         qrAbsoluteDivInClone.style.alignItems = 'center';
         qrAbsoluteDivInClone.style.zIndex = '10';
       }
+      // --- FIN DE LA MODIFICACIÓN CLAVE ---
       const qrCanvasInClone = clone.querySelector('#qrCanvas');
       if (qrCanvasInClone) {
         const originalQrCanvas = document.getElementById('qrCanvas');
