@@ -409,7 +409,7 @@ Ref: ${insertData.referencia_usada}`;
         confirmacionDatos.style.display = 'none';
         entradaGenerada.style.display = 'block';
       } else {
-        errorMsg.textContent = "No se pudo confirmar el guardado de los datos después de la insercción.";
+        errorMsg.textContent = "No se pudo confirmar el guardado de los datos después de la inserción.";
         errorMsg.style.display = 'block';
         isSubmitting = false;
         btnConfirmar.disabled = false;
@@ -479,13 +479,15 @@ if (guardarBtn) {
         clone.style.backgroundColor = '#ffffff';
       }
       // --- MODIFICACIÓN CLAVE ---
-      // Cambiamos el estilo del contenedor QR en el clon para que esté centrado.
+      // Cambiamos el estilo del contenedor QR en el clon para que coincida con el CSS actualizado.
       const qrAbsoluteDivInClone = clone.querySelector('.qr-absolute');
       if (qrAbsoluteDivInClone) {
         qrAbsoluteDivInClone.style.position = 'absolute';
-        qrAbsoluteDivInClone.style.top = '50%'; // Centrado verticalmente
-        qrAbsoluteDivInClone.style.left = '50%'; // Centrado horizontalmente
-        qrAbsoluteDivInClone.style.transform = 'translate(-50%, -50%)'; // Ajuste final
+        qrAbsoluteDivInClone.style.top = '55%'; // Misma posición que en el CSS
+        qrAbsoluteDivInClone.style.left = '150px'; // Misma posición que en el CSS
+        // El transform del CSS original (translate(-50%, -50%)) se mantiene aquí para alinear el centro del QR en la posición.
+        // Si el CSS cambia a translateX(-50%) translateY(-50%), se debe mantener aquí.
+        qrAbsoluteDivInClone.style.transform = 'translate(-50%, -50%)'; // Ajuste final para centrar el elemento en la posición
         qrAbsoluteDivInClone.style.background = '#ffffff';
         qrAbsoluteDivInClone.style.padding = getComputedStyle(elementToCapture.querySelector('.qr-absolute')).padding;
         qrAbsoluteDivInClone.style.borderRadius = getComputedStyle(elementToCapture.querySelector('.qr-absolute')).borderRadius;
