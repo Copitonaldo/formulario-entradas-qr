@@ -1,5 +1,5 @@
 // Importar Supabase
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.4/+esm";
 
 // Configuración de Supabase (debe ser la misma que en tus otros archivos JS)
 const SUPABASE_URL = 'https://wiyejeeiehwfkdcbpomp.supabase.co';
@@ -245,3 +245,4 @@ function ocultarMensajes() {
   El script JS asume que 'formularios.id' es el UUID que se usará como FK en 'referencias_usos.formulario_id'.
 */
 console.log("referencia.js cargado.");
+
