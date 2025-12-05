@@ -1,5 +1,5 @@
 // Importar Supabase
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
 // Configuración de Supabase
 const SUPABASE_URL = 'https://wiyejeeiehwfkdcbpomp.supabase.co';
