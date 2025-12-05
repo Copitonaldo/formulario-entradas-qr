@@ -226,4 +226,3 @@ logoutBtn.addEventListener('click', () => {
   formulariosCache = [];
   renderFormularios();
 });
-
