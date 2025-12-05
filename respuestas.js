@@ -1,5 +1,5 @@
 // Importar Supabase
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.4/+esm";
 
 // Configuración de Supabase (manteniendo los valores originales)
 const SUPABASE_URL = 'https://wiyejeeiehwfkdcbpomp.supabase.co';
@@ -263,3 +263,4 @@ if (excelBtn) {
 }
 
 console.log("respuestas.js cargado con lógica de referencias y nuevos campos.");
+
