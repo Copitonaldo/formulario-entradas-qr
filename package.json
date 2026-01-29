@@ -1,9 +1,0 @@
-{
-  "dependencies": {
-    "@capacitor/android": "^7.4.3",
-    "@capacitor/barcode-scanner": "^2.0.4",
-    "@capacitor/camera": "^7.0.2",
-    "@capacitor/core": "^7.4.3",
-    "@capacitor/preferences": "^7.0.2"
-  }
-}
