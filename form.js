@@ -1,24 +1,28 @@
 // Importar Supabase
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.4/+esm";
-
+// Configuración de Supabase (manteniendo los valores originales)
 const SUPABASE_URL = 'https://wiyejeeiehwfkdcbpomp.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpeWVqZWVpZWh3ZmtkY2Jwb21wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NjQwOTYsImV4cCI6MjA2NzE0MDA5Nn0.yDq4eOHujKH2nmg-F-DVnqCHGwdfEmf4Z968KXl1SDc';
-
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpeWVqZWVpZWh3ZmtkY2Jwb21wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NjQwOTYsImV4cCI6MjA2NzE0MDA5Nn0.yDq4eOHujKH2nmg-F-DVnqCHGwdfEmf4Z968KXl1SDc'; // Clave original
+// Inicializar Supabase
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+// Variables del DOM
 const urlParams = new URLSearchParams(window.location.search);
-const formId = urlParams.get('id');
+const formId = urlParams.get('id'); // Este es el 'codigo_form' en Supabase
 const formTitleElement = document.getElementById('formTitle');
 const formData = document.getElementById('formData');
 const inputNombre = document.getElementById('nombre');
 const inputCedula = document.getElementById('cedula');
 const inputEdad = document.getElementById('edad');
+const inputNumero = document.getElementById('numero');
+const inputCorreo = document.getElementById('correo');
 const inputReferencia = document.getElementById('referencia');
 const errorMsg = document.getElementById('errorMsg');
 const confirmacionDatos = document.getElementById('confirmacionDatos');
 const confNombre = document.getElementById('confNombre');
 const confCedula = document.getElementById('confCedula');
 const confEdad = document.getElementById('confEdad');
+const confNumero = document.getElementById('confNumero');
+const confCorreo = document.getElementById('confCorreo');
 const confReferencia = document.getElementById('confReferencia');
 const confCustomFieldsContainer = document.getElementById('confCustomFieldsContainer');
 const btnConfirmar = document.getElementById('btnConfirmar');
@@ -26,6 +30,8 @@ const btnCorregir = document.getElementById('btnCorregir');
 const outNombre = document.getElementById('outNombre');
 const outCedula = document.getElementById('outCedula');
 const outEdad = document.getElementById('outEdad');
+const outNumero = document.getElementById('outNumero');
+const outCorreo = document.getElementById('outCorreo');
 const outCodigo = document.getElementById('outCodigo');
 const outReferencia = document.getElementById('outReferencia');
 const outReferenciaContenedor = document.getElementById('outReferenciaContenedor');
@@ -43,19 +49,21 @@ let currentFormDbId = null;
 let currentParametrosPersonalizados = [];
 let isSubmitting = false;
 
+// --- Carga de datos del formulario ---
 async function cargarDatosFormulario() {
   if (!formId) return;
+  console.log(`[DEBUG] Buscando formulario con codigo_form: "${formId}"`);
   const { data: formDataResult, error: formError } = await supabase
     .from('formularios')
     .select('id, nombre, imagen_url, min_age, max_age, parametros_personalizados')
     .eq('codigo_form', formId)
     .single();
-
   if (formError) {
+    console.error("Error al cargar datos del formulario desde Supabase:", formError);
     if (formTitleElement) formTitleElement.textContent = 'Error al cargar formulario';
     if (ticketBg) ticketBg.style.display = 'none';
     if (formData) formData.style.display = 'none';
-    errorMsg.innerHTML = '<b>Error:</b> No se pudo cargar la información del formulario.';
+    errorMsg.innerHTML = '<b>Error:</b> No se pudo cargar la información del formulario. Intente más tarde.';
     errorMsg.style.display = 'block';
     return;
   }
@@ -77,12 +85,12 @@ async function cargarDatosFormulario() {
       : [];
 
     renderizarCamposPersonalizadosPublico();
-
   } else {
     if (formTitleElement) formTitleElement.textContent = 'Formulario no encontrado';
     if (ticketBg) ticketBg.style.display = 'none';
+    console.warn(`Formulario con codigo_form ${formId} no encontrado en Supabase.`);
     if (formData) formData.style.display = 'none';
-    errorMsg.innerHTML = '<b>Error:</b> El formulario especificado no existe.';
+    errorMsg.innerHTML = '<b>Error:</b> El formulario especificado no existe. Verifique el enlace o contacte al administrador.';
     errorMsg.style.display = 'block';
   }
 }
@@ -101,7 +109,7 @@ function renderizarCamposPersonalizadosPublico() {
   currentParametrosPersonalizados.forEach((param, index) => {
     const label = document.createElement('label');
     label.setAttribute('for', `custom_param_${index}`);
-    label.textContent = `${param}: `;
+    label.textContent = `${param}:`;
 
     const input = document.createElement('input');
     input.type = 'text';
@@ -109,7 +117,6 @@ function renderizarCamposPersonalizadosPublico() {
     input.setAttribute('data-param-name', param);
     input.required = true;
     input.autocomplete = 'off';
-    input.placeholder = `Ingrese ${param.toLowerCase()}`;
 
     label.appendChild(input);
     customFieldsContainer.appendChild(label);
@@ -126,7 +133,7 @@ function escapeHtml(text) {
 if (!formId || formId.trim() === "") {
   if (formTitleElement) formTitleElement.textContent = 'Error: Formulario no especificado';
   if (errorMsg) {
-    errorMsg.innerHTML = '<b>Error Crítico:</b> No se ha especificado un ID de formulario en la URL.';
+    errorMsg.innerHTML = '<b>Error Crítico:</b> No se ha especificado un ID de formulario en la URL (parámetro `?id=`).<br>Por favor, contacte al administrador o verifique el enlace.';
     errorMsg.style.display = 'block';
   }
   if (formData) formData.style.display = 'none';
@@ -152,6 +159,8 @@ if (formData) {
     const nombre = inputNombre.value.trim();
     const cedulaRaw = inputCedula.value.replace(/\D/g, '');
     const edadValue = inputEdad.value.trim();
+    const numeroValue = inputNumero.value.trim();
+    const correoValue = inputCorreo.value.trim();
     const referenciaValue = inputReferencia.value.trim();
 
     if (!nombre || !/^\d{8}$/.test(cedulaRaw) || !edadValue || !referenciaValue) {
@@ -163,6 +172,7 @@ if (formData) {
       return;
     }
 
+    // Validar parámetros personalizados
     const customValuesMap = {};
     let camposPersonalizadosValidos = true;
 
@@ -183,6 +193,17 @@ if (formData) {
       return;
     }
 
+    // Validaciones opcionales para número y correo
+    if (numeroValue && !/^\d+$/.test(numeroValue.replace(/\D/g, ''))) {
+        errorMsg.textContent = 'Número de teléfono inválido.';
+        errorMsg.style.display = 'block';
+        return;
+    }
+    if (correoValue && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoValue)) {
+        errorMsg.textContent = 'Correo electrónico inválido.';
+        errorMsg.style.display = 'block';
+        return;
+    }
     const edad = parseInt(edadValue);
     if (isNaN(edad) || edad < 0) {
         errorMsg.textContent = 'Edad inválida.';
@@ -190,12 +211,12 @@ if (formData) {
         return;
     }
     if (currentMinAge !== null && edad < currentMinAge) {
-      errorMsg.textContent = `Error: Su edad debe ser mayor o igual a ${currentMinAge}.`;
+      errorMsg.textContent = `Error: Su edad no es válida. Debe ser mayor o igual a ${currentMinAge}.`;
       errorMsg.style.display = 'block';
       return;
     }
     if (currentMaxAge !== null && edad > currentMaxAge) {
-      errorMsg.textContent = `Error: Su edad debe ser menor o igual a ${currentMaxAge}.`;
+      errorMsg.textContent = `Error: Su edad no es válida. Debe ser menor o igual a ${currentMaxAge}.`;
       errorMsg.style.display = 'block';
       return;
     }
@@ -203,14 +224,16 @@ if (formData) {
     confNombre.textContent = toTitleCase(nombre);
     confCedula.textContent = formatCedula(cedulaRaw);
     confEdad.textContent = `${edad} años`;
+    confNumero.textContent = numeroValue || '-';
+    confCorreo.textContent = correoValue || '-';
     confReferencia.textContent = referenciaValue;
 
     if (confCustomFieldsContainer) {
       confCustomFieldsContainer.innerHTML = '';
       Object.entries(customValuesMap).forEach(([key, val]) => {
-        const div = document.createElement('div');
-        div.innerHTML = `<b>${escapeHtml(key)}:</b> ${escapeHtml(val)}`;
-        confCustomFieldsContainer.appendChild(div);
+        const p = document.createElement('p');
+        p.innerHTML = `<b>${escapeHtml(key)}:</b> ${escapeHtml(val)}`;
+        confCustomFieldsContainer.appendChild(p);
       });
     }
 
@@ -222,6 +245,8 @@ if (formData) {
       cedula: cedulaRaw, 
       edad: edadValue, 
       edadInt: edad, 
+      numero: numeroValue, 
+      correo: correoValue, 
       referencia: referenciaValue, 
       customValues: customValuesMap 
     };
@@ -236,6 +261,7 @@ async function validarYObtenerReferencia(codigoReferencia, formDbId) {
     .eq('codigo_referencia', codigoReferencia)
     .single();
   if (error || !data) {
+    console.warn("Error al buscar referencia o no encontrada:", error);
     return { valida: false, mensaje: "El código de referencia proporcionado no existe o es incorrecto." };
   }
   if (data.usos_disponibles <= 0) {
@@ -245,17 +271,23 @@ async function validarYObtenerReferencia(codigoReferencia, formDbId) {
 }
 
 async function decrementarUsoReferencia(idReferencia) {
-  const { data: refData } = await supabase
+  const { data: refData, error: fetchError } = await supabase
     .from('referencias_usos')
     .select('usos_disponibles')
     .eq('id', idReferencia)
     .single();
-  if (!refData) return;
-  
-  await supabase
+  if (fetchError || !refData) {
+    console.error("Error al obtener la referencia para decrementar:", fetchError);
+    return;
+  }
+  const nuevosUsosDisponibles = refData.usos_disponibles - 1;
+  const { error: updateError } = await supabase
     .from('referencias_usos')
-    .update({ usos_disponibles: refData.usos_disponibles - 1 })
+    .update({ usos_disponibles: nuevosUsosDisponibles })
     .eq('id', idReferencia);
+  if (updateError) {
+    console.error("Error al decrementar uso de referencia:", updateError);
+  }
 }
 
 if (btnConfirmar) {
@@ -263,32 +295,41 @@ if (btnConfirmar) {
     if (isSubmitting) return;
     isSubmitting = true;
     btnConfirmar.disabled = true;
+    const originalButtonText = btnConfirmar.textContent;
     btnConfirmar.textContent = 'Procesando...';
     errorMsg.style.display = 'none';
-
     try {
-      if (!formId || !currentFormDbId) {
-        errorMsg.innerHTML = "<b>Error Crítico:</b> ID de formulario no válido.";
+      if (!formId || formId.trim() === "" || !currentFormDbId) {
+        errorMsg.innerHTML = "<b>Error Crítico:</b> ID de formulario ausente o no válido.";
         errorMsg.style.display = 'block';
         isSubmitting = false;
         btnConfirmar.disabled = false;
-        btnConfirmar.textContent = 'Sí';
+        btnConfirmar.textContent = originalButtonText;
         return;
       }
-
-      const { nombre, cedula, edadInt, referencia, customValues } = window.datosParaConfirmar;
+      const { nombre, cedula, edadInt, numero, correo, referencia, customValues } = window.datosParaConfirmar;
       const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
-
+      if (!referencia) {
+        errorMsg.textContent = "Error: Falta el código de referencia.";
+        errorMsg.style.display = 'block';
+        confirmacionDatos.style.display = 'none';
+        if (formData) formData.style.display = 'block';
+        isSubmitting = false;
+        btnConfirmar.disabled = false;
+        btnConfirmar.textContent = originalButtonText;
+        return;
+      }
+      let idReferenciaParaDecrementar = null;
       const validacionRef = await validarYObtenerReferencia(referencia, currentFormDbId);
       if (!validacionRef.valida) {
         errorMsg.textContent = validacionRef.mensaje;
         errorMsg.style.display = 'block';
         isSubmitting = false;
         btnConfirmar.disabled = false;
-        btnConfirmar.textContent = 'Sí';
+        btnConfirmar.textContent = originalButtonText;
         return;
       }
-      const idReferenciaParaDecrementar = validacionRef.datosReferencia.id;
+      idReferenciaParaDecrementar = validacionRef.datosReferencia.id;
 
       const { data: existingResponse } = await supabase
         .from('respuestas')
@@ -304,30 +345,41 @@ if (btnConfirmar) {
         if (formData) formData.style.display = 'block';
         isSubmitting = false;
         btnConfirmar.disabled = false;
-        btnConfirmar.textContent = 'Sí';
+        btnConfirmar.textContent = originalButtonText;
         return;
       }
 
       let nuevoCodigoSecuencial;
       let nuevoCodigoSecuencialFormateado;
-
-      let { data: contadorData } = await supabase
-        .from('contadores_formularios')
-        .select('ultimo_codigo')
-        .eq('formulario_id', currentFormDbId)
-        .single();
-
-      if (contadorData && typeof contadorData.ultimo_codigo === 'number') {
-        nuevoCodigoSecuencial = contadorData.ultimo_codigo + 1;
-      } else {
-        nuevoCodigoSecuencial = 1;
+      try {
+        let { data: contadorData, error: contadorError } = await supabase
+          .from('contadores_formularios')
+          .select('ultimo_codigo')
+          .eq('formulario_id', currentFormDbId)
+          .single();
+        if (contadorError && contadorError.code !== 'PGRST116') {
+          throw contadorError;
+        }
+        if (contadorData && typeof contadorData.ultimo_codigo === 'number') {
+          nuevoCodigoSecuencial = contadorData.ultimo_codigo + 1;
+        } else {
+          nuevoCodigoSecuencial = 1;
+        }
+        const { error: upsertError } = await supabase
+          .from('contadores_formularios')
+          .upsert({ formulario_id: currentFormDbId, ultimo_codigo: nuevoCodigoSecuencial }, { onConflict: 'formulario_id' });
+        if (upsertError) throw upsertError;
+        nuevoCodigoSecuencialFormateado = formatSequentialCode(nuevoCodigoSecuencial);
+      } catch (e) {
+        errorMsg.textContent = "Error crítico al generar el código.";
+        errorMsg.style.display = 'block';
+        confirmacionDatos.style.display = 'none';
+        if (formData) formData.style.display = 'block';
+        isSubmitting = false;
+        btnConfirmar.disabled = false;
+        btnConfirmar.textContent = originalButtonText;
+        return;
       }
-
-      await supabase
-        .from('contadores_formularios')
-        .upsert({ formulario_id: currentFormDbId, ultimo_codigo: nuevoCodigoSecuencial }, { onConflict: 'formulario_id' });
-
-      nuevoCodigoSecuencialFormateado = formatSequentialCode(nuevoCodigoSecuencial);
 
       const nuevaRespuesta = {
         formulario_id: currentFormDbId,
@@ -338,6 +390,8 @@ if (btnConfirmar) {
         referencia_usada: referencia,
         parametros_personalizados: customValues
       };
+      if (numero) nuevaRespuesta.numero_telefono = numero;
+      if (correo) nuevaRespuesta.correo_electronico = correo;
 
       const { data: insertData, error: insertError } = await supabase
         .from('respuestas')
@@ -350,19 +404,23 @@ if (btnConfirmar) {
         errorMsg.style.display = 'block';
         isSubmitting = false;
         btnConfirmar.disabled = false;
-        btnConfirmar.textContent = 'Sí';
+        btnConfirmar.textContent = originalButtonText;
         return;
       }
 
-      await decrementarUsoReferencia(idReferenciaParaDecrementar);
+      if (idReferenciaParaDecrementar) {
+        await decrementarUsoReferencia(idReferenciaParaDecrementar);
+      }
 
       outNombre.textContent = insertData.nombre_completo;
       outCedula.textContent = formatCedula(insertData.cedula);
       outEdad.textContent = `${insertData.edad} años`;
+      outNumero.textContent = insertData.numero_telefono || '-';
+      outCorreo.textContent = insertData.correo_electronico || '-';
       outCodigo.textContent = insertData.codigo_secuencial;
       outReferencia.textContent = insertData.referencia_usada;
       outReferenciaContenedor.style.display = 'block';
-      if (codigoQR) codigoQR.textContent = insertData.codigo_secuencial;
+      if (codigoQR) codigoQR.textContent = "Código: " + insertData.codigo_secuencial;
 
       if (outCustomFieldsContainer) {
         outCustomFieldsContainer.innerHTML = '';
@@ -375,12 +433,15 @@ if (btnConfirmar) {
       }
 
       const qrCanvasElement = document.getElementById('qrCanvas');
-      let datosQR = `${formDisplayName}\nNombre: ${insertData.nombre_completo}\nCédula: ${insertData.cedula}\nEdad: ${insertData.edad}\nCódigo: ${insertData.codigo_secuencial}\nRef: ${insertData.referencia_usada}`;
+      let datosQR = `${formDisplayName}\nNombre: ${insertData.nombre_completo}\nCédula: ${insertData.cedula}\nEdad: ${insertData.edad}\nCódigo: ${insertData.codigo_secuencial}`;
+      if (insertData.numero_telefono) datosQR += `\nNúmero: ${insertData.numero_telefono}`;
+      if (insertData.correo_electronico) datosQR += `\nCorreo: ${insertData.correo_electronico}`;
+      if (insertData.referencia_usada) datosQR += `\nRef: ${insertData.referencia_usada}`;
 
       if (qrCanvasElement) {
         QRCode.toCanvas(qrCanvasElement, datosQR, {
-          width: 70,
-          height: 70,
+          width: parseInt(qrCanvasElement.style.width) || 70,
+          height: parseInt(qrCanvasElement.style.height) || 70,
           margin: 1
         });
       }
@@ -393,7 +454,7 @@ if (btnConfirmar) {
       errorMsg.style.display = 'block';
       isSubmitting = false;
       btnConfirmar.disabled = false;
-      btnConfirmar.textContent = 'Sí';
+      btnConfirmar.textContent = originalButtonText;
     }
   });
 }
@@ -426,19 +487,21 @@ if (guardarBtn) {
       
       clone.style.width = `${cloneBaseWidth}px`;
       clone.style.height = `${cloneBaseHeight}px`;
+      clone.style.boxSizing = 'border-box';
       clone.style.boxShadow = 'none';
       clone.style.borderRadius = '0px';
-      clone.style.backgroundColor = 'transparent';
+      clone.style.backgroundColor = '#ffffff';
 
       const qrAbsoluteDivInClone = clone.querySelector('.qr-absolute');
       if (qrAbsoluteDivInClone) {
         qrAbsoluteDivInClone.style.position = 'absolute';
         qrAbsoluteDivInClone.style.top = '55%';
-        qrAbsoluteDivInClone.style.left = '90px'; 
+        qrAbsoluteDivInClone.style.left = '150px'; 
         qrAbsoluteDivInClone.style.transform = 'translate(-50%, -50%)';
-        qrAbsoluteDivInClone.style.background = 'rgba(255, 255, 255, 0.95)';
+        qrAbsoluteDivInClone.style.background = '#ffffff';
         qrAbsoluteDivInClone.style.padding = '6px';
         qrAbsoluteDivInClone.style.borderRadius = '8px';
+        qrAbsoluteDivInClone.style.boxShadow = 'none';
         qrAbsoluteDivInClone.style.display = 'flex';
         qrAbsoluteDivInClone.style.flexDirection = 'column';
         qrAbsoluteDivInClone.style.alignItems = 'center';
@@ -454,20 +517,21 @@ if (guardarBtn) {
       html2canvas(clone, {
         useCORS: true,
         scale: scaleFactor,
-        backgroundColor: null,
+        backgroundColor: '#ffffff',
         onclone: (documentCloned, clonedElement) => {
           const clonedCanvasEl = clonedElement.querySelector('#qrCanvas');
           if (clonedCanvasEl) {
             const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
-            let datosQRClone = `${formDisplayName}\nNombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}\nRef: ${outReferencia.textContent}`;
+            let datosQRClone = `${formDisplayName}\nNombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}`;
+            if (outNumero.textContent && outNumero.textContent !== '-') datosQRClone += `\nNúmero: ${outNumero.textContent}`;
+            if (outCorreo.textContent && outCorreo.textContent !== '-') datosQRClone += `\nCorreo: ${outCorreo.textContent}`;
+            if (outReferenciaContenedor.style.display !== 'none' && outReferencia.textContent) datosQRClone += `\nRef: ${outReferencia.textContent}`;
             
-            QRCode.toCanvas(clonedCanvasEl, datosQRClone, { width: 70, height: 70, margin: 1 }, function (error) {
-              if (error) console.error('Error redibujando QR en clon:', error);
-            });
+            QRCode.toCanvas(clonedCanvasEl, datosQRClone, { width: 70, height: 70, margin: 1 });
           }
           const clonedQrLabel = clonedElement.querySelector('.qr-code-label');
           if (clonedQrLabel) {
-            clonedQrLabel.textContent = outCodigo.textContent;
+            clonedQrLabel.textContent = "Código: " + outCodigo.textContent;
           }
         }
       }).then(canvasFromHtml2Canvas => {
@@ -475,6 +539,8 @@ if (guardarBtn) {
         finalCanvas.width = targetOutputWidthPx;
         finalCanvas.height = targetOutputHeightPx;
         const finalCtx = finalCanvas.getContext('2d');
+        finalCtx.fillStyle = '#ffffff';
+        finalCtx.fillRect(0, 0, targetOutputWidthPx, targetOutputHeightPx);
         
         finalCtx.drawImage(
           canvasFromHtml2Canvas,
