@@ -96,12 +96,15 @@ function renderizarCamposPersonalizadosPublico() {
     return;
   }
 
-  // Dejamos que el CSS original controle la visualización sin forzar estilos en línea raros
   customFieldsContainer.style.display = 'block';
 
   currentParametrosPersonalizados.forEach((param, index) => {
     const wrapper = document.createElement('div');
-    // Usamos las mismas etiquetas estándar del formulario original
+    wrapper.style.display = 'flex';
+    wrapper.style.flexDirection = 'column';
+    wrapper.style.gap = '6px';
+    wrapper.style.marginBottom = '12px';
+
     wrapper.innerHTML = `
       <label for="custom_param_${index}">${escapeHtml(param)}:</label>
       <input type="text" id="custom_param_${index}" data-param-name="${escapeHtml(param)}" required autocomplete="off" placeholder="Ingrese ${escapeHtml(param.toLowerCase())}" />
