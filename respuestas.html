@@ -13,9 +13,25 @@
 <main>
   <div id="dashboard">Entradas totales: <span id="dashboardCount">0</span></div>
   <h2 id="formTitle">Cargando respuestas...</h2>
-  <input type="text" id="searchInput" placeholder="Buscar por nombre, cédula, edad o referencia..." />
-  <button id="printBtn" style="display:none;">Imprimir</button>
-  <button id="excelBtn" style="display:none;">Descargar Excel</button>
+
+  <!-- Contenedor de filtros avanzados -->
+  <div class="filters-container">
+    <input type="text" id="searchInput" placeholder="Buscar por nombre, cédula, edad o referencia..." />
+    <select id="filterReferencia" class="filter-select">
+      <option value="">Todas las referencias</option>
+    </select>
+    <select id="filterOrden" class="filter-select">
+      <option value="recientes">Más recientes primero</option>
+      <option value="antiguos">Más antiguos primero</option>
+      <option value="nombre">Ordenar por Nombre (A-Z)</option>
+    </select>
+  </div>
+
+  <div class="btn-action-group">
+    <button id="printBtn" style="display:none;">Imprimir</button>
+    <button id="excelBtn" style="display:none;">Descargar Excel</button>
+  </div>
+
   <table id="respuestasTable" style="width:100%; border-collapse: collapse;">
     <thead>
       <tr>
