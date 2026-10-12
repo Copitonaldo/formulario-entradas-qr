@@ -99,17 +99,20 @@ function renderizarCamposPersonalizadosPublico() {
   customFieldsContainer.style.display = 'block';
 
   currentParametrosPersonalizados.forEach((param, index) => {
-    const wrapper = document.createElement('div');
-    wrapper.style.display = 'flex';
-    wrapper.style.flexDirection = 'column';
-    wrapper.style.gap = '6px';
-    wrapper.style.marginBottom = '12px';
+    const label = document.createElement('label');
+    label.setAttribute('for', `custom_param_${index}`);
+    label.textContent = `${param}: `;
 
-    wrapper.innerHTML = `
-      <label for="custom_param_${index}">${escapeHtml(param)}:</label>
-      <input type="text" id="custom_param_${index}" data-param-name="${escapeHtml(param)}" required autocomplete="off" placeholder="Ingrese ${escapeHtml(param.toLowerCase())}" />
-    `;
-    customFieldsContainer.appendChild(wrapper);
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.id = `custom_param_${index}`;
+    input.setAttribute('data-param-name', param);
+    input.required = true;
+    input.autocomplete = 'off';
+    input.placeholder = `Ingrese ${param.toLowerCase()}`;
+
+    label.appendChild(input);
+    customFieldsContainer.appendChild(label);
   });
 }
 
@@ -205,9 +208,9 @@ if (formData) {
     if (confCustomFieldsContainer) {
       confCustomFieldsContainer.innerHTML = '';
       Object.entries(customValuesMap).forEach(([key, val]) => {
-        const p = document.createElement('p');
-        p.innerHTML = `<strong>${escapeHtml(key)}:</strong> ${escapeHtml(val)}`;
-        confCustomFieldsContainer.appendChild(p);
+        const div = document.createElement('div');
+        div.innerHTML = `<b>${escapeHtml(key)}:</b> ${escapeHtml(val)}`;
+        confCustomFieldsContainer.appendChild(div);
       });
     }
 
@@ -365,9 +368,9 @@ if (btnConfirmar) {
         outCustomFieldsContainer.innerHTML = '';
         const savedCustomValues = insertData.parametros_personalizados || {};
         Object.entries(savedCustomValues).forEach(([key, val]) => {
-          const p = document.createElement('p');
-          p.innerHTML = `<strong>${escapeHtml(key)}:</strong> ${escapeHtml(val)}`;
-          outCustomFieldsContainer.appendChild(p);
+          const div = document.createElement('div');
+          div.innerHTML = `<b>${escapeHtml(key)}:</b> ${escapeHtml(val)}`;
+          outCustomFieldsContainer.appendChild(div);
         });
       }
 
@@ -431,7 +434,7 @@ if (guardarBtn) {
       if (qrAbsoluteDivInClone) {
         qrAbsoluteDivInClone.style.position = 'absolute';
         qrAbsoluteDivInClone.style.top = '55%';
-        qrAbsoluteDivInClone.style.left = '18%'; 
+        qrAbsoluteDivInClone.style.left = '90px'; 
         qrAbsoluteDivInClone.style.transform = 'translate(-50%, -50%)';
         qrAbsoluteDivInClone.style.background = 'rgba(255, 255, 255, 0.95)';
         qrAbsoluteDivInClone.style.padding = '6px';
@@ -464,7 +467,7 @@ if (guardarBtn) {
           }
           const clonedQrLabel = clonedElement.querySelector('.qr-code-label');
           if (clonedQrLabel) {
-            clonedQrLabel.textContent = "Código: " + outCodigo.textContent;
+            clonedQrLabel.textContent = outCodigo.textContent;
           }
         }
       }).then(canvasFromHtml2Canvas => {
