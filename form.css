@@ -41,27 +41,25 @@ form#formData input[type="email"] {
   box-sizing: border-box;
 }
 
-/* Estilos para que los campos personalizados mantengan exactamente el mismo diseño original */
 #customFieldsContainer {
   display: flex;
   flex-direction: column;
   width: 100%;
 }
-#customFieldsContainer div {
+#customFieldsContainer label {
   display: flex;
   flex-direction: column;
   font-weight: bold;
   margin-bottom: 20px;
   font-size: 1.1rem;
 }
-#customFieldsContainer input[type="text"] {
+#customFieldsContainer input {
   margin-top: 8px;
   padding: 8px 10px;
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
-  width: 100%;
 }
 
 form#formData button {
@@ -99,22 +97,45 @@ form#formData button:hover {
 #confirmacionDatos h3 {
   margin-top: 0;
   text-align: center;
+  font-size: 1.3rem;
+  margin-bottom: 20px;
 }
-#confirmacionDatos p {
-  margin: 8px 0;
+#confirmacionDatos .datos {
+  margin-top: 0;
+  font-size: 1.1rem;
+  padding: 0;
 }
-#confirmacionDatos div {
+.botones-confirmacion {
   display: flex;
-  flex-direction: column;
+  gap: 10px;
+  justify-content: space-between;
+  margin-top: 25px;
 }
-#confirmacionDatos div b {
-  display: inline-block;
-  width: 100px;
-  font-weight: bold;
-  margin-right: 8px;
+.btn-si {
+  background-color: #28a745 !important;
+  color: white;
+  border: none;
+  padding: 10px 25px;
+  font-size: 1.1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  flex: 1;
 }
-#confirmacionDatos button {
-  margin-top: 10px;
+.btn-si:hover {
+  background-color: #218838 !important;
+}
+.btn-no {
+  background-color: #dc3545 !important;
+  color: white;
+  border: none;
+  padding: 10px 25px;
+  font-size: 1.1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  flex: 1;
+}
+.btn-no:hover {
+  background-color: #c82333 !important;
 }
 #entradaGenerada {
   background: white;
