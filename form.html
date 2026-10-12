@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Formulario Público</title>
   <link rel="stylesheet" href="form.css" />
-  <!-- Librería QRCode -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js"></script>
 </head>
 <body>
@@ -22,7 +21,6 @@
       <input type="number" id="edad" required min="0" />
     </label>
 
-    <!-- Contenedor dinámico de opciones nuevas -->
     <div id="customFieldsContainer"></div>
 
     <label>Referencia:
@@ -38,7 +36,6 @@
       <p><b>Nombre:</b> <span id="confNombre"></span></p>
       <p><b>Cédula:</b> <span id="confCedula"></span></p>
       <p><b>Edad:</b> <span id="confEdad"></span></p>
-      <!-- Opciones nuevas en confirmación -->
       <div id="confCustomFieldsContainer"></div>
       <p><b>Referencia:</b> <span id="confReferencia">-</span></p>
     </div>
@@ -61,7 +58,6 @@
       <div><b>Nombre:</b> <span id="outNombre"></span></div>
       <div><b>Cédula:</b> <span id="outCedula"></span></div>
       <div><b>Edad:</b> <span id="outEdad"></span></div>
-      <!-- Opciones nuevas en ticket -->
       <div id="outCustomFieldsContainer"></div>
       <div><b>CÓDIGO:</b> <span id="outCodigo"></span></div>
       <div id="outReferenciaContenedor" style="display:none;"><b>Referencia:</b> <span id="outReferencia"></span></div>
@@ -69,7 +65,6 @@
     <button id="guardarBtn">Guardar entrada</button>
   </div>
 </div>
-<!-- Carga de scripts -->
 <script type="module" src="form.js"></script>
 </body>
 </html>
