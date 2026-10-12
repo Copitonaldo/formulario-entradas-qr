@@ -91,6 +91,19 @@ async function cargarDatosFormulario() {
 function renderizarCamposPersonalizadosPublico() {
   if (!customFieldsContainer) return;
   customFieldsContainer.innerHTML = '';
+
+  // Si no hay parámetros personalizados, ocultamos el contenedor por completo para que no afecte el diseño original
+  if (!currentParametrosPersonalizados || currentParametrosPersonalizados.length === 0) {
+    customFieldsContainer.style.display = 'none';
+    return;
+  }
+
+  // Si sí hay, lo mostramos como flex y dibujamos los inputs
+  customFieldsContainer.style.display = 'flex';
+  customFieldsContainer.style.flexDirection = 'column';
+  customFieldsContainer.style.gap = '15px';
+  customFieldsContainer.style.marginBottom = '15px';
+
   currentParametrosPersonalizados.forEach((param, index) => {
     const wrapper = document.createElement('div');
     wrapper.style.display = 'flex';
