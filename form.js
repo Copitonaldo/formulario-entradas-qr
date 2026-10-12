@@ -334,15 +334,15 @@ if (guardarBtn) {
       clone.style.width = `${cloneBaseWidth}px`;
       clone.style.height = `${cloneBaseHeight}px`;
       clone.style.boxShadow = 'none';
-      clone.style.borderRadius = '0px'; // Evita esquinas redondeadas feas en la descarga
+      clone.style.borderRadius = '0px';
       clone.style.backgroundColor = 'transparent';
 
-      // Posicionar exactamente el bloque QR en el clon con el mismo left (90px)
+      // Usar porcentaje dinámico (18%) para que se posicione idéntico en móviles y PC
       const qrAbsoluteDivInClone = clone.querySelector('.qr-absolute');
       if (qrAbsoluteDivInClone) {
         qrAbsoluteDivInClone.style.position = 'absolute';
         qrAbsoluteDivInClone.style.top = '55%';
-        qrAbsoluteDivInClone.style.left = '90px'; 
+        qrAbsoluteDivInClone.style.left = '18%'; 
         qrAbsoluteDivInClone.style.transform = 'translate(-50%, -50%)';
         qrAbsoluteDivInClone.style.background = 'rgba(255, 255, 255, 0.95)';
         qrAbsoluteDivInClone.style.padding = '6px';
@@ -400,4 +400,24 @@ if (guardarBtn) {
       alert("No se pudo generar la imagen de la entrada.");
     }
   });
+}
+```[cite: 14]
+
+### Ajuste rápido en `form.css`
+Asegúrate también de que en tu archivo **`form.css`**, la clase `.qr-absolute` tenga el mismo porcentaje en `left` para que la vista previa en los teléfonos móviles sea impecable:
+
+```css
+.qr-absolute {
+  position: absolute;
+  top: 55%;
+  left: 18%; /* <--- Cambiado de píxeles a porcentaje para que sea adaptable en Android/iPhone */
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.95);
+  padding: 6px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 10;
 }
