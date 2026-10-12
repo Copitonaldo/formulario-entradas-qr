@@ -76,7 +76,6 @@ async function cargarDatosFormulario() {
       ? formDataResult.parametros_personalizados 
       : [];
 
-    // Renderizar dinámicamente las casillas personalizadas en el formulario público
     renderizarCamposPersonalizadosPublico();
 
   } else {
@@ -92,13 +91,12 @@ function renderizarCamposPersonalizadosPublico() {
   if (!customFieldsContainer) return;
   customFieldsContainer.innerHTML = '';
 
-  // Si no hay parámetros personalizados, ocultamos el contenedor por completo para que no afecte el diseño original
+  // Si no hay parámetros personalizados, ocultamos el contenedor por completo para mantener el diseño original intacto
   if (!currentParametrosPersonalizados || currentParametrosPersonalizados.length === 0) {
     customFieldsContainer.style.display = 'none';
     return;
   }
 
-  // Si sí hay, lo mostramos como flex y dibujamos los inputs
   customFieldsContainer.style.display = 'flex';
   customFieldsContainer.style.flexDirection = 'column';
   customFieldsContainer.style.gap = '15px';
@@ -168,7 +166,6 @@ if (formData) {
       return;
     }
 
-    // Recopilar valores de los campos personalizados y validar que no estén vacíos
     const customValuesMap = {};
     let camposPersonalizadosValidos = true;
 
@@ -211,7 +208,6 @@ if (formData) {
     confEdad.textContent = `${edad} años`;
     confReferencia.textContent = referenciaValue;
 
-    // Renderizar confirmación de campos personalizados
     if (confCustomFieldsContainer) {
       confCustomFieldsContainer.innerHTML = '';
       Object.entries(customValuesMap).forEach(([key, val]) => {
@@ -246,7 +242,7 @@ async function validarYObtenerReferencia(codigoReferencia, formDbId) {
     return { valida: false, mensaje: "El código de referencia proporcionado no existe o es incorrecto." };
   }
   if (data.usos_disponibles <= 0) {
-    return { valida: false, mensaje: "Este código de referencia ya ha sido utilizado y não tiene usos disponibles." };
+    return { valida: false, mensaje: "Este código de referencia ya ha sido utilizado y no tiene usos disponibles." };
   }
   return { valida: true, datosReferencia: data };
 }
@@ -343,7 +339,7 @@ if (btnConfirmar) {
         cedula: cedula,
         edad: edadInt,
         referencia_usada: referencia,
-        parametros_personalizados: customValues // Guarda las respuestas personalizadas en la BD
+        parametros_personalizados: customValues
       };
 
       const { data: insertData, error: insertError } = await supabase
@@ -371,7 +367,6 @@ if (btnConfirmar) {
       outReferenciaContenedor.style.display = 'block';
       if (codigoQR) codigoQR.textContent = "Código: " + insertData.codigo_secuencial;
 
-      // Renderizar campos personalizados en el ticket final
       if (outCustomFieldsContainer) {
         outCustomFieldsContainer.innerHTML = '';
         const savedCustomValues = insertData.parametros_personalizados || {};
