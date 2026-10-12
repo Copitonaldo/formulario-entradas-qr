@@ -25,7 +25,58 @@ const maxAgeInput = document.getElementById('maxAge');
 const formBgInput = document.getElementById('formBgInput');
 const formulariosTableBody = document.querySelector('#formulariosTable tbody');
 
+// Elementos para parámetros personalizados dinámicos
+const nuevoParamInput = document.getElementById('nuevoParamInput');
+const btnAddParam = document.getElementById('btnAddParam');
+const customParamsList = document.getElementById('customParamsList');
+
 let formulariosCache = [];
+let customParamsArray = [];
+
+// Control de parámetros personalizados escritos por ti
+if (btnAddParam) {
+  btnAddParam.addEventListener('click', () => {
+    const paramName = nuevoParamInput.value.trim();
+    if (!paramName) return;
+
+    if (customParamsArray.includes(paramName)) {
+      alert('Este parámetro ya ha sido agregado.');
+      return;
+    }
+
+    customParamsArray.push(paramName);
+    renderCustomParams();
+    nuevoParamInput.value = '';
+  });
+}
+
+function renderCustomParams() {
+  if (!customParamsList) return;
+  customParamsList.innerHTML = '';
+  customParamsArray.forEach((param, index) => {
+    const itemDiv = document.createElement('div');
+    itemDiv.style.display = 'flex';
+    itemDiv.style.justifyContent = 'space-between';
+    itemDiv.style.alignItems = 'center';
+    itemDiv.style.background = '#f1f1f1';
+    itemDiv.style.padding = '4px 8px';
+    itemDiv.style.borderRadius = '4px';
+
+    itemDiv.innerHTML = `
+      <span>🔹 ${param}</span>
+      <button type="button" class="remove-param-btn" data-index="${index}" style="background: #dc3545; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer;">Eliminar</button>
+    `;
+    customParamsList.appendChild(itemDiv);
+  });
+
+  document.querySelectorAll('.remove-param-btn').forEach(btn => {
+    btn.onclick = (e) => {
+      const idx = e.target.getAttribute('data-index');
+      customParamsArray.splice(idx, 1);
+      renderCustomParams();
+    };
+  });
+}
 
 // Función principal: Cargar formularios
 async function cargarFormularios() {
@@ -124,7 +175,8 @@ createForm.addEventListener('submit', async (e) => {
     nombre,
     min_age: minAge,
     max_age: maxAge,
-    imagen_url: imagenUrl
+    imagen_url: imagenUrl,
+    parametros_personalizados: customParamsArray // Guarda los parámetros escritos por ti
   };
 
   const { error: insertError } = await supabase.from('formularios').insert([nuevoFormulario]);
@@ -136,6 +188,8 @@ createForm.addEventListener('submit', async (e) => {
   }
 
   alert(`✅ Formulario creado: ${codigoForm}`);
+  customParamsArray = [];
+  renderCustomParams();
   await cargarFormularios();
   createForm.reset();
 });
@@ -159,7 +213,7 @@ window.borrarFormulario = async function(codigoForm, db_id) {
       .delete()
       .eq('formulario_id', db_id);
 
-    if (deleteContadorError && deleteContadorError.code !== 'PGRST116') { // PGRST116: No rows found
+    if (deleteContadorError && deleteContadorError.code !== 'PGRST116') {
       throw deleteContadorError;
     }
 
@@ -170,7 +224,7 @@ window.borrarFormulario = async function(codigoForm, db_id) {
       .eq('id', db_id)
       .single();
 
-    if (fetchImageError && fetchImageError.code !== 'PGRST116') { // PGRST116: No rows found
+    if (fetchImageError && fetchImageError.code !== 'PGRST116') {
       throw fetchImageError;
     }
 
@@ -179,10 +233,8 @@ window.borrarFormulario = async function(codigoForm, db_id) {
       const { error: deleteImageError } = await supabase.storage
         .from('form-backgrounds')
         .remove([imagePath]);
-      // No lanzar error si la imagen no se encuentra, podría haber sido borrada manualmente o no existir.
       if (deleteImageError && deleteImageError.statusCode !== '404' && !deleteImageError.message.includes("Object not found")) {
           console.warn("Advertencia al borrar imagen de Supabase Storage:", deleteImageError);
-          // Opcional: alert('Advertencia: No se pudo borrar la imagen del almacenamiento, pero el formulario se eliminará.');
       }
     }
 
@@ -195,7 +247,7 @@ window.borrarFormulario = async function(codigoForm, db_id) {
     if (deleteFormularioError) throw deleteFormularioError;
 
     alert(`✅ Formulario "${codigoForm}" y todos sus datos han sido eliminados.`);
-    await cargarFormularios(); // Actualizar lista
+    await cargarFormularios();
 
   } catch (error) {
     console.error("Error al borrar formulario o datos relacionados:", error);
@@ -226,4 +278,3 @@ logoutBtn.addEventListener('click', () => {
   formulariosCache = [];
   renderFormularios();
 });
-
