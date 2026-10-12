@@ -362,7 +362,7 @@ if (btnConfirmar) {
       outCodigo.textContent = insertData.codigo_secuencial;
       outReferencia.textContent = insertData.referencia_usada;
       outReferenciaContenedor.style.display = 'block';
-      if (codigoQR) codigoQR.textContent = "Código: " + insertData.codigo_secuencial;
+      if (codigoQR) codigoQR.textContent = insertData.codigo_secuencial;
 
       if (outCustomFieldsContainer) {
         outCustomFieldsContainer.innerHTML = '';
