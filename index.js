@@ -26,12 +26,29 @@ const formBgInput = document.getElementById('formBgInput');
 const formulariosTableBody = document.querySelector('#formulariosTable tbody');
 
 // Elementos para parámetros personalizados dinámicos
+const toggleParamsBtn = document.getElementById('toggleParamsBtn');
+const customParamsContainer = document.getElementById('customParamsContainer');
 const nuevoParamInput = document.getElementById('nuevoParamInput');
 const btnAddParam = document.getElementById('btnAddParam');
 const customParamsList = document.getElementById('customParamsList');
 
 let formulariosCache = [];
 let customParamsArray = [];
+
+// Mostrar / Ocultar sección de parámetros personalizados
+if (toggleParamsBtn && customParamsContainer) {
+  toggleParamsBtn.addEventListener('click', () => {
+    if (customParamsContainer.style.display === 'none') {
+      customParamsContainer.style.display = 'block';
+      toggleParamsBtn.textContent = '➖ Ocultar casilla personalizada';
+      toggleParamsBtn.style.background = '#dc3545';
+    } else {
+      customParamsContainer.style.display = 'none';
+      toggleParamsBtn.textContent = '➕ Agregar casilla personalizada (Opcional)';
+      toggleParamsBtn.style.background = '#6c757d';
+    }
+  });
+}
 
 // Control de parámetros personalizados escritos por ti
 if (btnAddParam) {
@@ -40,7 +57,7 @@ if (btnAddParam) {
     if (!paramName) return;
 
     if (customParamsArray.includes(paramName)) {
-      alert('Este parámetro ya ha sido agregado.');
+      alert('Esta casilla ya ha sido agregada.');
       return;
     }
 
@@ -58,13 +75,14 @@ function renderCustomParams() {
     itemDiv.style.display = 'flex';
     itemDiv.style.justifyContent = 'space-between';
     itemDiv.style.alignItems = 'center';
-    itemDiv.style.background = '#f1f1f1';
-    itemDiv.style.padding = '4px 8px';
+    itemDiv.style.background = '#fff';
+    itemDiv.style.border = '1px solid #ddd';
+    itemDiv.style.padding = '6px 10px';
     itemDiv.style.borderRadius = '4px';
 
     itemDiv.innerHTML = `
-      <span>🔹 ${param}</span>
-      <button type="button" class="remove-param-btn" data-index="${index}" style="background: #dc3545; color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer;">Eliminar</button>
+      <span style="font-weight: bold; color: #333;">📌 ${param}</span>
+      <button type="button" class="remove-param-btn" data-index="${index}" style="background: #dc3545; color: white; border: none; border-radius: 3px; padding: 3px 8px; cursor: pointer; width: auto;">Eliminar</button>
     `;
     customParamsList.appendChild(itemDiv);
   });
@@ -176,7 +194,7 @@ createForm.addEventListener('submit', async (e) => {
     min_age: minAge,
     max_age: maxAge,
     imagen_url: imagenUrl,
-    parametros_personalizados: customParamsArray // Guarda los parámetros escritos por ti
+    parametros_personalizados: customParamsArray
   };
 
   const { error: insertError } = await supabase.from('formularios').insert([nuevoFormulario]);
@@ -190,6 +208,11 @@ createForm.addEventListener('submit', async (e) => {
   alert(`✅ Formulario creado: ${codigoForm}`);
   customParamsArray = [];
   renderCustomParams();
+  if (customParamsContainer) customParamsContainer.style.display = 'none';
+  if (toggleParamsBtn) {
+    toggleParamsBtn.textContent = '➕ Agregar casilla personalizada (Opcional)';
+    toggleParamsBtn.style.background = '#6c757d';
+  }
   await cargarFormularios();
   createForm.reset();
 });
@@ -199,7 +222,6 @@ window.borrarFormulario = async function(codigoForm, db_id) {
   if (!confirm(`¿Seguro que quieres borrar el formulario "${codigoForm}" y todos sus datos?`)) return;
 
   try {
-    // 1. Borrar respuestas asociadas
     const { error: deleteRespuestasError } = await supabase
       .from('respuestas')
       .delete()
@@ -207,7 +229,6 @@ window.borrarFormulario = async function(codigoForm, db_id) {
 
     if (deleteRespuestasError) throw deleteRespuestasError;
 
-    // 2. Borrar contador del formulario
     const { error: deleteContadorError } = await supabase
       .from('contadores_formularios')
       .delete()
@@ -217,7 +238,6 @@ window.borrarFormulario = async function(codigoForm, db_id) {
       throw deleteContadorError;
     }
 
-    // 3. Borrar imagen del formulario (si existe)
     const { data: formData, error: fetchImageError } = await supabase
       .from('formularios')
       .select('imagen_url')
@@ -238,7 +258,6 @@ window.borrarFormulario = async function(codigoForm, db_id) {
       }
     }
 
-    // 4. Finalmente, borrar el formulario
     const { error: deleteFormularioError } = await supabase
       .from('formularios')
       .delete()
