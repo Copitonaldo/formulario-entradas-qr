@@ -25,7 +25,7 @@ header {
   justify-content: space-between;
   align-items: center;
   box-sizing: border-box;
-  border-radius: 8px 8px 0 0;
+  border-radius: 0; /* <--- Modificado de 8px a 0 para que quede recto */
   margin-bottom: 0;
   position: sticky;
   top: 0;
@@ -56,12 +56,20 @@ main {
   color: #007bff;
 }
 
-input#searchInput {
+/* --- Contenedor y estilos para los nuevos filtros --- */
+.filters-container {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
   width: 100%;
-  max-width: 400px;
+}
+
+input#searchInput {
+  flex: 1;
+  min-width: 250px;
   padding: 8px 12px;
   font-size: 1rem;
-  margin-bottom: 20px;
   border-radius: 5px;
   border: 1px solid #ccc;
   box-sizing: border-box;
@@ -73,9 +81,29 @@ input#searchInput:focus {
   outline: none;
 }
 
-#excelBtn {
+select.filter-select {
+  padding: 8px 12px;
+  font-size: 1rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: white;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+select.filter-select:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.btn-action-group {
   margin-bottom: 20px;
-  margin-left: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+#excelBtn {
   background: #1d6f42;
   color: #fff;
   border: none;
@@ -90,7 +118,6 @@ input#searchInput:focus {
 }
 
 #printBtn {
-  margin-bottom: 20px;
   background: #007bff;
   color: #fff;
   border: none;
@@ -193,6 +220,12 @@ tbody tr:hover {
     padding: 12px 10px;
     font-size: 1rem;
   }
+  .filters-container {
+    flex-direction: column;
+  }
+  input#searchInput, select.filter-select {
+    width: 100%;
+  }
   table, thead, tbody, th, td, tr {
     display: block;
     width: 100%;
@@ -220,10 +253,8 @@ tbody tr:hover {
   td:nth-of-type(2):before { content: "Nombre: "; }
   td:nth-of-type(3):before { content: "Cédula: "; }
   td:nth-of-type(4):before { content: "Edad: "; }
-  td:nth-of-type(5):before { content: "Número: "; }
-  td:nth-of-type(6):before { content: "Correo: "; }
-  td:nth-of-type(7):before { content: "Referencia: "; }
-  td:nth-of-type(8):before { content: "Acciones: "; }
+  td:nth-of-type(5):before { content: "Referencia: "; }
+  td:nth-of-type(6):before { content: "Acciones: "; }
 
   td:before {
     font-weight: bold;
