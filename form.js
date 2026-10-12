@@ -91,39 +91,30 @@ function renderizarCamposPersonalizadosPublico() {
   if (!customFieldsContainer) return;
   customFieldsContainer.innerHTML = '';
 
-  // Si no hay parámetros personalizados, ocultamos el contenedor por completo para mantener el diseño original intacto
   if (!currentParametrosPersonalizados || currentParametrosPersonalizados.length === 0) {
     customFieldsContainer.style.display = 'none';
     return;
   }
 
-  customFieldsContainer.style.display = 'flex';
-  customFieldsContainer.style.flexDirection = 'column';
-  customFieldsContainer.style.gap = '15px';
-  customFieldsContainer.style.marginBottom = '15px';
+  // Dejamos que el CSS original controle la visualización sin forzar estilos en línea raros
+  customFieldsContainer.style.display = 'block';
 
   currentParametrosPersonalizados.forEach((param, index) => {
     const wrapper = document.createElement('div');
-    wrapper.style.display = 'flex';
-    wrapper.style.flexDirection = 'column';
-    wrapper.style.gap = '5px';
-
-    const label = document.createElement('label');
-    label.setAttribute('for', `custom_param_${index}`);
-    label.textContent = `${param}:`;
-
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.id = `custom_param_${index}`;
-    input.setAttribute('data-param-name', param);
-    input.required = true;
-    input.autocomplete = 'off';
-    input.placeholder = `Ingrese ${param.toLowerCase()}`;
-
-    wrapper.appendChild(label);
-    wrapper.appendChild(input);
+    // Usamos las mismas etiquetas estándar del formulario original
+    wrapper.innerHTML = `
+      <label for="custom_param_${index}">${escapeHtml(param)}:</label>
+      <input type="text" id="custom_param_${index}" data-param-name="${escapeHtml(param)}" required autocomplete="off" placeholder="Ingrese ${escapeHtml(param.toLowerCase())}" />
+    `;
     customFieldsContainer.appendChild(wrapper);
   });
+}
+
+function escapeHtml(text) {
+  if (text === null || typeof text === 'undefined') return '';
+  const div = document.createElement('div');
+  div.textContent = String(text);
+  return div.innerHTML;
 }
 
 if (!formId || formId.trim() === "") {
@@ -212,7 +203,7 @@ if (formData) {
       confCustomFieldsContainer.innerHTML = '';
       Object.entries(customValuesMap).forEach(([key, val]) => {
         const p = document.createElement('p');
-        p.innerHTML = `<strong>${key}:</strong> ${val}`;
+        p.innerHTML = `<strong>${escapeHtml(key)}:</strong> ${escapeHtml(val)}`;
         confCustomFieldsContainer.appendChild(p);
       });
     }
@@ -372,7 +363,7 @@ if (btnConfirmar) {
         const savedCustomValues = insertData.parametros_personalizados || {};
         Object.entries(savedCustomValues).forEach(([key, val]) => {
           const p = document.createElement('p');
-          p.innerHTML = `<strong>${key}:</strong> ${val}`;
+          p.innerHTML = `<strong>${escapeHtml(key)}:</strong> ${escapeHtml(val)}`;
           outCustomFieldsContainer.appendChild(p);
         });
       }
