@@ -40,6 +40,30 @@ form#formData input[type="email"] {
   border-radius: 4px;
   box-sizing: border-box;
 }
+
+/* Estilos para que los campos personalizados mantengan exactamente el mismo diseño original */
+#customFieldsContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+#customFieldsContainer div {
+  display: flex;
+  flex-direction: column;
+  font-weight: bold;
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+}
+#customFieldsContainer input[type="text"] {
+  margin-top: 8px;
+  padding: 8px 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
 form#formData button {
   width: 100%;
   padding: 12px;
@@ -129,7 +153,7 @@ form#formData button:hover {
 .qr-absolute {
   position: absolute;
   top: 55%;
-  left: 90px; /* <--- Ajustado más a la izquierda (cámbialo si lo quieres más a la izq/der) */
+  left: 90px;
   transform: translate(-50%, -50%);
   background: rgba(255, 255, 255, 0.95);
   padding: 6px;
@@ -161,7 +185,7 @@ form#formData button:hover {
 }
 .datos b {
   display: inline-block;
-  width: 115px; /* <--- Ampliado para que la palabra "Referencia" no se pegue */
+  width: 115px;
   font-weight: bold;
 }
 .datos div {
