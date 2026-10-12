@@ -24,8 +24,8 @@
     <label for="edad">Edad:</label>
     <input type="number" id="edad" required min="0" autocomplete="off" placeholder="Ej: 20" />
 
-    <!-- Contenedor dinámico donde aparecerán las casillas personalizadas creadas por ti -->
-    <div id="customFieldsContainer" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px;"></div>
+    <!-- Contenedor dinámico de parámetros personalizados -->
+    <div id="customFieldsContainer"></div>
 
     <label for="referencia">Código de Referencia:</label>
     <input type="text" id="referencia" required autocomplete="off" placeholder="Código de referencia" />
@@ -39,7 +39,6 @@
     <p><strong>Nombre:</strong> <span id="confNombre"></span></p>
     <p><strong>Cédula:</strong> <span id="confCedula"></span></p>
     <p><strong>Edad:</strong> <span id="confEdad"></span></p>
-    <!-- Contenedor de confirmación para los campos personalizados -->
     <div id="confCustomFieldsContainer" style="margin: 10px 0;"></div>
     <p><strong>Referencia:</strong> <span id="confReferencia"></span></p>
     <p style="color: #d9534f; font-weight: bold;">¿Son correctos tus datos? Una vez confirmados no se podrán cambiar.</p>
@@ -65,7 +64,6 @@
       <p><strong>Nombre:</strong> <span id="outNombre"></span></p>
       <p><strong>Cédula:</strong> <span id="outCedula"></span></p>
       <p><strong>Edad:</strong> <span id="outEdad"></span></p>
-      <!-- Contenedor para mostrar los campos personalizados en el detalle del ticket -->
       <div id="outCustomFieldsContainer" style="margin: 5px 0;"></div>
       <p><strong>CÓDIGO:</strong> <span id="outCodigo"></span></p>
       <p id="outReferenciaContenedor"><strong>Referencia:</strong> <span id="outReferencia"></span></p>
@@ -74,7 +72,6 @@
   </div>
 </main>
 
-<!-- Librerías de QR y canvas -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js"></script>
 <script type="module" src="form.js"></script>
 </body>
