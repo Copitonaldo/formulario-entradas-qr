@@ -28,12 +28,26 @@
     <form id="createForm">
       <label for="formName">Nombre del Formulario:</label>
       <input type="text" id="formName" required />
+      
       <label for="minAge">Edad Mínima:</label>
       <input type="number" id="minAge" min="0" placeholder="Ej: 14" />
+      
       <label for="maxAge">Edad Máxima:</label>
       <input type="number" id="maxAge" min="0" placeholder="Ej: 20" />
+      
       <label for="formBgInput">Imagen de Fondo:</label>
       <input type="file" id="formBgInput" accept="image/*" />
+
+      <!-- Selección opcional de parámetros adicionales (Nombre, Cédula, Edad y Referencia son fijos y obligatorios) -->
+      <fieldset style="margin: 15px 0; padding: 10px; border: 1px solid #ccc; border-radius: 4px; text-align: left;">
+        <legend style="font-weight: bold; padding: 0 5px;">Parámetros del Formulario</legend>
+        <p style="font-size: 0.9rem; color: #555; margin-top: 0;">Nota: Nombre, Cédula, Edad y Referencia son obligatorios por defecto.</p>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <label style="font-weight: normal;"><input type="checkbox" id="paramTelefono" /> Permitir/Solicitar Teléfono (Opcional)</label>
+          <label style="font-weight: normal;"><input type="checkbox" id="paramCorreo" /> Permitir/Solicitar Correo (Opcional)</label>
+        </div>
+      </fieldset>
+
       <button type="submit">Crear Formulario</button>
     </form>
 
