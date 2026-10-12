@@ -27,6 +27,9 @@
       <input type="number" id="edad" required min="0" autocomplete="off" placeholder="Ej: 20" />
     </label>
 
+    <!-- Contenedor dinámico para parámetros personalizados -->
+    <div id="customFieldsContainer"></div>
+
     <label for="referencia">Código de Referencia:
       <input type="text" id="referencia" required autocomplete="off" placeholder="Código de referencia" />
     </label>
@@ -41,6 +44,8 @@
       <div><b>Nombre:</b> <span id="confNombre"></span></div>
       <div><b>Cédula:</b> <span id="confCedula"></span></div>
       <div><b>Edad:</b> <span id="confEdad"></span></div>
+      <!-- Contenedor de confirmación para parámetros personalizados -->
+      <div id="confCustomFieldsContainer"></div>
       <div><b>Referencia:</b> <span id="confReferencia"></span></div>
     </div>
     <p style="color: #d9534f; font-weight: bold; text-align: center; margin-top: 15px; font-size: 0.95rem;">¿Son correctos tus datos? Una vez confirmados no se podrán cambiar.</p>
@@ -64,6 +69,8 @@
       <div><b>Nombre:</b> <span id="outNombre"></span></div>
       <div><b>Cédula:</b> <span id="outCedula"></span></div>
       <div><b>Edad:</b> <span id="outEdad"></span></div>
+      <!-- Contenedor de ticket para parámetros personalizados -->
+      <div id="outCustomFieldsContainer"></div>
       <div><b>Código:</b> <span id="outCodigo"></span></div>
       <div id="outReferenciaContenedor"><b>Referencia:</b> <span id="outReferencia"></span></div>
     </div>
