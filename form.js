@@ -1,4 +1,3 @@
-// Importar Supabase
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.4/+esm";
 const SUPABASE_URL = 'https://wiyejeeiehwfkdcbpomp.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpeWVqZWVpZWh3ZmtkY2Jwb21wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NjQwOTYsImV4cCI6MjA2NzE0MDA5Nn0.yDq4eOHujKH2nmg-F-DVnqCHGwdfEmf4Z968KXl1SDc';
@@ -440,7 +439,7 @@ if (guardarBtn) {
       if (qrAbsoluteDivInClone) {
         qrAbsoluteDivInClone.style.position = 'absolute';
         qrAbsoluteDivInClone.style.top = '55%';
-        qrAbsoluteDivInClone.style.left = '150px'; 
+        qrAbsoluteDivInClone.style.left = '90px'; 
         qrAbsoluteDivInClone.style.transform = 'translate(-50%, -50%)';
         qrAbsoluteDivInClone.style.background = '#ffffff';
         qrAbsoluteDivInClone.style.padding = '6px';
