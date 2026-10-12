@@ -13,6 +13,8 @@ const dashboardCount = document.getElementById('dashboardCount');
 const respuestasTable = document.getElementById('respuestasTable');
 const respuestasTableBody = document.querySelector('#respuestasTable tbody');
 const searchInput = document.getElementById('searchInput');
+const filterReferencia = document.getElementById('filterReferencia');
+const filterOrden = document.getElementById('filterOrden');
 const paginationDiv = document.getElementById('pagination');
 const excelBtn = document.getElementById('excelBtn');
 const printBtn = document.getElementById('printBtn');
@@ -23,6 +25,7 @@ let filteredRespuestas = [];
 let currentPage = 1;
 const PAGE_SIZE = 50;
 let currentFormDbId = null;
+let nombreFormularioActual = "Formulario"; // Variable para almacenar el nombre limpio del formulario
 
 if (!formId || formId.trim() === "") {
   if (formTitleElement) formTitleElement.textContent = 'ID de Formulario no especificado';
@@ -52,7 +55,8 @@ async function cargarRespuestas() {
   }
 
   currentFormDbId = formInfo.id;
-  if (formTitleElement) formTitleElement.textContent = `Respuestas del Formulario: ${formInfo.nombre || formId}`;
+  nombreFormularioActual = formInfo.nombre || formId; // Guardamos el nombre real
+  if (formTitleElement) formTitleElement.textContent = `Respuestas del Formulario: ${nombreFormularioActual}`;
 
   const { data, error } = await supabase
     .from('respuestas')
@@ -73,14 +77,19 @@ async function cargarRespuestas() {
         nombre: r.nombre_completo,
         cedula: r.cedula,
         edad: r.edad,
+        fecha_registro: r.fecha_registro,
         referencia_usada: r.referencia_usada || null
     }));
   }
+
+  poblarFiltroReferencias();
 
   if (todasLasRespuestas.length > 0) {
     if (noDataMsg) noDataMsg.style.display = 'none';
     if (respuestasTable) respuestasTable.style.display = '';
     if (searchInput) searchInput.style.display = '';
+    if (filterReferencia) filterReferencia.style.display = '';
+    if (filterOrden) filterOrden.style.display = '';
     if (printBtn) printBtn.style.display = 'inline-block';
     if (excelBtn) excelBtn.style.display = 'inline-block';
   } else {
@@ -91,7 +100,50 @@ async function cargarRespuestas() {
     if (respuestasTable) respuestasTable.style.display = 'none';
   }
 
-  filteredRespuestas = [...todasLasRespuestas];
+  aplicarFiltrosYOrden();
+}
+
+function poblarFiltroReferencias() {
+  if (!filterReferencia) return;
+  const referenciasUnicas = [...new Set(todasLasRespuestas.map(r => r.referencia_usada).filter(Boolean))];
+  
+  filterReferencia.innerHTML = '<option value="">Todas las referencias</option>';
+  referenciasUnicas.forEach(ref => {
+    const option = document.createElement('option');
+    option.value = ref;
+    option.textContent = `Referencia: ${ref}`;
+    filterReferencia.appendChild(option);
+  });
+}
+
+function aplicarFiltrosYOrden() {
+  const term = searchInput ? searchInput.value.toLowerCase() : '';
+  const refSelected = filterReferencia ? filterReferencia.value : '';
+  const ordenSelected = filterOrden ? filterOrden.value : 'recientes';
+
+  filteredRespuestas = todasLasRespuestas.filter(r => {
+    const matchTexto = 
+      (r.nombre && r.nombre.toLowerCase().includes(term)) ||
+      (r.cedula && formatCedula(r.cedula).toLowerCase().includes(term)) ||
+      (r.edad && r.edad.toString().includes(term)) ||
+      (r.codigo && r.codigo.toLowerCase().includes(term));
+    
+    const matchRef = refSelected === '' || r.referencia_usada === refSelected;
+
+    return matchTexto && matchRef;
+  });
+
+  filteredRespuestas.sort((a, b) => {
+    if (ordenSelected === 'recientes') {
+      return new Date(b.fecha_registro) - new Date(a.fecha_registro);
+    } else if (ordenSelected === 'antiguos') {
+      return new Date(a.fecha_registro) - new Date(b.fecha_registro);
+    } else if (ordenSelected === 'nombre') {
+      return a.nombre.localeCompare(b.nombre);
+    }
+    return 0;
+  });
+
   currentPage = 1;
   renderTableAndPagination();
 }
@@ -153,20 +205,9 @@ function renderTableAndPagination() {
   }
 }
 
-if (searchInput) {
-  searchInput.addEventListener('input', () => {
-    const term = searchInput.value.toLowerCase();
-    filteredRespuestas = todasLasRespuestas.filter(r =>
-      (r.nombre && r.nombre.toLowerCase().includes(term)) ||
-      (r.cedula && formatCedula(r.cedula).toLowerCase().includes(term)) ||
-      (r.edad && r.edad.toString().includes(term)) ||
-      (r.codigo && r.codigo.toLowerCase().includes(term)) ||
-      (r.referencia_usada && r.referencia_usada.toLowerCase().includes(term))
-    );
-    currentPage = 1;
-    renderTableAndPagination();
-  });
-}
+if (searchInput) searchInput.addEventListener('input', aplicarFiltrosYOrden);
+if (filterReferencia) filterReferencia.addEventListener('change', aplicarFiltrosYOrden);
+if (filterOrden) filterOrden.addEventListener('change', aplicarFiltrosYOrden);
 
 if (printBtn) {
   printBtn.onclick = function () {
@@ -201,6 +242,8 @@ if (excelBtn) {
     const ws = XLSX.utils.json_to_sheet(dataToExport);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Respuestas');
-    XLSX.writeFile(wb, `Respuestas_${formId}.xlsx`);
+    // Limpiamos caracteres especiales por seguridad en el nombre del archivo descargado
+    const nombreLimpio = nombreFormularioActual.replace(/[^a-zA-Z0-9_\- ]/g, "").trim();
+    XLSX.writeFile(wb, `Respuestas_${nombreLimpio}.xlsx`);
   };
 }
