@@ -41,7 +41,6 @@ form#formData input[type="email"] {
   box-sizing: border-box;
 }
 
-/* Contenedor dinámico de opciones nuevas */
 #customFieldsContainer {
   display: flex;
   flex-direction: column;
@@ -108,7 +107,7 @@ form#formData button:hover {
 }
 #confirmacionDatos div b {
   display: inline-block;
-  width: 100px;
+  width: 115px;
   font-weight: bold;
   margin-right: 8px;
 }
@@ -152,9 +151,9 @@ form#formData button:hover {
 .qr-absolute {
   position: absolute;
   top: 55%;
-  left: 150px;
+  left: 90px; /* <--- Movido más a la izquierda para que quede perfecto */
   transform: translate(-50%, -50%);
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   padding: 6px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
@@ -184,7 +183,7 @@ form#formData button:hover {
 }
 .datos b {
   display: inline-block;
-  width: 85px;
+  width: 115px; /* <--- Ampliado para evitar que "Referencia" se amontone */
   font-weight: bold;
 }
 .datos div {
@@ -208,6 +207,7 @@ form#formData button:hover {
 #guardarBtn:hover {
   background-color: #218838;
 }
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .center {
@@ -226,92 +226,19 @@ form#formData button:hover {
     padding-left: 20px;
     padding-right: 20px;
   }
-  #entradaGenerada {
-    padding-top: 20px;
-    padding-bottom: 30px;
-  }
-  .ticket-img-wrap {
-    max-width: 100%;
-  }
   .qr-absolute {
-    left: 20px;
-    padding: 5px;
-  }
-  #qrCanvas {
-    width: 65px;
-    height: 65px;
-  }
-  .qr-code-label {
-    font-size: 0.8rem;
-  }
-  .datos {
-    font-size: 1rem;
+    left: 80px; /* <--- Ajuste proporcional para móviles y tablets */
   }
   .datos b {
-    width: 75px;
-  }
-  #guardarBtn {
-    font-size: 1rem;
-    padding: 10px 20px;
+    width: 115px;
   }
 }
+
 @media (max-width: 480px) {
-  .center {
-    margin-top: 15px;
-    padding-left: 10px;
-    padding-right: 10px;
-  }
-  form#formData,
-  #confirmacionDatos,
-  #errorMsg {
-    padding: 20px 15px;
-  }
-  form#formData label {
-    font-size: 1rem;
-  }
-  form#formData input[type="text"],
-  form#formData input[type="number"],
-  form#formData input[type="tel"],
-  form#formData input[type="email"] {
-    font-size: 0.95rem;
-    padding: 10px 8px;
-  }
-  form#formData button {
-    font-size: 1rem;
-    padding: 12px;
-  }
-  #entradaGenerada {
-    padding: 15px 15px 25px 15px;
-  }
   .qr-absolute {
-    left: 15px;
-    padding: 4px;
-  }
-  #qrCanvas {
-    width: 50px;
-    height: 50px;
-  }
-  .qr-code-label {
-    font-size: 0.7rem;
-  }
-  .datos {
-    font-size: 0.9rem;
+    left: 75px; /* <--- Ajuste exacto para pantallas pequeñas de Android/iPhone */
   }
   .datos b {
-    width: 65px;
-  }
-  #guardarBtn {
-    font-size: 0.95rem;
-    padding: 10px 18px;
-  }
-  #confirmacionDatos h3 {
-    font-size: 1.1rem;
-  }
-  #confirmacionDatos p {
-    font-size: 0.9rem;
-  }
-  #confirmacionDatos button {
-    padding: 8px 15px;
-    font-size: 0.9rem;
+    width: 115px;
   }
 }
