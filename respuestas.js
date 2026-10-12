@@ -25,7 +25,8 @@ let filteredRespuestas = [];
 let currentPage = 1;
 const PAGE_SIZE = 50;
 let currentFormDbId = null;
-let nombreFormularioActual = "Formulario"; // Variable para almacenar el nombre limpio del formulario
+let nombreFormularioActual = "Formulario"; 
+let parametrosPersonalizados = []; // Variable para almacenar los parámetros dinámicos del formulario
 
 if (!formId || formId.trim() === "") {
   if (formTitleElement) formTitleElement.textContent = 'ID de Formulario no especificado';
@@ -41,7 +42,7 @@ if (!formId || formId.trim() === "") {
 async function cargarRespuestas() {
   const { data: formInfo, error: formInfoError } = await supabase
     .from('formularios')
-    .select('id, nombre')
+    .select('id, nombre, parametros_personalizados')
     .eq('codigo_form', formId)
     .single();
 
@@ -55,12 +56,17 @@ async function cargarRespuestas() {
   }
 
   currentFormDbId = formInfo.id;
-  nombreFormularioActual = formInfo.nombre || formId; // Guardamos el nombre real
+  nombreFormularioActual = formInfo.nombre || formId; 
+  parametrosPersonalizados = Array.isArray(formInfo.parametros_personalizados) ? formInfo.parametros_personalizados : [];
+  
   if (formTitleElement) formTitleElement.textContent = `Respuestas del Formulario: ${nombreFormularioActual}`;
+
+  // Construir los encabezados de la tabla dinámicamente incluyendo los parámetros personalizados
+  construirEncabezadosTabla();
 
   const { data, error } = await supabase
     .from('respuestas')
-    .select('id, codigo_secuencial, nombre_completo, cedula, edad, fecha_registro, referencia_usada')
+    .select('id, codigo_secuencial, nombre_completo, cedula, edad, fecha_registro, referencia_usada, parametros_personalizados')
     .eq('formulario_id', currentFormDbId)
     .order('fecha_registro', { ascending: false });
 
@@ -78,7 +84,8 @@ async function cargarRespuestas() {
         cedula: r.cedula,
         edad: r.edad,
         fecha_registro: r.fecha_registro,
-        referencia_usada: r.referencia_usada || null
+        referencia_usada: r.referencia_usada || null,
+        parametros_personalizados: r.parametros_personalizados || {}
     }));
   }
 
@@ -103,6 +110,30 @@ async function cargarRespuestas() {
   aplicarFiltrosYOrden();
 }
 
+function construirEncabezadosTabla() {
+  const theadRow = document.querySelector('#respuestasTable thead tr');
+  if (!theadRow) return;
+
+  let html = `
+    <th>Código</th>
+    <th>Nombre</th>
+    <th>Cédula</th>
+    <th>Edad</th>
+  `;
+
+  // Añadir una columna por cada parámetro personalizado configurado
+  parametrosPersonalizados.forEach(param => {
+    html += `<th>${escapeHtml(param)}</th>`;
+  });
+
+  html += `
+    <th>Referencia</th>
+    <th>Acciones</th>
+  `;
+
+  theadRow.innerHTML = html;
+}
+
 function poblarFiltroReferencias() {
   if (!filterReferencia) return;
   const referenciasUnicas = [...new Set(todasLasRespuestas.map(r => r.referencia_usada).filter(Boolean))];
@@ -122,11 +153,21 @@ function aplicarFiltrosYOrden() {
   const ordenSelected = filterOrden ? filterOrden.value : 'recientes';
 
   filteredRespuestas = todasLasRespuestas.filter(r => {
+    // Buscar también dentro de los valores de los parámetros personalizados
+    let matchCustom = false;
+    const customVals = r.parametros_personalizados || {};
+    Object.values(customVals).forEach(val => {
+      if (val && String(val).toLowerCase().includes(term)) {
+        matchCustom = true;
+      }
+    });
+
     const matchTexto = 
       (r.nombre && r.nombre.toLowerCase().includes(term)) ||
       (r.cedula && formatCedula(r.cedula).toLowerCase().includes(term)) ||
       (r.edad && r.edad.toString().includes(term)) ||
-      (r.codigo && r.codigo.toLowerCase().includes(term));
+      (r.codigo && r.codigo.toLowerCase().includes(term)) ||
+      matchCustom;
     
     const matchRef = refSelected === '' || r.referencia_usada === refSelected;
 
@@ -171,17 +212,30 @@ function renderTableAndPagination() {
 
   dataToShow.forEach((r, index) => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `
+    
+    let rowHtml = `
       <td>${escapeHtml(r.codigo)}</td>
       <td>${escapeHtml(r.nombre)}</td>
       <td>${escapeHtml(formatCedula(r.cedula))}</td>
       <td>${escapeHtml(r.edad)}</td>
+    `;
+
+    // Renderizar los valores correspondientes a los parámetros personalizados
+    const customVals = r.parametros_personalizados || {};
+    parametrosPersonalizados.forEach(param => {
+      const valorParam = customVals[param] !== undefined ? customVals[param] : '-';
+      rowHtml += `<td>${escapeHtml(valorParam)}</td>`;
+    });
+
+    rowHtml += `
       <td>${escapeHtml(r.referencia_usada || '-')}</td>
       <td>
         <button class="action-btn edit-btn" data-id="${r.id_db || index}" disabled>Editar</button>
         <button class="action-btn delete-btn" data-id="${r.id_db || index}" disabled>Borrar</button>
       </td>
     `;
+
+    tr.innerHTML = rowHtml;
     respuestasTableBody.appendChild(tr);
   });
 
@@ -217,10 +271,25 @@ if (printBtn) {
       table { border-collapse: collapse; width: 100%; }
       th, td { border: 1px solid #333; padding: 8px; text-align: center; }
       th { background: #007bff; color: white; }
-    </style></head><body><h2>${formTitleElement.textContent}</h2><table><thead><tr><th>Código</th><th>Nombre</th><th>Cédula</th><th>Edad</th><th>Referencia</th></tr></thead><tbody>`;
-    filteredRespuestas.forEach(r => {
-      html += `<tr><td>${escapeHtml(r.codigo)}</td><td>${escapeHtml(r.nombre)}</td><td>${escapeHtml(formatCedula(r.cedula))}</td><td>${escapeHtml(r.edad)}</td><td>${escapeHtml(r.referencia_usada || '-')}</td></tr>`;
+    </style></head><body><h2>${escapeHtml(formTitleElement.textContent)}</h2><table><thead><tr><th>Código</th><th>Nombre</th><th>Cédula</th><th>Edad</th>`;
+    
+    parametrosPersonalizados.forEach(param => {
+      html += `<th>${escapeHtml(param)}</th>`;
     });
+
+    html += `<th>Referencia</th></tr></thead><tbody>`;
+
+    filteredRespuestas.forEach(r => {
+      html += `<tr><td>${escapeHtml(r.codigo)}</td><td>${escapeHtml(r.nombre)}</td><td>${escapeHtml(formatCedula(r.cedula))}</td><td>${escapeHtml(r.edad)}</td>`;
+      
+      const customVals = r.parametros_personalizados || {};
+      parametrosPersonalizados.forEach(param => {
+        html += `<td>${escapeHtml(customVals[param] !== undefined ? customVals[param] : '-')}</td>`;
+      });
+
+      html += `<td>${escapeHtml(r.referencia_usada || '-')}</td></tr>`;
+    });
+
     html += '</tbody></table></body></html>';
     const win = window.open('', '', 'width=900,height=700');
     win.document.write(html);
@@ -232,17 +301,26 @@ if (printBtn) {
 if (excelBtn) {
   excelBtn.onclick = function () {
     if (!formId || filteredRespuestas.length === 0) return;
-    const dataToExport = filteredRespuestas.map(r => ({
-      'Código': r.codigo,
-      'Nombre': r.nombre,
-      'Cédula': formatCedula(r.cedula),
-      'Edad': r.edad,
-      'Referencia': r.referencia_usada || ''
-    }));
+    const dataToExport = filteredRespuestas.map(r => {
+      const customVals = r.parametros_personalizados || {};
+      let obj = {
+        'Código': r.codigo,
+        'Nombre': r.nombre,
+        'Cédula': formatCedula(r.cedula),
+        'Edad': r.edad,
+      };
+
+      parametrosPersonalizados.forEach(param => {
+        obj[param] = customVals[param] !== undefined ? customVals[param] : '';
+      });
+
+      obj['Referencia'] = r.referencia_usada || '';
+      return obj;
+    });
+
     const ws = XLSX.utils.json_to_sheet(dataToExport);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Respuestas');
-    // Limpiamos caracteres especiales por seguridad en el nombre del archivo descargado
     const nombreLimpio = nombreFormularioActual.replace(/[^a-zA-Z0-9_\- ]/g, "").trim();
     XLSX.writeFile(wb, `Respuestas_${nombreLimpio}.xlsx`);
   };
