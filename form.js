@@ -20,6 +20,7 @@ const confNombre = document.getElementById('confNombre');
 const confCedula = document.getElementById('confCedula');
 const confEdad = document.getElementById('confEdad');
 const confReferencia = document.getElementById('confReferencia');
+const confCustomFieldsContainer = document.getElementById('confCustomFieldsContainer');
 const btnConfirmar = document.getElementById('btnConfirmar');
 const btnCorregir = document.getElementById('btnCorregir');
 const outNombre = document.getElementById('outNombre');
@@ -28,22 +29,25 @@ const outEdad = document.getElementById('outEdad');
 const outCodigo = document.getElementById('outCodigo');
 const outReferencia = document.getElementById('outReferencia');
 const outReferenciaContenedor = document.getElementById('outReferenciaContenedor');
+const outCustomFieldsContainer = document.getElementById('outCustomFieldsContainer');
 const codigoQR = document.getElementById('codigoQR');
 const qrCanvas = document.getElementById('qrCanvas');
 const entradaGenerada = document.getElementById('entradaGenerada');
 const ticketBg = document.getElementById('ticketBg');
 const guardarBtn = document.getElementById('guardarBtn');
+const customFieldsContainer = document.getElementById('customFieldsContainer');
 
 let currentMinAge = null;
 let currentMaxAge = null;
 let currentFormDbId = null;
+let currentParametrosPersonalizados = [];
 let isSubmitting = false;
 
 async function cargarDatosFormulario() {
   if (!formId) return;
   const { data: formDataResult, error: formError } = await supabase
     .from('formularios')
-    .select('id, nombre, imagen_url, min_age, max_age')
+    .select('id, nombre, imagen_url, min_age, max_age, parametros_personalizados')
     .eq('codigo_form', formId)
     .single();
 
@@ -68,6 +72,13 @@ async function cargarDatosFormulario() {
     }
     currentMinAge = formDataResult.min_age !== undefined ? formDataResult.min_age : null;
     currentMaxAge = formDataResult.max_age !== undefined ? formDataResult.max_age : null;
+    currentParametrosPersonalizados = Array.isArray(formDataResult.parametros_personalizados) 
+      ? formDataResult.parametros_personalizados 
+      : [];
+
+    // Renderizar dinámicamente las casillas personalizadas en el formulario público
+    renderizarCamposPersonalizadosPublico();
+
   } else {
     if (formTitleElement) formTitleElement.textContent = 'Formulario no encontrado';
     if (ticketBg) ticketBg.style.display = 'none';
@@ -77,7 +88,33 @@ async function cargarDatosFormulario() {
   }
 }
 
-// Validación inicial y llamada directa para asegurar que cargue el nombre
+function renderizarCamposPersonalizadosPublico() {
+  if (!customFieldsContainer) return;
+  customFieldsContainer.innerHTML = '';
+  currentParametrosPersonalizados.forEach((param, index) => {
+    const wrapper = document.createElement('div');
+    wrapper.style.display = 'flex';
+    wrapper.style.flexDirection = 'column';
+    wrapper.style.gap = '5px';
+
+    const label = document.createElement('label');
+    label.setAttribute('for', `custom_param_${index}`);
+    label.textContent = `${param}:`;
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.id = `custom_param_${index}`;
+    input.setAttribute('data-param-name', param);
+    input.required = true;
+    input.autocomplete = 'off';
+    input.placeholder = `Ingrese ${param.toLowerCase()}`;
+
+    wrapper.appendChild(label);
+    wrapper.appendChild(input);
+    customFieldsContainer.appendChild(wrapper);
+  });
+}
+
 if (!formId || formId.trim() === "") {
   if (formTitleElement) formTitleElement.textContent = 'Error: Formulario no especificado';
   if (errorMsg) {
@@ -118,6 +155,27 @@ if (formData) {
       return;
     }
 
+    // Recopilar valores de los campos personalizados y validar que no estén vacíos
+    const customValuesMap = {};
+    let camposPersonalizadosValidos = true;
+
+    currentParametrosPersonalizados.forEach((param, index) => {
+      const inputEl = document.getElementById(`custom_param_${index}`);
+      if (inputEl) {
+        const val = inputEl.value.trim();
+        if (!val) {
+          camposPersonalizadosValidos = false;
+        }
+        customValuesMap[param] = val;
+      }
+    });
+
+    if (!camposPersonalizadosValidos) {
+      errorMsg.textContent = 'Debe completar todos los campos personalizados.';
+      errorMsg.style.display = 'block';
+      return;
+    }
+
     const edad = parseInt(edadValue);
     if (isNaN(edad) || edad < 0) {
         errorMsg.textContent = 'Edad inválida.';
@@ -140,10 +198,27 @@ if (formData) {
     confEdad.textContent = `${edad} años`;
     confReferencia.textContent = referenciaValue;
 
+    // Renderizar confirmación de campos personalizados
+    if (confCustomFieldsContainer) {
+      confCustomFieldsContainer.innerHTML = '';
+      Object.entries(customValuesMap).forEach(([key, val]) => {
+        const p = document.createElement('p');
+        p.innerHTML = `<strong>${key}:</strong> ${val}`;
+        confCustomFieldsContainer.appendChild(p);
+      });
+    }
+
     formData.style.display = 'none';
     entradaGenerada.style.display = 'none';
     confirmacionDatos.style.display = 'block';
-    window.datosParaConfirmar = { nombre, cedula: cedulaRaw, edad: edadValue, edadInt: edad, referencia: referenciaValue };
+    window.datosParaConfirmar = { 
+      nombre, 
+      cedula: cedulaRaw, 
+      edad: edadValue, 
+      edadInt: edad, 
+      referencia: referenciaValue, 
+      customValues: customValuesMap 
+    };
   });
 }
 
@@ -158,7 +233,7 @@ async function validarYObtenerReferencia(codigoReferencia, formDbId) {
     return { valida: false, mensaje: "El código de referencia proporcionado no existe o es incorrecto." };
   }
   if (data.usos_disponibles <= 0) {
-    return { valida: false, mensaje: "Este código de referencia ya ha sido utilizado y no tiene usos disponibles." };
+    return { valida: false, mensaje: "Este código de referencia ya ha sido utilizado y não tiene usos disponibles." };
   }
   return { valida: true, datosReferencia: data };
 }
@@ -195,7 +270,7 @@ if (btnConfirmar) {
         return;
       }
 
-      const { nombre, cedula, edadInt, referencia } = window.datosParaConfirmar;
+      const { nombre, cedula, edadInt, referencia, customValues } = window.datosParaConfirmar;
       const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
 
       const validacionRef = await validarYObtenerReferencia(referencia, currentFormDbId);
@@ -254,7 +329,8 @@ if (btnConfirmar) {
         nombre_completo: toTitleCase(nombre),
         cedula: cedula,
         edad: edadInt,
-        referencia_usada: referencia
+        referencia_usada: referencia,
+        parametros_personalizados: customValues // Guarda las respuestas personalizadas en la BD
       };
 
       const { data: insertData, error: insertError } = await supabase
@@ -281,6 +357,17 @@ if (btnConfirmar) {
       outReferencia.textContent = insertData.referencia_usada;
       outReferenciaContenedor.style.display = 'block';
       if (codigoQR) codigoQR.textContent = "Código: " + insertData.codigo_secuencial;
+
+      // Renderizar campos personalizados en el ticket final
+      if (outCustomFieldsContainer) {
+        outCustomFieldsContainer.innerHTML = '';
+        const savedCustomValues = insertData.parametros_personalizados || {};
+        Object.entries(savedCustomValues).forEach(([key, val]) => {
+          const p = document.createElement('p');
+          p.innerHTML = `<strong>${key}:</strong> ${val}`;
+          outCustomFieldsContainer.appendChild(p);
+        });
+      }
 
       const qrCanvasElement = document.getElementById('qrCanvas');
       let datosQR = `${formDisplayName}\nNombre: ${insertData.nombre_completo}\nCédula: ${insertData.cedula}\nEdad: ${insertData.edad}\nCódigo: ${insertData.codigo_secuencial}\nRef: ${insertData.referencia_usada}`;
