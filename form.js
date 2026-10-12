@@ -333,21 +333,63 @@ if (guardarBtn) {
       
       clone.style.width = `${cloneBaseWidth}px`;
       clone.style.height = `${cloneBaseHeight}px`;
-      clone.style.backgroundColor = '#ffffff';
+      clone.style.boxShadow = 'none';
+      clone.style.borderRadius = '0px'; // Evita esquinas redondeadas feas en la descarga
+      clone.style.backgroundColor = 'transparent';
 
+      // Posicionar exactamente el bloque QR en el clon con el mismo left (90px)
+      const qrAbsoluteDivInClone = clone.querySelector('.qr-absolute');
+      if (qrAbsoluteDivInClone) {
+        qrAbsoluteDivInClone.style.position = 'absolute';
+        qrAbsoluteDivInClone.style.top = '55%';
+        qrAbsoluteDivInClone.style.left = '90px'; 
+        qrAbsoluteDivInClone.style.transform = 'translate(-50%, -50%)';
+        qrAbsoluteDivInClone.style.background = 'rgba(255, 255, 255, 0.95)';
+        qrAbsoluteDivInClone.style.padding = '6px';
+        qrAbsoluteDivInClone.style.borderRadius = '8px';
+        qrAbsoluteDivInClone.style.display = 'flex';
+        qrAbsoluteDivInClone.style.flexDirection = 'column';
+        qrAbsoluteDivInClone.style.alignItems = 'center';
+        qrAbsoluteDivInClone.style.zIndex = '10';
+      }
+
+      clone.style.position = 'absolute';
+      clone.style.left = '-9999px';
       document.body.appendChild(clone);
       await new Promise(resolve => setTimeout(resolve, 250));
 
+      const scaleFactor = targetOutputWidthPx / cloneBaseWidth;
       html2canvas(clone, {
         useCORS: true,
-        scale: targetOutputWidthPx / cloneBaseWidth,
+        scale: scaleFactor,
+        backgroundColor: null,
+        onclone: (documentCloned, clonedElement) => {
+          const clonedCanvasEl = clonedElement.querySelector('#qrCanvas');
+          if (clonedCanvasEl) {
+            const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
+            let datosQRClone = `${formDisplayName}\nNombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}\nRef: ${outReferencia.textContent}`;
+            
+            QRCode.toCanvas(clonedCanvasEl, datosQRClone, { width: 70, height: 70, margin: 1 }, function (error) {
+              if (error) console.error('Error redibujando QR en clon:', error);
+            });
+          }
+          const clonedQrLabel = clonedElement.querySelector('.qr-code-label');
+          if (clonedQrLabel) {
+            clonedQrLabel.textContent = "Código: " + outCodigo.textContent;
+          }
+        }
       }).then(canvasFromHtml2Canvas => {
         const finalCanvas = document.createElement('canvas');
         finalCanvas.width = targetOutputWidthPx;
         finalCanvas.height = targetOutputHeightPx;
         const finalCtx = finalCanvas.getContext('2d');
-        finalCtx.drawImage(canvasFromHtml2Canvas, 0, 0, canvasFromHtml2Canvas.width, canvasFromHtml2Canvas.height, 0, 0, targetOutputWidthPx, targetOutputHeightPx);
         
+        finalCtx.drawImage(
+          canvasFromHtml2Canvas,
+          0, 0, canvasFromHtml2Canvas.width, canvasFromHtml2Canvas.height,
+          0, 0, targetOutputWidthPx, targetOutputHeightPx
+        );
+
         const link = document.createElement('a');
         link.download = `${outCodigo.textContent || 'TICKET'}${outNombre.textContent || 'nombre'}.jpg`;
         link.href = finalCanvas.toDataURL('image/jpeg', 0.9);
@@ -355,7 +397,7 @@ if (guardarBtn) {
         document.body.removeChild(clone);
       });
     } catch (error) {
-      alert("No se pudo generar la imagen.");
+      alert("No se pudo generar la imagen de la entrada.");
     }
   });
 }
