@@ -16,7 +16,7 @@
 
   <!-- Contenedor de filtros avanzados -->
   <div class="filters-container">
-    <input type="text" id="searchInput" placeholder="Buscar por nombre, cédula, edad o referencia..." />
+    <input type="text" id="searchInput" placeholder="Buscar por nombre, cédula, edad, parámetros o referencia..." />
     <select id="filterReferencia" class="filter-select">
       <option value="">Todas las referencias</option>
     </select>
@@ -32,24 +32,23 @@
     <button id="excelBtn" style="display:none;">Descargar Excel</button>
   </div>
 
-  <table id="respuestasTable" style="width:100%; border-collapse: collapse;">
-    <thead>
-      <tr>
-        <th>Código</th>
-        <th>Nombre</th>
-        <th>Cédula</th>
-        <th>Edad</th>
-        <th>Referencia</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Respuestas aquí -->
-    </tbody>
-  </table>
+  <div style="overflow-x: auto;">
+    <table id="respuestasTable" style="width:100%; border-collapse: collapse;">
+      <thead>
+        <tr id="tableHeaderRow">
+          <!-- Los encabezados (Código, Nombre, Cédula, Edad, Personalizados..., Referencia, Acciones) se cargan dinámicamente -->
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <!-- Respuestas aquí -->
+      </tbody>
+    </table>
+  </div>
+  
   <div id="pagination" style="margin-top:16px; display:flex; justify-content:center;"></div>
   <p id="noDataMsg" style="display:none; font-weight: bold; margin-top: 20px;">No hay respuestas para este formulario.</p>
 </main>
+
 <!-- SheetJS para exportar a Excel -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script type="module" src="respuestas.js"></script>
