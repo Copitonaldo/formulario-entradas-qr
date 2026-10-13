@@ -186,7 +186,7 @@ th, td {
   padding: 12px 15px;
   text-align: center;
   border: 1px solid #ddd;
-  white-space: nowrap; /* Mantiene los botones y enlaces uno al lado del otro en PC */
+  white-space: nowrap; /* Mantiene los enlaces al lado en PC */
 }
 
 tbody tr:hover {
@@ -246,7 +246,7 @@ img.thumb {
     display: block;
     width: 100%;
     box-sizing: border-box;
-    white-space: normal; /* Permite ajuste de texto en móvil */
+    white-space: normal;
   }
   thead tr {
     display: none;
@@ -270,26 +270,43 @@ img.thumb {
   }
   td:last-child {
     border-bottom: none;
-    flex-direction: column; /* Apila los enlaces de acciones en móvil para que no se amontonen */
-    align-items: flex-start;
-    padding-top: 10px;
+    flex-direction: column;
+    align-items: stretch;
+    padding-top: 12px;
   }
   
-  /* Ajuste especial para la celda de acciones en móvil */
+  /* Celda de acciones limpia y espaciada en móvil */
   td:last-child:before {
     content: "Acciones:";
     font-weight: bold;
     color: #007bff;
+    margin-bottom: 8px;
+    text-align: left;
+  }
+
+  /* Transformar los enlaces y botones de acción en bloques cómodos para tocar */
+  td:last-child a {
+    display: block;
+    padding: 6px 0;
+    text-align: center;
+    background: #f1f7ff;
+    color: #007bff;
+    border-radius: 4px;
     margin-bottom: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    border: 1px solid #cce5ff;
   }
 
-  td:last-child a, 
-  td:last-child button {
-    display: inline-block;
-    margin: 3px 0;
+  td:last-child button.delete-btn {
+    display: block;
+    width: 100%;
+    padding: 8px;
+    margin-top: 4px;
+    text-align: center;
   }
 
-  /* Etiquetas automáticas para las demás celdas */
+  /* Etiquetas automáticas para las demás celdas asegurando visibilidad completa */
   td:nth-of-type(1):before { content: "Código: "; font-weight: bold; color: #007bff; text-align: left; }
   td:nth-of-type(2):before { content: "Nombre: "; font-weight: bold; color: #007bff; text-align: left; }
   td:nth-of-type(3):before { content: "Tipo: "; font-weight: bold; color: #007bff; text-align: left; }
@@ -298,10 +315,5 @@ img.thumb {
   img.thumb {
     width: 50px;
     height: 30px;
-  }
-  .delete-btn {
-    padding: 6px 12px;
-    font-size: 0.9rem;
-    margin-top: 5px;
   }
 }
