@@ -38,7 +38,7 @@ const customFieldsContainer = document.getElementById('customFieldsContainer');
 let currentMinAge = null;
 let currentMaxAge = null;
 let currentFormDbId = null;
-let currentFormTipo = 'normal'; // Para saber si el formulario es normal o vip_general
+let currentFormTipo = 'normal';
 let currentParametrosPersonalizados = [];
 let isSubmitting = false;
 
@@ -381,7 +381,7 @@ if (btnConfirmar) {
         });
       }
 
-      // --- APLICAR ESTILO VIP DINÁMICO EN LA ENTRADA ---
+      // --- APLICAR ESTILO VIP DINÁMICO SEGÚN LA REFERENCIA USADA ---
       const ticketWrap = document.querySelector('#entradaGenerada .ticket-img-wrap');
       if (ticketWrap) {
         if (currentFormTipo === 'vip_general' && tipoEntradaRef.toUpperCase() === 'VIP') {
@@ -494,7 +494,7 @@ if (guardarBtn) {
         const finalCanvas = document.createElement('canvas');
         finalCanvas.width = targetOutputWidthPx;
         finalCanvas.height = targetOutputHeightPx;
-        finalCtx = finalCanvas.getContext('2d');
+        const finalCtx = finalCanvas.getContext('2d');
         finalCtx.fillStyle = '#ffffff';
         finalCtx.fillRect(0, 0, targetOutputWidthPx, targetOutputHeightPx);
         
