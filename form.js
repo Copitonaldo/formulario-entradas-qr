@@ -440,7 +440,7 @@ if (guardarBtn) {
       if (qrAbsoluteDivInClone) {
         qrAbsoluteDivInClone.style.position = 'absolute';
         qrAbsoluteDivInClone.style.top = '55%';
-        qrAbsoluteDivInClone.style.left = '18%'; 
+        qrAbsoluteDivInClone.style.left = '14%'; // Sincronizado con la previsualización al descargar
         qrAbsoluteDivInClone.style.transform = 'translate(-50%, -50%)';
         qrAbsoluteDivInClone.style.background = '#ffffff';
         qrAbsoluteDivInClone.style.padding = '6px';
