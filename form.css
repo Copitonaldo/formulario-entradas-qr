@@ -151,7 +151,7 @@ form#formData button:hover {
 .qr-absolute {
   position: absolute;
   top: 55%;
-  left: 14%; /* Posición desplazada hacia la izquierda en previsualización */
+  left: 15.5%; /* Un pelin más a la derecha */
   transform: translate(-50%, -50%);
   background: rgba(255, 255, 255, 0.95);
   padding: 6px;
@@ -226,7 +226,7 @@ form#formData button:hover {
     padding-right: 20px;
   }
   .qr-absolute {
-    left: 14%;
+    left: 15.5%;
   }
   .datos b {
     width: 115px;
@@ -235,7 +235,7 @@ form#formData button:hover {
 
 @media (max-width: 480px) {
   .qr-absolute {
-    left: 14%;
+    left: 15.5%;
   }
   .datos b {
     width: 115px;
