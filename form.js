@@ -28,6 +28,8 @@ const outCustomFieldsContainer = document.getElementById('outCustomFieldsContain
 const outCodigo = document.getElementById('outCodigo');
 const outReferencia = document.getElementById('outReferencia');
 const outReferenciaContenedor = document.getElementById('outReferenciaContenedor');
+const outTipoEntrada = document.getElementById('outTipoEntrada');
+const outTipoEntradaContenedor = document.getElementById('outTipoEntradaContenedor');
 const codigoQR = document.getElementById('codigoQR');
 const qrCanvas = document.getElementById('qrCanvas');
 const entradaGenerada = document.getElementById('entradaGenerada');
@@ -369,6 +371,15 @@ if (btnConfirmar) {
       outCodigo.textContent = insertData.codigo_secuencial;
       outReferencia.textContent = insertData.referencia_usada;
       outReferenciaContenedor.style.display = 'block';
+
+      // --- MOSTRAR TIPO DE ENTRADA EN PANTALLA SI EL FORMULARIO ES VIP/GENERAL ---
+      if (currentFormTipo === 'vip_general' && outTipoEntradaContenedor && outTipoEntrada) {
+        outTipoEntrada.textContent = tipoEntradaRef;
+        outTipoEntradaContenedor.style.display = 'block';
+      } else if (outTipoEntradaContenedor) {
+        outTipoEntradaContenedor.style.display = 'none';
+      }
+
       if (codigoQR) codigoQR.textContent = "Código: " + insertData.codigo_secuencial;
 
       if (outCustomFieldsContainer) {
@@ -392,9 +403,11 @@ if (btnConfirmar) {
       }
 
       const qrCanvasElement = document.getElementById('qrCanvas');
-      let datosQR = `${formDisplayName}\nNombre: ${insertData.nombre_completo}\nCédula: ${insertData.cedula}\nEdad: ${insertData.edad}\nCódigo: ${insertData.codigo_secuencial}`;
-      if (insertData.referencia_usada) datosQR += `\nRef: ${insertData.referencia_usada}`;
-      if (currentFormTipo === 'vip_general') datosQR += `\nTipo: ${tipoEntradaRef}`;
+      
+      // CONSTRUCCIÓN DEL QR CON TILDES ORIGINALES E INCLUYENDO EL TIPO SI ES VIP/GENERAL
+      let datosQR = `${formDisplayName}\nNombre: ${insertData.nombre_completo}\nCédula: ${insertData.cedula}\nEdad: ${insertData.edad} años\nCódigo: ${insertData.codigo_secuencial}`;
+      if (insertData.referencia_usada) datosQR += `\nReferencia: ${insertData.referencia_usada}`;
+      if (currentFormTipo === 'vip_general') datosQR += `\nTipo de Entrada: ${tipoEntradaRef}`;
 
       if (qrCanvasElement) {
         QRCode.toCanvas(qrCanvasElement, datosQR, {
@@ -448,7 +461,6 @@ if (guardarBtn) {
       clone.style.boxSizing = 'border-box';
       clone.style.backgroundColor = '#ffffff';
 
-      // Si es VIP, aplicamos borde recto sin esquinas redondeadas exageradas en el clon
       if (elementToCapture.classList.contains('ticket-vip-style')) {
         clone.style.border = '10px solid #d4af37';
         clone.style.boxShadow = 'none';
@@ -488,14 +500,16 @@ if (guardarBtn) {
           const clonedCanvasEl = clonedElement.querySelector('#qrCanvas');
           if (clonedCanvasEl) {
             const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
-            let datosQRClone = `${formDisplayName}\nNombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}`;
-            if (outReferenciaContenedor.style.display !== 'none' && outReferencia.textContent) datosQRClone += `\nRef: ${outReferencia.textContent}`;
             
+            // DATOS DEL QR DEL CLON CON SUS TILDES Y TIPO DE ENTRADA INCLUIDO
+            let datosQRClone = `${formDisplayName}\nNombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}`;
+            if (outReferenciaContenedor.style.display !== 'none' && outReferencia.textContent) datosQRClone += `\nReferencia: ${outReferencia.textContent}`;
+            if (currentFormTipo === 'vip_general' && outTipoEntrada && outTipoEntrada.textContent) datosQRClone += `\nTipo de Entrada: ${outTipoEntrada.textContent}`;
+
             QRCode.toCanvas(clonedCanvasEl, datosQRClone, { width: 70, height: 70, margin: 1 });
           }
           const clonedQrLabel = clonedElement.querySelector('.qr-code-label');
           if (clonedQrLabel) {
-            // CORREGIDO: Palabra "Código" correctamente escrita con su número
             clonedQrLabel.textContent = "Código: " + outCodigo.textContent;
           }
         }
@@ -514,7 +528,6 @@ if (guardarBtn) {
         );
 
         const link = document.createElement('a');
-        // CORREGIDO: Nombre del archivo sin guion bajo entre el código y el nombre (Ej: 004Frank Torres.jpg)
         link.download = `${outCodigo.textContent || 'TICKET'}${outNombre.textContent || 'nombre'}.jpg`;
         link.href = finalCanvas.toDataURL('image/jpeg', 0.9);
         link.click();
