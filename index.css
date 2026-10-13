@@ -171,12 +171,19 @@ form#createForm button:hover {
   background-color: #0056b3;
 }
 
+/* NUEVO: Contenedor responsivo para tablas en index */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 30px;
+}
 
 table {
   width: 100%;
   border-collapse: collapse;
   font-family: Arial, sans-serif;
-  margin-top: 30px;
+  min-width: 600px; /* Asegura que no se apriete demasiado en móviles */
 }
 
 thead {
@@ -189,6 +196,7 @@ th, td {
   padding: 12px 15px;
   text-align: center;
   border: 1px solid #ddd;
+  white-space: nowrap; /* Evita saltos de línea extraños en celdas de acciones */
 }
 
 tbody tr:hover {
@@ -217,21 +225,20 @@ img.thumb {
   background-color: #a71d2a;
 }
 
-
 @media (max-width: 700px) {
   body {
-    padding-top: 15px; /* Reducir padding superior en pantallas pequeñas */
+    padding-top: 15px;
   }
   main {
-    padding: 20px 15px; /* Ajustar padding de main */
-    border-radius: 0; /* Quitar border-radius en pantallas pequeñas */
+    padding: 20px 15px;
+    border-radius: 0;
   }
   header {
-    padding: 15px 20px; /* Ajustar padding de header */
-    border-radius: 0; /* Quitar border-radius en pantallas pequeñas */
+    padding: 15px 20px;
+    border-radius: 0;
   }
   header h1 {
-    font-size: 1.5rem; /* Reducir tamaño de fuente del título */
+    font-size: 1.5rem;
   }
   .logout-btn {
     padding: 8px 16px;
@@ -244,11 +251,11 @@ img.thumb {
     padding: 0 10px;
   }
   table th, table td {
-    padding: 10px 8px; /* Ajustar padding de celdas */
-    font-size: 0.9rem; /* Reducir tamaño de fuente en tablas */
+    padding: 10px 8px;
+    font-size: 0.9rem;
   }
   img.thumb {
-    width: 50px; /* Ajustar tamaño de imagen miniatura */
+    width: 50px;
     height: 30px;
   }
   .delete-btn {
@@ -277,7 +284,7 @@ img.thumb {
     padding: 12px;
   }
   table th, table td {
-    font-size: 0.85rem; /* Reducir aún más el tamaño de fuente en tablas */
+    font-size: 0.85rem;
     padding: 8px 5px;
   }
   img.thumb {
