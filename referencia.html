@@ -28,6 +28,17 @@
         <label for="usosReferencia">¿Cuántas veces se puede usar?</label>
         <input type="number" id="usosReferencia" name="usosReferencia" required min="1">
       </div>
+      
+      <!-- NUEVO: Selector de Tipo de Entrada (VIP o General) -->
+      <div>
+        <label for="tipoEntrada">Tipo de Entrada:</label>
+        <select id="tipoEntrada" name="tipoEntrada" required style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; background-color: white;">
+          <option value="">Selecciona...</option>
+          <option value="VIP">VIP</option>
+          <option value="General">General</option>
+        </select>
+      </div>
+
       <button type="submit">Crear Referencia</button>
     </form>
     <div id="exitoMensaje"></div>
@@ -38,6 +49,7 @@
       <thead>
         <tr>
           <th>Código Referencia</th>
+          <th>Tipo de Entrada</th> <!-- NUEVO -->
           <th>Usos Disponibles</th>
           <th>Acciones</th>
         </tr>
