@@ -79,7 +79,6 @@ form#formData button:hover { background-color: #0056b3; }
 #entradaGenerada h3 { margin-top: 0; text-align: center; }
 .ticket-img-wrap {
   position: relative; display: block; width: 100%; max-width: 500px;
-  /* La vista previa conserva la misma proporción que la imagen descargada. */
   aspect-ratio: 2500 / 960; margin: 0 auto 10px auto;
   background: #f0f0f0; border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.15); box-sizing: border-box; overflow: hidden;
@@ -121,7 +120,6 @@ form#formData button:hover { background-color: #0056b3; }
   .qr-absolute { left: 15.5%; }
   .datos b { width: 115px; }
 }
-/* ESTILO VIP EXCLUSIVO: conservado sin cambios */
 .ticket-vip-style {
   border: 5px solid #d4af37 !important;
   box-shadow: 0 0 20px rgba(212, 175, 55, 0.7) !important;
