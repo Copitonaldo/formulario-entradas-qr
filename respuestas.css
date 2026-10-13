@@ -25,7 +25,7 @@ header {
   justify-content: space-between;
   align-items: center;
   box-sizing: border-box;
-  border-radius: 0; /* <--- Modificado de 8px a 0 para que quede recto */
+  border-radius: 0;
   margin-bottom: 0;
   position: sticky;
   top: 0;
@@ -39,7 +39,7 @@ header h1 {
 
 main {
   width: 100%;
-  max-width: 1000px; /* Ajustado para acomodar más columnas */
+  max-width: 1000px;
   background: white;
   padding: 40px 40px 32px 40px;
   border-radius: 0 0 8px 8px;
@@ -56,7 +56,6 @@ main {
   color: #007bff;
 }
 
-/* --- Contenedor y estilos para los nuevos filtros --- */
 .filters-container {
   display: flex;
   gap: 10px;
@@ -131,10 +130,18 @@ select.filter-select:focus {
   background: #0056b3;
 }
 
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 10px;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
   font-family: Arial, sans-serif;
+  min-width: 650px;
 }
 
 thead {
@@ -144,9 +151,10 @@ thead {
 }
 
 th, td {
-  padding: 12px 15px; /* Ajustado para mejor espaciado */
+  padding: 12px 15px;
   text-align: center;
   border: 1px solid #ddd;
+  white-space: nowrap;
 }
 
 tbody tr:hover {
@@ -211,60 +219,18 @@ tbody tr:hover {
   margin-top: 20px;
 }
 
-/* Media Query Responsiva */
 @media (max-width: 700px) {
   main {
-    padding: 16px 4px 16px 4px;
+    padding: 16px 10px;
   }
   header {
-    padding: 12px 10px;
-    font-size: 1rem;
+    padding: 12px 15px;
   }
   .filters-container {
     flex-direction: column;
   }
   input#searchInput, select.filter-select {
     width: 100%;
-  }
-  table, thead, tbody, th, td, tr {
-    display: block;
-    width: 100%;
-  }
-  thead tr {
-    display: none;
-  }
-  tr {
-    margin-bottom: 18px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    background: #fff;
-    box-shadow: 0 2px 8px #0001;
-  }
-  td {
-    text-align: left;
-    padding: 10px 8px;
-    border: none;
-    position: relative;
-    /* Añadir un separador visual entre filas */
-    border-bottom: 1px solid #eee;
-  }
-  /* Añadir etiquetas antes de cada celda */
-  td:nth-of-type(1):before { content: "Código: "; }
-  td:nth-of-type(2):before { content: "Nombre: "; }
-  td:nth-of-type(3):before { content: "Cédula: "; }
-  td:nth-of-type(4):before { content: "Edad: "; }
-  td:nth-of-type(5):before { content: "Referencia: "; }
-  td:nth-of-type(6):before { content: "Acciones: "; }
-
-  td:before {
-    font-weight: bold;
-    display: block;
-    margin-bottom: 4px;
-    color: #007bff;
-  }
-  /* Ajustar botones de acción */
-  .action-btn {
-    margin: 2px 4px; /* Espaciado consistente */
   }
   #pagination {
     flex-wrap: wrap;
