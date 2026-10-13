@@ -169,6 +169,7 @@ form#createForm button:hover {
   background-color: #0056b3;
 }
 
+/* ESTILO ESCRITORIO (PC): Tabla clásica idéntica a la original */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -186,7 +187,7 @@ th, td {
   padding: 12px 15px;
   text-align: center;
   border: 1px solid #ddd;
-  white-space: nowrap; /* Mantiene los botones alineados en PC */
+  white-space: nowrap;
 }
 
 tbody tr:hover {
@@ -215,9 +216,9 @@ img.thumb {
   background-color: #a71d2a;
 }
 
-/* ==========================================
-   ADAPTACIÓN MÓVIL (TARJETAS LIMPIAS Y ORDENADAS)
-   ================================---------- */
+/* ==========================================================
+   ADAPTACIÓN EXCLUSIVA PARA MÓVILES (Pantallas menores a 700px)
+   ========================================================== */
 @media (max-width: 700px) {
   body {
     padding-top: 15px;
@@ -244,13 +245,14 @@ img.thumb {
     padding: 0 10px;
   }
 
+  /* Desactivamos propiedades de tabla y convertimos en tarjetas limpias */
   table, thead, tbody, th, td, tr {
     display: block;
     width: 100%;
     box-sizing: border-box;
     white-space: normal;
   }
-  thead tr {
+  thead {
     display: none;
   }
   tr {
@@ -260,6 +262,8 @@ img.thumb {
     background: #fff;
     box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     padding: 15px;
+    display: flex;
+    flex-direction: column;
   }
   td {
     text-align: right;
@@ -271,23 +275,18 @@ img.thumb {
     align-items: center;
   }
   
-  /* Orden limpio de arriba a abajo por cada columna */
+  /* Orden estricto de visualización en móvil (Código primero, luego Nombre, Tipo, Imagen y Acciones) */
   td:nth-of-type(1) { order: 1; }
   td:nth-of-type(2) { order: 2; }
   td:nth-of-type(3) { order: 3; }
   td:nth-of-type(4) { order: 4; }
   td:last-child     { order: 5; border-bottom: none; flex-direction: column; align-items: stretch; padding-top: 14px; }
 
-  tr {
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* Etiquetas de texto visibles en cada línea de la tarjeta */
-  td:nth-of-type(1):before { content: "Código:"; font-weight: bold; color: #007bff; }
-  td:nth-of-type(2):before { content: "Nombre:"; font-weight: bold; color: #007bff; }
-  td:nth-of-type(3):before { content: "Tipo:"; font-weight: bold; color: #007bff; }
-  td:nth-of-type(4):before { content: "Imagen:"; font-weight: bold; color: #007bff; }
+  /* Etiquetas de texto visibles en cada línea de la tarjeta móvil */
+  td:nth-of-type(1):before { content: "Código:"; font-weight: bold; color: #007bff; text-align: left; }
+  td:nth-of-type(2):before { content: "Nombre:"; font-weight: bold; color: #007bff; text-align: left; }
+  td:nth-of-type(3):before { content: "Tipo:"; font-weight: bold; color: #007bff; text-align: left; }
+  td:nth-of-type(4):before { content: "Imagen:"; font-weight: bold; color: #007bff; text-align: left; }
   
   td:last-child:before {
     content: "Acciones:";
@@ -297,7 +296,7 @@ img.thumb {
     text-align: left;
   }
 
-  /* Estilo cómodo para los enlaces de acciones en móvil */
+  /* Estilo limpio para los botones/enlaces de acciones en móvil sin barras extrañas */
   td:last-child a {
     display: block;
     padding: 8px;
