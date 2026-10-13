@@ -7,7 +7,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const urlParams = new URLSearchParams(window.location.search);
-const formId = urlParams.get('id'); // Este es el 'codigo_form' en la URL (?id=...)
+const formId = urlParams.get('id'); 
 const formTitleElement = document.getElementById('formTitle');
 const dashboardCount = document.getElementById('dashboardCount');
 const respuestasTable = document.getElementById('respuestasTable');
@@ -26,7 +26,7 @@ let filteredRespuestas = [];
 let currentPage = 1;
 const PAGE_SIZE = 50;
 let currentFormDbId = null; 
-let currentFormTipo = 'normal'; // Detecta si es 'normal' o 'vip_general'
+let currentFormTipo = 'normal'; 
 let parametrosDinamicos = [];
 
 if (!formId || formId.trim() === "") {
@@ -53,7 +53,6 @@ if (!formId || formId.trim() === "") {
 }
 
 async function cargarRespuestas() {
-  // 1. Obtener información del formulario, su tipo y parámetros personalizados
   const { data: formInfo, error: formInfoError } = await supabase
     .from('formularios')
     .select('id, nombre, tipo_formulario, parametros_personalizados') 
@@ -76,7 +75,9 @@ async function cargarRespuestas() {
   
   if (formTitleElement) formTitleElement.textContent = `Respuestas del Formulario: ${formInfo.nombre || formId}`;
 
-  // 2. Cargar respuestas del formulario
+  // Ajustar el menú de orden/separar dinámicamente si es VIP/General
+  ajustarOpcionesFiltroOrden();
+
   const { data: respuestasData, error: respuestasError } = await supabase
     .from('respuestas')
     .select('id, codigo_secuencial, nombre_completo, cedula, edad, fecha_registro, referencia_usada, parametros_personalizados')
@@ -90,7 +91,6 @@ async function cargarRespuestas() {
     }
     todasLasRespuestas = [];
   } else {
-    // Si el formulario es VIP/General, vinculamos el tipo de entrada según la referencia usada
     let referenciasMap = {};
     if (currentFormTipo === 'vip_general') {
       const { data: refsData } = await supabase
@@ -152,6 +152,27 @@ async function cargarRespuestas() {
   aplicarFiltrosYOrden();
 }
 
+function ajustarOpcionesFiltroOrden() {
+  if (!filterOrden) return;
+
+  // Mantener las opciones base de orden
+  filterOrden.innerHTML = `
+    <option value="recientes">Más recientes primero</option>
+    <option value="antiguos">Más antiguos primero</option>
+    <option value="nombre">Ordenar por Nombre (A-Z)</option>
+    <option value="codigo_desc">Código: Mayor a Menor</option>
+    <option value="codigo_asc">Código: Menor a Mayor</option>
+  `;
+
+  // Si el formulario es VIP/General, añadimos opciones adicionales para separar/filtrar por VIP o General
+  if (currentFormTipo === 'vip_general') {
+    filterOrden.innerHTML += `
+      <option value="solo_vip">Separar / Filtrar: Solo VIP</option>
+      <option value="solo_general">Separar / Filtrar: Solo General</option>
+    `;
+  }
+}
+
 function construirEncabezadosTabla() {
   if (!tableHeaderRow) return;
 
@@ -168,7 +189,6 @@ function construirEncabezadosTabla() {
 
   html += `<th>Referencia</th>`;
 
-  // Muestra la columna "Tipo de Entrada" únicamente si el formulario es VIP/General
   if (currentFormTipo === 'vip_general') {
     html += `<th>Tipo de Entrada</th>`;
   }
@@ -207,6 +227,7 @@ function aplicarFiltrosYOrden() {
   const refSeleccionada = filterReferencia ? filterReferencia.value : '';
   const ordenSeleccionado = filterOrden ? filterOrden.value : 'recientes';
 
+  // Filtrado general por texto y referencia
   filteredRespuestas = todasLasRespuestas.filter(r => {
     let cumpleTexto = (
       (r.nombre && r.nombre.toLowerCase().includes(term)) ||
@@ -220,9 +241,18 @@ function aplicarFiltrosYOrden() {
 
     let cumpleRef = refSeleccionada === '' || r.referencia_usada === refSeleccionada;
 
-    return cumpleTexto && cumpleRef;
+    // Filtro adicional si seleccionó separar por Solo VIP o Solo General
+    let cumpleTipoEntrada = true;
+    if (ordenSeleccionado === 'solo_vip') {
+      cumpleTipoEntrada = r.tipo_entrada.toUpperCase() === 'VIP';
+    } else if (ordenSeleccionado === 'solo_general') {
+      cumpleTipoEntrada = r.tipo_entrada.toUpperCase() === 'GENERAL';
+    }
+
+    return cumpleTexto && cumpleRef && cumpleTipoEntrada;
   });
 
+  // Ordenamiento
   filteredRespuestas.sort((a, b) => {
     if (ordenSeleccionado === 'recientes') {
       return new Date(b.fecha_registro) - new Date(a.fecha_registro);
@@ -230,6 +260,10 @@ function aplicarFiltrosYOrden() {
       return new Date(a.fecha_registro) - new Date(b.fecha_registro);
     } else if (ordenSeleccionado === 'nombre') {
       return (a.nombre || '').localeCompare(b.nombre || '');
+    } else if (ordenSeleccionado === 'codigo_desc') {
+      return String(b.codigo).localeCompare(String(a.codigo), undefined, { numeric: true });
+    } else if (ordenSeleccionado === 'codigo_asc') {
+      return String(a.codigo).localeCompare(String(b.codigo), undefined, { numeric: true });
     }
     return 0;
   });
