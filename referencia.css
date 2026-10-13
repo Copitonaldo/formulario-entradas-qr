@@ -171,8 +171,9 @@ td button:hover {
     border-bottom: none;
   }
 
-  /* Etiquetas dinámicas para referencias */
+  /* Etiquetas dinámicas para referencias corregidas a "Tipo de Entrada" */
   td:nth-of-type(1):before { content: "Código Referencia: "; font-weight: bold; color: #007bff; text-align: left; }
-  td:nth-of-type(2):before { content: "Tipo / Usos: "; font-weight: bold; color: #007bff; text-align: left; }
-  td:nth-of-type(3):before { content: "Acciones: "; font-weight: bold; color: #007bff; text-align: left; }
+  td:nth-of-type(2):before { content: "Tipo de Entrada: "; font-weight: bold; color: #007bff; text-align: left; }
+  td:nth-of-type(3):before { content: "Usos Disponibles: "; font-weight: bold; color: #007bff; text-align: left; }
+  td:nth-of-type(4):before { content: "Acciones: "; font-weight: bold; color: #007bff; text-align: left; }
 }
