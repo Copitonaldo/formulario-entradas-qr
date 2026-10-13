@@ -16,6 +16,7 @@
     <div id="formInfo">
       <p><strong>Formulario Padre:</strong> <span id="formPadreNombre">-</span></p>
       <p><strong>Código del Formulario Padre:</strong> <span id="formPadreCodigo">-</span></p>
+      <p><strong>Tipo de Formulario:</strong> <span id="formPadreTipo">-</span></p>
     </div>
 
     <h2>Crear Nueva Referencia</h2>
@@ -29,10 +30,10 @@
         <input type="number" id="usosReferencia" name="usosReferencia" required min="1">
       </div>
       
-      <!-- NUEVO: Selector de Tipo de Entrada (VIP o General) -->
-      <div>
+      <!-- Contenedor del Tipo de Entrada que se ocultará si el formulario es Normal -->
+      <div id="tipoEntradaContainer" style="display: none;">
         <label for="tipoEntrada">Tipo de Entrada:</label>
-        <select id="tipoEntrada" name="tipoEntrada" required style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; background-color: white;">
+        <select id="tipoEntrada" name="tipoEntrada" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; background-color: white;">
           <option value="">Selecciona...</option>
           <option value="VIP">VIP</option>
           <option value="General">General</option>
@@ -49,7 +50,7 @@
       <thead>
         <tr>
           <th>Código Referencia</th>
-          <th>Tipo de Entrada</th> <!-- NUEVO -->
+          <th id="thTipoEntrada" style="display: none;">Tipo de Entrada</th> <!-- Dinámico -->
           <th>Usos Disponibles</th>
           <th>Acciones</th>
         </tr>
