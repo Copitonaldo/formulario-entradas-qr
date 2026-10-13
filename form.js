@@ -38,6 +38,7 @@ const customFieldsContainer = document.getElementById('customFieldsContainer');
 let currentMinAge = null;
 let currentMaxAge = null;
 let currentFormDbId = null;
+let currentFormTipo = 'normal'; // Para saber si el formulario es normal o vip_general
 let currentParametrosPersonalizados = [];
 let isSubmitting = false;
 
@@ -45,7 +46,7 @@ async function cargarDatosFormulario() {
   if (!formId) return;
   const { data: formDataResult, error: formError } = await supabase
     .from('formularios')
-    .select('id, nombre, imagen_url, min_age, max_age, parametros_personalizados')
+    .select('id, nombre, tipo_formulario, imagen_url, min_age, max_age, parametros_personalizados')
     .eq('codigo_form', formId)
     .single();
   if (formError) {
@@ -58,6 +59,7 @@ async function cargarDatosFormulario() {
   }
   if (formDataResult) {
     currentFormDbId = formDataResult.id;
+    currentFormTipo = formDataResult.tipo_formulario || 'normal';
     if (formTitleElement) {
       formTitleElement.textContent = `Formulario: ${formDataResult.nombre || formId}`;
     }
@@ -226,7 +228,7 @@ if (formData) {
 async function validarYObtenerReferencia(codigoReferencia, formDbId) {
   const { data, error } = await supabase
     .from('referencias_usos')
-    .select('id, usos_disponibles')
+    .select('id, usos_disponibles, tipo_entrada')
     .eq('formulario_id', formDbId)
     .eq('codigo_referencia', codigoReferencia)
     .single();
@@ -283,6 +285,7 @@ if (btnConfirmar) {
         return;
       }
       const idReferenciaParaDecrementar = validacionRef.datosReferencia.id;
+      const tipoEntradaRef = validacionRef.datosReferencia.tipo_entrada || 'General';
 
       const { data: existingResponse } = await supabase
         .from('respuestas')
@@ -378,9 +381,20 @@ if (btnConfirmar) {
         });
       }
 
+      // --- APLICAR ESTILO VIP DINÁMICO EN LA ENTRADA ---
+      const ticketWrap = document.querySelector('#entradaGenerada .ticket-img-wrap');
+      if (ticketWrap) {
+        if (currentFormTipo === 'vip_general' && tipoEntradaRef.toUpperCase() === 'VIP') {
+          ticketWrap.classList.add('ticket-vip-style');
+        } else {
+          ticketWrap.classList.remove('ticket-vip-style');
+        }
+      }
+
       const qrCanvasElement = document.getElementById('qrCanvas');
       let datosQR = `${formDisplayName}\nNombre: ${insertData.nombre_completo}\nCédula: ${insertData.cedula}\nEdad: ${insertData.edad}\nCódigo: ${insertData.codigo_secuencial}`;
       if (insertData.referencia_usada) datosQR += `\nRef: ${insertData.referencia_usada}`;
+      if (currentFormTipo === 'vip_general') datosQR += `\nTipo: ${tipoEntradaRef}`;
 
       if (qrCanvasElement) {
         QRCode.toCanvas(qrCanvasElement, datosQR, {
@@ -440,7 +454,7 @@ if (guardarBtn) {
       if (qrAbsoluteDivInClone) {
         qrAbsoluteDivInClone.style.position = 'absolute';
         qrAbsoluteDivInClone.style.top = '55%';
-        qrAbsoluteDivInClone.style.left = '15.5%'; // Sincronizado para el archivo descargado
+        qrAbsoluteDivInClone.style.left = '15.5%';
         qrAbsoluteDivInClone.style.transform = 'translate(-50%, -50%)';
         qrAbsoluteDivInClone.style.background = '#ffffff';
         qrAbsoluteDivInClone.style.padding = '6px';
@@ -480,7 +494,7 @@ if (guardarBtn) {
         const finalCanvas = document.createElement('canvas');
         finalCanvas.width = targetOutputWidthPx;
         finalCanvas.height = targetOutputHeightPx;
-        const finalCtx = finalCanvas.getContext('2d');
+        finalCtx = finalCanvas.getContext('2d');
         finalCtx.fillStyle = '#ffffff';
         finalCtx.fillRect(0, 0, targetOutputWidthPx, targetOutputHeightPx);
         
