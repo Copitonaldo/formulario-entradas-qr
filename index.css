@@ -6,53 +6,50 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding-top: 15px;
+  padding-top: 30px;
   box-sizing: border-box;
-  width: 100%;
 }
 
 body {
   flex-direction: column;
   width: 100%;
-  max-width: 1200px; /* Ampliado para que la tabla en PC quepa completa */
-  padding: 0 10px;
-  box-sizing: border-box;
+  max-width: 1000px;
 }
 
 header {
   width: 100%;
   background: #333;
   color: white;
-  padding: 15px 25px;
+  padding: 18px 32px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-sizing: border-box;
   border-radius: 8px 8px 0 0;
-  margin-bottom: 0;
+  margin-bottom: 15px;
 }
 
 header h1 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.7rem;
 }
 
 .logout-btn {
   background: #cc0000;
   color: white;
   border: none;
-  padding: 8px 18px;
+  padding: 10px 22px;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 0.95rem;
+  font-size: 1rem;
 }
 
 main {
   width: 100%;
   background: white;
-  padding: 30px;
+  padding: 40px 40px 32px 40px;
   border-radius: 0 0 8px 8px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.08);
+  box-shadow: 0 0 20px rgba(0,0,0,0.10);
   box-sizing: border-box;
   text-align: left;
 }
@@ -64,7 +61,7 @@ main {
 }
 
 #loginSection h2 {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   font-weight: bold;
   color: #333;
 }
@@ -89,8 +86,8 @@ main {
 
 #loginSection button {
   width: 100%;
-  padding: 12px;
-  font-size: 1.1rem;
+  padding: 14px;
+  font-size: 1.15rem;
   font-weight: bold;
   background-color: #007bff;
   border: none;
@@ -100,21 +97,21 @@ main {
 }
 
 #adminPanel h2 {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   font-weight: bold;
   color: #333;
 }
 
 form#createForm {
-  max-width: 100%;
-  margin-bottom: 30px;
+  max-width: 600px;
+  margin-bottom: 40px;
 }
 
 form#createForm label {
   display: block;
   font-weight: bold;
   margin: 10px 0 5px;
-  font-size: 1rem;
+  font-size: 1.1rem;
 }
 
 form#createForm input[type="text"],
@@ -126,15 +123,15 @@ form#createForm select {
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 4px;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   box-sizing: border-box;
   background-color: white;
 }
 
 form#createForm button {
   width: 100%;
-  padding: 12px;
-  font-size: 1.1rem;
+  padding: 14px;
+  font-size: 1.15rem;
   font-weight: bold;
   color: white;
   background-color: #007bff;
@@ -144,13 +141,14 @@ form#createForm button {
 }
 
 /* ==========================================================
-   CONTROL DE VISIBILIDAD (PC vs MÓVIL) - SIN SCROLL EN PC
+   CONTROL DE VISIBILIDAD (PC vs MÓVIL)
    ========================================================== */
 .desktop-table-container {
   display: block;
   width: 100%;
-  overflow-x: visible; /* Eliminamos el scroll horizontal forzado */
-  margin-top: 15px;
+  overflow-x: auto; /* Evita que la tabla de PC se corte o salga de la pantalla */
+  -webkit-overflow-scrolling: touch;
+  margin-top: 20px;
 }
 
 .mobile-cards-container {
@@ -161,7 +159,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-family: Arial, sans-serif;
-  table-layout: fixed; /* Distribuye el espacio proporcionalmente para que nada se salga */
+  min-width: 650px; /* Asegura espacio suficiente para la PC sin romper nada */
 }
 
 thead {
@@ -171,40 +169,31 @@ thead {
 }
 
 th, td {
-  padding: 10px 8px;
+  padding: 12px 15px;
   text-align: center;
   border: 1px solid #ddd;
-  word-wrap: break-word;
-  font-size: 0.95rem;
+  white-space: nowrap;
 }
-
-/* Asignar anchos óptimos a las columnas en PC para que queden completas */
-th:nth-child(1), td:nth-child(1) { width: 15%; } /* Código */
-th:nth-child(2), td:nth-child(2) { width: 20%; } /* Nombre */
-th:nth-child(3), td:nth-child(3) { width: 15%; } /* Tipo */
-th:nth-child(4), td:nth-child(4) { width: 15%; } /* Imagen */
-th:nth-child(5), td:nth-child(5) { width: 35%; } /* Acciones con espacio suficiente */
 
 tbody tr:hover {
   background-color: #f1f7ff;
 }
 
 img.thumb {
-  width: 50px;
-  height: 35px;
+  width: 60px;
+  height: 40px;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 5px;
 }
 
 .delete-btn {
-  padding: 5px 10px;
+  padding: 6px 12px;
   background-color: #dc3545;
   border: none;
   color: white;
-  border-radius: 4px;
+  border-radius: 5px;
   cursor: pointer;
   font-weight: bold;
-  font-size: 0.9rem;
 }
 
 .delete-btn:hover {
@@ -215,25 +204,32 @@ img.thumb {
    ESTILOS EXCLUSIVOS PARA MÓVILES (Menor a 700px)
    ========================================================== */
 @media (max-width: 700px) {
-  html, body {
-    padding-top: 0;
-  }
   body {
-    padding: 0;
-    max-width: 100%;
+    padding-top: 15px;
   }
   main {
-    padding: 15px 10px;
+    padding: 20px 15px;
     border-radius: 0;
   }
   header {
-    padding: 12px 15px;
+    padding: 15px 20px;
     border-radius: 0;
   }
   header h1 {
-    font-size: 1.3rem;
+    font-size: 1.5rem;
+  }
+  .logout-btn {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+  }
+  #loginSection {
+    padding: 0 10px;
+  }
+  form#createForm {
+    padding: 0 10px;
   }
 
+  /* Ocultamos la tabla de PC y activamos las tarjetas móviles */
   .desktop-table-container {
     display: none;
   }
@@ -241,7 +237,7 @@ img.thumb {
   .mobile-cards-container {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 16px;
     margin-top: 15px;
   }
 
@@ -249,11 +245,11 @@ img.thumb {
     background: #fff;
     border: 1px solid #bce8f1;
     border-radius: 8px;
-    padding: 12px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    padding: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
   }
 
   .m-card-row {
@@ -261,8 +257,8 @@ img.thumb {
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid #f1f1f1;
-    padding-bottom: 6px;
-    font-size: 0.9rem;
+    padding-bottom: 8px;
+    font-size: 0.95rem;
   }
 
   .m-card-label {
@@ -273,13 +269,13 @@ img.thumb {
   .m-card-actions {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    margin-top: 4px;
+    gap: 8px;
+    margin-top: 6px;
   }
 
   .m-card-actions a {
     display: block;
-    padding: 8px;
+    padding: 9px;
     text-align: center;
     background: #f1f7ff;
     color: #007bff;
@@ -287,17 +283,17 @@ img.thumb {
     text-decoration: none;
     font-weight: bold;
     border: 1px solid #cce5ff;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
   }
 
   .m-card-actions button.delete-btn {
     width: 100%;
-    padding: 8px;
-    font-size: 0.9rem;
+    padding: 10px;
+    font-size: 0.95rem;
   }
 
   .thumb {
-    width: 45px;
-    height: 30px;
+    width: 55px;
+    height: 35px;
   }
 }
