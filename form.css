@@ -151,7 +151,7 @@ form#formData button:hover {
 .qr-absolute {
   position: absolute;
   top: 55%;
-  left: 18%; /* Posición porcentual perfecta y simétrica para todos los dispositivos */
+  left: 14%; /* Posición desplazada hacia la izquierda en previsualización */
   transform: translate(-50%, -50%);
   background: rgba(255, 255, 255, 0.95);
   padding: 6px;
@@ -183,7 +183,7 @@ form#formData button:hover {
 }
 .datos b {
   display: inline-block;
-  width: 115px; /* Ancho suficiente para evitar que "Referencia" se amontone[cite: 19] */
+  width: 115px;
   font-weight: bold;
 }
 .datos div {
@@ -208,7 +208,6 @@ form#formData button:hover {
   background-color: #218838;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .center {
     margin-top: 20px;
@@ -227,7 +226,7 @@ form#formData button:hover {
     padding-right: 20px;
   }
   .qr-absolute {
-    left: 18%;
+    left: 14%;
   }
   .datos b {
     width: 115px;
@@ -236,7 +235,7 @@ form#formData button:hover {
 
 @media (max-width: 480px) {
   .qr-absolute {
-    left: 18%;
+    left: 14%;
   }
   .datos b {
     width: 115px;
