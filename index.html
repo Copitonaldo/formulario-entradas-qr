@@ -30,6 +30,13 @@
       <label for="formName">Nombre del Formulario:</label>
       <input type="text" id="formName" required />
       
+      <!-- NUEVO: Selector de Tipo de Formulario (Normal o VIP/General) -->
+      <label for="formType">Tipo de Formulario:</label>
+      <select id="formType" style="width: 100%; padding: 8px 10px; font-size: 1rem; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 20px; box-sizing: border-box; background-color: white;">
+        <option value="normal">Normal (Libre)</option>
+        <option value="vip_general">Entrada VIP / General</option>
+      </select>
+
       <label for="minAge">Edad Mínima:</label>
       <input type="number" id="minAge" min="0" placeholder="Ej: 14" />
       
@@ -68,6 +75,7 @@
         <tr>
           <th>Código</th>
           <th>Nombre</th>
+          <th>Tipo</th> <!-- NUEVO: Columna para ver el tipo -->
           <th>Imagen</th>
           <th>Acciones</th>
         </tr>
