@@ -11,26 +11,26 @@
   <h1>Lista de Respuestas</h1>
 </header>
 <main>
-  <div id="dashboard">Entradas totales: <span id="dashboardCount">0</span>[cite: 16]</div>
-  <h2 id="formTitle">Cargando respuestas...[cite: 23]</h2>
+  <div id="dashboard">Entradas totales: <span id="dashboardCount">0</span></div>
+  <h2 id="formTitle">Cargando respuestas...</h2>
 
   <div class="filters-container">
-    <input type="text" id="searchInput" placeholder="Buscar por nombre, cédula, edad, parámetros o referencia..."[cite: 14, 23] />
+    <input type="text" id="searchInput" placeholder="Buscar por nombre, cédula, edad, parámetros o referencia..." />
     <select id="filterReferencia" class="filter-select">
-      <option value="">Todas las referencias[cite: 14, 23]</option>
+      <option value="">Todas las referencias</option>
     </select>
     <select id="filterOrden" class="filter-select">
-      <option value="recientes">Más recientes primero[cite: 14, 23, 24]</option>
-      <option value="antiguos">Más antiguos primero[cite: 24]</option>
-      <option value="nombre">Ordenar por Nombre (A-Z)[cite: 24]</option>
-      <option value="codigo_desc">Código: Mayor a Menor[cite: 24]</option>
-      <option value="codigo_asc">Código: Menor a Mayor[cite: 24]</option>
+      <option value="recientes">Más recientes primero</option>
+      <option value="antiguos">Más antiguos primero</option>
+      <option value="nombre">Ordenar por Nombre (A-Z)</option>
+      <option value="codigo_desc">Código: Mayor a Menor</option>
+      <option value="codigo_asc">Código: Menor a Mayor</option>
     </select>
   </div>
 
   <div class="btn-action-group">
-    <button id="printBtn" style="display:none;">Imprimir[cite: 23]</button>
-    <button id="excelBtn" style="display:none;">Descargar Excel[cite: 23]</button>
+    <button id="printBtn" style="display:none;">Imprimir</button>
+    <button id="excelBtn" style="display:none;">Descargar Excel</button>
   </div>
 
   <div class="table-responsive">
@@ -43,7 +43,7 @@
   </div>
   
   <div id="pagination" style="margin-top:16px; display:flex; justify-content:center;"></div>
-  <p id="noDataMsg" style="display:none; font-weight: bold; margin-top: 20px;">No hay respuestas para este formulario.[cite: 23]</p>
+  <p id="noDataMsg" style="display:none; font-weight: bold; margin-top: 20px;">No hay respuestas para este formulario.</p>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
