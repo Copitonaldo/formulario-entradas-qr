@@ -1,7 +1,7 @@
 // Importar Supabase
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.4/+esm";
 
-// Configuración de Supabase
+// Configuración de Supabase (Tus credenciales originales exactas)
 const SUPABASE_URL = 'https://wiyejeeiehwfkdcbpomp.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpeWVqZWVpZWh3ZmtkY2Jwb21wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NjQwOTYsImV4cCI6MjA2NzE0MDA5Nn0.yDq4eOHujKH2nmg-F-DVnqCHGwdfEmf4Z968KXl1SDc';
 
@@ -20,6 +20,7 @@ const loginError = document.getElementById('loginError');
 const logoutBtn = document.getElementById('logoutBtn');
 const createForm = document.getElementById('createForm');
 const formNameInput = document.getElementById('formName');
+const formTypeInput = document.getElementById('formType'); // NUEVO
 const minAgeInput = document.getElementById('minAge');
 const maxAgeInput = document.getElementById('maxAge');
 const formBgInput = document.getElementById('formBgInput');
@@ -96,11 +97,11 @@ function renderCustomParams() {
   });
 }
 
-// Función principal: Cargar formularios
+// Función principal: Cargar formularios (agregando selección del campo tipo_formulario o modo)
 async function cargarFormularios() {
   const { data, error } = await supabase
     .from('formularios')
-    .select('id, codigo_form, nombre, imagen_url, min_age, max_age')
+    .select('id, codigo_form, nombre, tipo_formulario, imagen_url, min_age, max_age')
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -111,6 +112,7 @@ async function cargarFormularios() {
       db_id: f.id,
       codigo: f.codigo_form,
       nombre: f.nombre,
+      tipo_formulario: f.tipo_formulario || 'normal',
       imagenFondoUrl: f.imagen_url || '',
       min_age: f.min_age,
       max_age: f.max_age
@@ -133,6 +135,7 @@ function renderFormularios() {
     tr.innerHTML = `
       <td>${f.codigo}</td>
       <td>${f.nombre}</td>
+      <td>${f.tipo_formulario === 'vip_general' ? 'VIP / General' : 'Normal'}</td>
       <td><img src="${f.imagenFondoUrl}" alt="Fondo" class="thumb" /></td>
       <td>
         <a href="form.html?id=${f.codigo}" target="_blank">Formulario Público</a> |
@@ -150,6 +153,7 @@ createForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const nombre = formNameInput.value.trim();
+  const tipoFormulario = formTypeInput.value;
   if (!nombre) return alert('Ingrese un nombre para el formulario');
 
   let minAge = null;
@@ -191,6 +195,7 @@ createForm.addEventListener('submit', async (e) => {
   const nuevoFormulario = {
     codigo_form: codigoForm,
     nombre,
+    tipo_formulario: tipoFormulario,
     min_age: minAge,
     max_age: maxAge,
     imagen_url: imagenUrl,
@@ -236,6 +241,15 @@ window.borrarFormulario = async function(codigoForm, db_id) {
 
     if (deleteContadorError && deleteContadorError.code !== 'PGRST116') {
       throw deleteContadorError;
+    }
+
+    const { error: deleteReferenciasError } = await supabase
+      .from('referencias_usos')
+      .delete()
+      .eq('formulario_id', db_id);
+
+    if (deleteReferenciasError && deleteReferenciasError.code !== 'PGRST116') {
+      throw deleteReferenciasError;
     }
 
     const { data: formData, error: fetchImageError } = await supabase
