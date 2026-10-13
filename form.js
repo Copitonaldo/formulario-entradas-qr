@@ -448,10 +448,11 @@ if (guardarBtn) {
       clone.style.boxSizing = 'border-box';
       clone.style.backgroundColor = '#ffffff';
 
+      // Si es VIP, aplicamos borde recto sin esquinas redondeadas exageradas en el clon
       if (elementToCapture.classList.contains('ticket-vip-style')) {
         clone.style.border = '10px solid #d4af37';
-        clone.style.boxShadow = '0 0 25px rgba(212, 175, 55, 0.8)';
-        clone.style.borderRadius = '12px';
+        clone.style.boxShadow = 'none';
+        clone.style.borderRadius = '0px'; 
       } else {
         clone.style.boxShadow = 'none';
         clone.style.borderRadius = '0px';
@@ -494,6 +495,7 @@ if (guardarBtn) {
           }
           const clonedQrLabel = clonedElement.querySelector('.qr-code-label');
           if (clonedQrLabel) {
+            // CORREGIDO: Palabra "Código" correctamente escrita con su número
             clonedQrLabel.textContent = "Código: " + outCodigo.textContent;
           }
         }
@@ -512,7 +514,8 @@ if (guardarBtn) {
         );
 
         const link = document.createElement('a');
-        link.download = `${outCodigo.textContent || 'TICKET'}_${outNombre.textContent || 'nombre'}.jpg`;
+        // CORREGIDO: Nombre del archivo sin guion bajo entre el código y el nombre (Ej: 004Frank Torres.jpg)
+        link.download = `${outCodigo.textContent || 'TICKET'}${outNombre.textContent || 'nombre'}.jpg`;
         link.href = finalCanvas.toDataURL('image/jpeg', 0.9);
         link.click();
         document.body.removeChild(clone);
