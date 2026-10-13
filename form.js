@@ -381,7 +381,7 @@ if (btnConfirmar) {
         });
       }
 
-      // --- APLICAR ESTILO VIP DINÁMICO SEGÚN LA REFERENCIA USADA ---
+      // --- APLICAR ESTILO VIP DINÁMICO EN LA VISTA PREVIA ---
       const ticketWrap = document.querySelector('#entradaGenerada .ticket-img-wrap');
       if (ticketWrap) {
         if (currentFormTipo === 'vip_general' && tipoEntradaRef.toUpperCase() === 'VIP') {
@@ -446,9 +446,16 @@ if (guardarBtn) {
       clone.style.width = `${cloneBaseWidth}px`;
       clone.style.height = `${cloneBaseHeight}px`;
       clone.style.boxSizing = 'border-box';
-      clone.style.boxShadow = 'none';
-      clone.style.borderRadius = '0px';
       clone.style.backgroundColor = '#ffffff';
+
+      if (elementToCapture.classList.contains('ticket-vip-style')) {
+        clone.style.border = '10px solid #d4af37';
+        clone.style.boxShadow = '0 0 25px rgba(212, 175, 55, 0.8)';
+        clone.style.borderRadius = '12px';
+      } else {
+        clone.style.boxShadow = 'none';
+        clone.style.borderRadius = '0px';
+      }
 
       const qrAbsoluteDivInClone = clone.querySelector('.qr-absolute');
       if (qrAbsoluteDivInClone) {
@@ -505,7 +512,7 @@ if (guardarBtn) {
         );
 
         const link = document.createElement('a');
-        link.download = `${outCodigo.textContent || 'TICKET'}${outNombre.textContent || 'nombre'}.jpg`;
+        link.download = `${outCodigo.textContent || 'TICKET'}_${outNombre.textContent || 'nombre'}.jpg`;
         link.href = finalCanvas.toDataURL('image/jpeg', 0.9);
         link.click();
         document.body.removeChild(clone);
