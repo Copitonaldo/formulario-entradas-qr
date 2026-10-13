@@ -159,11 +159,11 @@ function ajustarOpcionesFiltroOrden() {
   if (!filterOrden) return;
 
   filterOrden.innerHTML = `
-    <option value="recientes">Más recientes primero[cite: 24]</option>
-    <option value="antiguos">Más antiguos primero[cite: 24]</option>
-    <option value="nombre">Ordenar por Nombre (A-Z)[cite: 24]</option>
-    <option value="codigo_desc">Código: Mayor a Menor[cite: 24]</option>
-    <option value="codigo_asc">Código: Menor a Mayor[cite: 24]</option>
+    <option value="recientes">Más recientes primero</option>
+    <option value="antiguos">Más antiguos primero</option>
+    <option value="nombre">Ordenar por Nombre (A-Z)</option>
+    <option value="codigo_desc">Código: Mayor a Menor</option>
+    <option value="codigo_asc">Código: Menor a Mayor</option>
   `;
 
   if (currentFormTipo === 'vip_general') {
@@ -202,7 +202,7 @@ function poblarFiltroReferencias() {
   if (!filterReferencia) return;
   const referenciasUnicas = [...new Set(todasLasRespuestas.map(r => r.referencia_usada).filter(Boolean))];
   
-  filterReferencia.innerHTML = '<option value="">Todas las referencias[cite: 14, 23]</option>';
+  filterReferencia.innerHTML = '<option value="">Todas las referencias</option>';
   referenciasUnicas.forEach(ref => {
     const opt = document.createElement('option');
     opt.value = ref;
