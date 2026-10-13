@@ -140,21 +140,7 @@ form#createForm button {
   cursor: pointer;
 }
 
-/* ==========================================================
-   ESTRUCTURA VISIBLE SEGÚN EL DISPOSITIVO (PC vs MÓVIL)
-   ========================================================== */
-
-/* Por defecto en PC mostramos la tabla clásica y ocultamos las tarjetas móviles */
-.desktop-table-container {
-  display: block;
-  width: 100%;
-  overflow-x: auto;
-}
-
-.mobile-cards-container {
-  display: none;
-}
-
+/* ESTILOS DE ESCRITORIO (PC) */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -196,89 +182,113 @@ img.thumb {
   font-weight: bold;
 }
 
-/* ESTILOS PARA TELÉFONOS (Menor a 700px) */
+.delete-btn:hover {
+  background-color: #a71d2a;
+}
+
+/* ==========================================================
+   ADAPTACIÓN MÓVIL (Menor a 700px): Tarjetas limpias y ordenadas
+   ========================================================== */
 @media (max-width: 700px) {
   body {
-    padding-top: 10px;
+    padding-top: 15px;
   }
   main {
-    padding: 15px 10px;
+    padding: 20px 15px;
     border-radius: 0;
   }
   header {
-    padding: 12px 15px;
+    padding: 15px 20px;
     border-radius: 0;
   }
   header h1 {
-    font-size: 1.3rem;
+    font-size: 1.5rem;
+  }
+  .logout-btn {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+  }
+  #loginSection {
+    padding: 0 10px;
+  }
+  form#createForm {
+    padding: 0 10px;
   }
 
-  /* Ocultamos la tabla de PC y activamos el contenedor de tarjetas móviles */
-  .desktop-table-container {
+  table, thead, tbody, th, td, tr {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    white-space: normal;
+  }
+  thead {
     display: none;
   }
-
-  .mobile-cards-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-top: 15px;
-  }
-
-  /* Diseño de cada tarjeta en el móvil */
-  .m-card {
-    background: #fff;
+  tr {
+    margin-bottom: 20px;
     border: 1px solid #bce8f1;
     border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     padding: 15px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.06);
     display: flex;
     flex-direction: column;
-    gap: 10px;
   }
-
-  .m-card-row {
+  td {
+    text-align: right;
+    padding: 10px 8px;
+    border: none;
+    border-bottom: 1px solid #f1f1f1;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #f1f1f1;
-    padding-bottom: 6px;
-    font-size: 0.95rem;
   }
+  
+  /* Orden estricto para que el Código salga siempre arriba */
+  td:nth-of-type(1) { order: 1; }
+  td:nth-of-type(2) { order: 2; }
+  td:nth-of-type(3) { order: 3; }
+  td:nth-of-type(4) { order: 4; }
+  td:last-child     { order: 5; border-bottom: none; flex-direction: column; align-items: stretch; padding-top: 14px; }
 
-  .m-card-label {
+  /* Etiquetas automáticas a la izquierda */
+  td:nth-of-type(1):before { content: "Código:"; font-weight: bold; color: #007bff; text-align: left; }
+  td:nth-of-type(2):before { content: "Nombre:"; font-weight: bold; color: #007bff; text-align: left; }
+  td:nth-of-type(3):before { content: "Tipo:"; font-weight: bold; color: #007bff; text-align: left; }
+  td:nth-of-type(4):before { content: "Imagen:"; font-weight: bold; color: #007bff; text-align: left; }
+  
+  td:last-child:before {
+    content: "Acciones:";
     font-weight: bold;
     color: #007bff;
+    margin-bottom: 8px;
+    text-align: left;
   }
 
-  .m-card-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-top: 5px;
-  }
-
-  .m-card-actions a {
+  /* Limpiamos las barras '|' y dejamos botones cómodos verticales */
+  td:last-child a {
     display: block;
     padding: 8px;
     text-align: center;
     background: #f1f7ff;
     color: #007bff;
     border-radius: 4px;
+    margin-bottom: 6px;
     text-decoration: none;
     font-weight: bold;
     border: 1px solid #cce5ff;
-    font-size: 0.9rem;
   }
 
-  .m-card-actions button.delete-btn {
+  td:last-child button.delete-btn {
+    display: block;
     width: 100%;
-    padding: 9px;
-    font-size: 0.95rem;
+    padding: 10px;
+    margin-top: 4px;
+    text-align: center;
   }
 
-  .thumb {
-    width: 50px;
-    height: 30px;
+  img.thumb {
+    width: 55px;
+    height: 35px;
   }
 }
