@@ -151,7 +151,7 @@ form#formData button:hover {
 .qr-absolute {
   position: absolute;
   top: 55%;
-  left: 15.5%; /* Un pelin más a la derecha */
+  left: 15.5%;
   transform: translate(-50%, -50%);
   background: rgba(255, 255, 255, 0.95);
   padding: 6px;
@@ -240,4 +240,28 @@ form#formData button:hover {
   .datos b {
     width: 115px;
   }
+}
+
+/* ==========================================================
+   ESTILO VIP EXCLUSIVO (Añadido para el borde y resplandor dorado)
+   ================================================---------- */
+.ticket-vip-style {
+  border: 5px solid #d4af37 !important;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.7) !important;
+  border-radius: 12px;
+  position: relative;
+}
+
+.ticket-vip-style::after {
+  content: "★ VIP";
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: #d4af37;
+  color: #fff;
+  padding: 3px 10px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  border-radius: 4px;
+  z-index: 20;
 }
