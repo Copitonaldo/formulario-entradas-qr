@@ -127,26 +127,52 @@ function generarCodigoFormulario() {
   return 'FORM' + Math.random().toString(36).substr(2, 5).toUpperCase();
 }
 
-// Renderizar formularios en la tabla (con enlaces limpios adaptables tanto para PC como para Móvil)
+// Renderizar formularios (actualiza tanto la tabla de PC con sus "|" como las tarjetas de móvil limpias)
 function renderFormularios() {
-  if (!formulariosTableBody) return;
-  formulariosTableBody.innerHTML = '';
-  formulariosCache.forEach(f => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${f.codigo}</td>
-      <td>${f.nombre}</td>
-      <td>${f.tipo_formulario === 'vip_general' ? 'VIP / General' : 'Normal'}</td>
-      <td><img src="${f.imagenFondoUrl}" alt="Fondo" class="thumb" /></td>
-      <td>
-        <a href="form.html?id=${f.codigo}" target="_blank" style="text-decoration:none; color:#007bff; font-weight:bold; margin-right: 8px;">Formulario Público</a>
-        <a href="respuestas.html?id=${f.codigo}" target="_blank" style="text-decoration:none; color:#007bff; font-weight:bold; margin-right: 8px;">Lista de Datos</a>
-        <a href="referencia.html?id_formulario=${f.codigo}" target="_blank" style="text-decoration:none; color:#007bff; font-weight:bold; margin-right: 8px;">Formulario de Referencia</a>
-        <button class="delete-btn" onclick="borrarFormulario('${f.codigo}', '${f.db_id}')">Borrar</button>
-      </td>
-    `;
-    formulariosTableBody.appendChild(tr);
-  });
+  // 1. Rellenar tabla de PC (con las barras '|' originales)
+  if (formulariosTableBody) {
+    formulariosTableBody.innerHTML = '';
+    formulariosCache.forEach(f => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${f.codigo}</td>
+        <td>${f.nombre}</td>
+        <td>${f.tipo_formulario === 'vip_general' ? 'VIP / General' : 'Normal'}</td>
+        <td><img src="${f.imagenFondoUrl}" alt="Fondo" class="thumb" /></td>
+        <td>
+          <a href="form.html?id=${f.codigo}" target="_blank">Formulario Público</a> |
+          <a href="respuestas.html?id=${f.codigo}" target="_blank">Lista de Datos</a> |
+          <a href="referencia.html?id_formulario=${f.codigo}" target="_blank">Formulario de Referencia</a> |
+          <button class="delete-btn" onclick="borrarFormulario('${f.codigo}', '${f.db_id}')">Borrar</button>
+        </td>
+      `;
+      formulariosTableBody.appendChild(tr);
+    });
+  }
+
+  // 2. Rellenar tarjetas para Móvil (limpias, ordenadas y sin barras)
+  const mobileContainer = document.getElementById('mobileCardsContainer');
+  if (mobileContainer) {
+    mobileContainer.innerHTML = '';
+    formulariosCache.forEach(f => {
+      const card = document.createElement('div');
+      card.className = 'm-card';
+      card.innerHTML = `
+        <div class="m-card-row"><span class="m-card-label">Código:</span> <span>${f.codigo}</span></div>
+        <div class="m-card-row"><span class="m-card-label">Nombre:</span> <span>${f.nombre}</span></div>
+        <div class="m-card-row"><span class="m-card-label">Tipo:</span> <span>${f.tipo_formulario === 'vip_general' ? 'VIP / General' : 'Normal'}</span></div>
+        <div class="m-card-row"><span class="m-card-label">Imagen:</span> <img src="${f.imagenFondoUrl}" alt="Fondo" class="thumb" /></div>
+        <div style="font-weight: bold; color: #007bff; margin-top: 4px;">Acciones:</div>
+        <div class="m-card-actions">
+          <a href="form.html?id=${f.codigo}" target="_blank">Formulario Público</a>
+          <a href="respuestas.html?id=${f.codigo}" target="_blank">Lista de Datos</a>
+          <a href="referencia.html?id_formulario=${f.codigo}" target="_blank">Formulario de Referencia</a>
+          <button class="delete-btn" onclick="borrarFormulario('${f.codigo}', '${f.db_id}')">Borrar</button>
+        </div>
+      `;
+      mobileContainer.appendChild(card);
+    });
+  }
 }
 
 // Evento: Crear formulario
