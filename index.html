@@ -15,13 +15,13 @@
 
 <main>
   <!-- Login simple -->
-<div id="loginSection">
-  <h2>Iniciar sesión</h2>
-  <label for="password">Contraseña:</label>
-  <input type="password" id="password" placeholder="Ingresa tu contraseña">
-  <button id="loginBtn" type="button">Entrar</button>
-  <p id="loginError" style="color: red; display: none;">Contraseña incorrecta</p>
-</div>
+  <div id="loginSection">
+    <h2>Iniciar sesión</h2>
+    <label for="password">Contraseña:</label>
+    <input type="password" id="password" placeholder="Ingresa tu contraseña">
+    <button id="loginBtn" type="button">Entrar</button>
+    <p id="loginError" style="color: red; display: none;">Contraseña incorrecta</p>
+  </div>
 
   <!-- Panel administrador -->
   <div id="adminPanel" class="admin-panel" style="display:none;">
@@ -30,7 +30,6 @@
       <label for="formName">Nombre del Formulario:</label>
       <input type="text" id="formName" required />
       
-      <!-- NUEVO: Selector de Tipo de Formulario (Normal o VIP/General) -->
       <label for="formType">Tipo de Formulario:</label>
       <select id="formType" style="width: 100%; padding: 8px 10px; font-size: 1rem; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 20px; box-sizing: border-box; background-color: white;">
         <option value="normal">Normal (Libre)</option>
@@ -46,14 +45,12 @@
       <label for="formBgInput">Imagen de Fondo:</label>
       <input type="file" id="formBgInput" accept="image/*" />
 
-      <!-- Botón para desplegar la sección de parámetros opcionales -->
       <div style="margin: 20px 0;">
         <button type="button" id="toggleParamsBtn" style="background: #6c757d; color: white; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-size: 0.95rem;">
           ➕ Agregar casilla personalizada (Opcional)
         </button>
       </div>
 
-      <!-- Sección oculta por defecto para escribir casillas personalizadas -->
       <fieldset id="customParamsContainer" style="display: none; margin: 15px 0; padding: 15px; border: 1px solid #ccc; border-radius: 6px; text-align: left; background: #fafafa;">
         <legend style="font-weight: bold; padding: 0 5px;">Parámetros Personalizados</legend>
         <p style="font-size: 0.85rem; color: #666; margin-top: 0;">Nombre, Cédula, Edad y Referencia son obligatorios por defecto. Escribe aquí abajo si deseas solicitar un dato extra (ej: Talla, Sección, etc.):</p>
@@ -70,20 +67,21 @@
     </form>
 
     <h2>Formularios Existentes</h2>
-    <table id="formulariosTable">
-      <thead>
-        <tr>
-          <th>Código</th>
-          <th>Nombre</th>
-          <th>Tipo</th> <!-- NUEVO: Columna para ver el tipo -->
-          <th>Imagen</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table id="formulariosTable">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Tipo</th>
+            <th>Imagen</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
   </div>
 </main>
 
