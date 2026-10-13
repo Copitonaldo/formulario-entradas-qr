@@ -28,6 +28,7 @@ const PAGE_SIZE = 50;
 let currentFormDbId = null; 
 let currentFormTipo = 'normal'; 
 let parametrosDinamicos = [];
+let currentFormNombreReal = ''; 
 
 if (!formId || formId.trim() === "") {
   if (formTitleElement) formTitleElement.textContent = 'ID de Formulario no especificado';
@@ -71,11 +72,13 @@ async function cargarRespuestas() {
 
   currentFormDbId = formInfo.id;
   currentFormTipo = formInfo.tipo_formulario || 'normal';
+  currentFormNombreReal = formInfo.nombre || formId; 
   parametrosDinamicos = Array.isArray(formInfo.parametros_personalizados) ? formInfo.parametros_personalizados : [];
   
-  if (formTitleElement) formTitleElement.textContent = `Respuestas del Formulario: ${formInfo.nombre || formId}`;
+  if (formTitleElement) {
+    formTitleElement.textContent = `Respuestas del Formulario: ${currentFormNombreReal}`;
+  }
 
-  // Ajustar el menú de orden/separar dinámicamente si es VIP/General
   ajustarOpcionesFiltroOrden();
 
   const { data: respuestasData, error: respuestasError } = await supabase
@@ -155,7 +158,6 @@ async function cargarRespuestas() {
 function ajustarOpcionesFiltroOrden() {
   if (!filterOrden) return;
 
-  // Mantener las opciones base de orden
   filterOrden.innerHTML = `
     <option value="recientes">Más recientes primero</option>
     <option value="antiguos">Más antiguos primero</option>
@@ -164,7 +166,6 @@ function ajustarOpcionesFiltroOrden() {
     <option value="codigo_asc">Código: Menor a Mayor</option>
   `;
 
-  // Si el formulario es VIP/General, añadimos opciones adicionales para separar/filtrar por VIP o General
   if (currentFormTipo === 'vip_general') {
     filterOrden.innerHTML += `
       <option value="solo_vip">Separar / Filtrar: Solo VIP</option>
@@ -227,7 +228,6 @@ function aplicarFiltrosYOrden() {
   const refSeleccionada = filterReferencia ? filterReferencia.value : '';
   const ordenSeleccionado = filterOrden ? filterOrden.value : 'recientes';
 
-  // Filtrado general por texto y referencia
   filteredRespuestas = todasLasRespuestas.filter(r => {
     let cumpleTexto = (
       (r.nombre && r.nombre.toLowerCase().includes(term)) ||
@@ -241,7 +241,6 @@ function aplicarFiltrosYOrden() {
 
     let cumpleRef = refSeleccionada === '' || r.referencia_usada === refSeleccionada;
 
-    // Filtro adicional si seleccionó separar por Solo VIP o Solo General
     let cumpleTipoEntrada = true;
     if (ordenSeleccionado === 'solo_vip') {
       cumpleTipoEntrada = r.tipo_entrada.toUpperCase() === 'VIP';
@@ -252,7 +251,6 @@ function aplicarFiltrosYOrden() {
     return cumpleTexto && cumpleRef && cumpleTipoEntrada;
   });
 
-  // Ordenamiento
   filteredRespuestas.sort((a, b) => {
     if (ordenSeleccionado === 'recientes') {
       return new Date(b.fecha_registro) - new Date(a.fecha_registro);
@@ -418,6 +416,9 @@ if (excelBtn) {
     const ws = XLSX.utils.json_to_sheet(dataToExport);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Respuestas');
-    XLSX.writeFile(wb, `Respuestas_${formId}.xlsx`);
+    
+    // Nombre del archivo limpio con espacio: Respuestas [Nombre].xlsx
+    const nombreArchivoLimpio = `Respuestas ${currentFormNombreReal.replace(/[/\\?%*:|"<>]/g, '')}.xlsx`;
+    XLSX.writeFile(wb, nombreArchivoLimpio);
   };
 }
