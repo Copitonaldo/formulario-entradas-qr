@@ -140,12 +140,26 @@ form#createForm button {
   cursor: pointer;
 }
 
-/* ESTILOS DE ESCRITORIO (PC) */
+/* ==========================================================
+   CONTROL DE VISIBILIDAD (PC vs MÓVIL)
+   ========================================================== */
+.desktop-table-container {
+  display: block;
+  width: 100%;
+  overflow-x: auto; /* Evita que la tabla de PC se corte o salga de la pantalla */
+  -webkit-overflow-scrolling: touch;
+  margin-top: 20px;
+}
+
+.mobile-cards-container {
+  display: none;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
   font-family: Arial, sans-serif;
-  margin-top: 20px;
+  min-width: 650px; /* Asegura espacio suficiente para la PC sin romper nada */
 }
 
 thead {
@@ -187,7 +201,7 @@ img.thumb {
 }
 
 /* ==========================================================
-   ADAPTACIÓN MÓVIL (Menor a 700px): Tarjetas limpias y ordenadas
+   ESTILOS EXCLUSIVOS PARA MÓVILES (Menor a 700px)
    ========================================================== */
 @media (max-width: 700px) {
   body {
@@ -215,79 +229,70 @@ img.thumb {
     padding: 0 10px;
   }
 
-  table, thead, tbody, th, td, tr {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-    white-space: normal;
-  }
-  thead {
+  /* Ocultamos la tabla de PC y activamos las tarjetas móviles */
+  .desktop-table-container {
     display: none;
   }
-  tr {
-    margin-bottom: 20px;
-    border: 1px solid #bce8f1;
-    border-radius: 8px;
-    background: #fff;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-    padding: 15px;
+
+  .mobile-cards-container {
     display: flex;
     flex-direction: column;
+    gap: 16px;
+    margin-top: 15px;
   }
-  td {
-    text-align: right;
-    padding: 10px 8px;
-    border: none;
-    border-bottom: 1px solid #f1f1f1;
+
+  .m-card {
+    background: #fff;
+    border: 1px solid #bce8f1;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .m-card-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 1px solid #f1f1f1;
+    padding-bottom: 8px;
+    font-size: 0.95rem;
   }
-  
-  /* Orden estricto para que el Código salga siempre arriba */
-  td:nth-of-type(1) { order: 1; }
-  td:nth-of-type(2) { order: 2; }
-  td:nth-of-type(3) { order: 3; }
-  td:nth-of-type(4) { order: 4; }
-  td:last-child     { order: 5; border-bottom: none; flex-direction: column; align-items: stretch; padding-top: 14px; }
 
-  /* Etiquetas automáticas a la izquierda */
-  td:nth-of-type(1):before { content: "Código:"; font-weight: bold; color: #007bff; text-align: left; }
-  td:nth-of-type(2):before { content: "Nombre:"; font-weight: bold; color: #007bff; text-align: left; }
-  td:nth-of-type(3):before { content: "Tipo:"; font-weight: bold; color: #007bff; text-align: left; }
-  td:nth-of-type(4):before { content: "Imagen:"; font-weight: bold; color: #007bff; text-align: left; }
-  
-  td:last-child:before {
-    content: "Acciones:";
+  .m-card-label {
     font-weight: bold;
     color: #007bff;
-    margin-bottom: 8px;
-    text-align: left;
   }
 
-  /* Limpiamos las barras '|' y dejamos botones cómodos verticales */
-  td:last-child a {
+  .m-card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .m-card-actions a {
     display: block;
-    padding: 8px;
+    padding: 9px;
     text-align: center;
     background: #f1f7ff;
     color: #007bff;
     border-radius: 4px;
-    margin-bottom: 6px;
     text-decoration: none;
     font-weight: bold;
     border: 1px solid #cce5ff;
+    font-size: 0.9rem;
   }
 
-  td:last-child button.delete-btn {
-    display: block;
+  .m-card-actions button.delete-btn {
     width: 100%;
     padding: 10px;
-    margin-top: 4px;
-    text-align: center;
+    font-size: 0.95rem;
   }
 
-  img.thumb {
+  .thumb {
     width: 55px;
     height: 35px;
   }
