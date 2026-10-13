@@ -372,7 +372,6 @@ if (btnConfirmar) {
       outReferencia.textContent = insertData.referencia_usada;
       outReferenciaContenedor.style.display = 'block';
 
-      // MOSTRAR CAMPOS PERSONALIZADOS EN LA PREVISUALIZACIÓN WEB
       if (outCustomFieldsContainer) {
         outCustomFieldsContainer.innerHTML = '';
         const savedCustomValues = insertData.parametros_personalizados || {};
@@ -383,7 +382,6 @@ if (btnConfirmar) {
         });
       }
 
-      // MOSTRAR TIPO DE ENTRADA EN LA PREVISUALIZACIÓN WEB SI EL FORMULARIO ES VIP/GENERAL
       if (currentFormTipo === 'vip_general' && outTipoEntradaContenedor && outTipoEntrada) {
         outTipoEntrada.textContent = tipoEntradaRef;
         outTipoEntradaContenedor.style.display = 'block';
@@ -393,7 +391,6 @@ if (btnConfirmar) {
 
       if (codigoQR) codigoQR.textContent = "Código: " + insertData.codigo_secuencial;
 
-      // ESTILO VIP EN LA VISTA PREVIA
       const ticketWrap = document.querySelector('#entradaGenerada .ticket-img-wrap');
       if (ticketWrap) {
         if (currentFormTipo === 'vip_general' && tipoEntradaRef.toUpperCase() === 'VIP') {
@@ -405,7 +402,7 @@ if (btnConfirmar) {
 
       const qrCanvasElement = document.getElementById('qrCanvas');
       
-      // CONSTRUCCIÓN DEL QR INCLUYENDO CAMPOS PERSONALIZADOS Y TIPO DE ENTRADA
+      // CONSTRUCCIÓN DEL QR CON FORMATO DE TEXTO LIMPIO Y NÍTIDO
       let datosQR = `${formDisplayName}\nNombre: ${insertData.nombre_completo}\nCédula: ${formatCedula(insertData.cedula)}\nEdad: ${insertData.edad} años`;
       
       const savedCustomValues = insertData.parametros_personalizados || {};
@@ -419,9 +416,10 @@ if (btnConfirmar) {
 
       if (qrCanvasElement) {
         QRCode.toCanvas(qrCanvasElement, datosQR, {
-          width: parseInt(qrCanvasElement.style.width) || 70,
-          height: parseInt(qrCanvasElement.style.height) || 70,
-          margin: 1
+          width: parseInt(qrCanvasElement.style.width) || 80,
+          height: parseInt(qrCanvasElement.style.height) || 80,
+          margin: 1,
+          errorCorrectionLevel: 'M'
         });
       }
 
@@ -511,7 +509,6 @@ if (guardarBtn) {
             
             let datosQRClone = `${formDisplayName}\nNombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}`;
             
-            // INCLUIR CAMPOS PERSONALIZADOS EN EL QR DEL CLON
             const customDivs = outCustomFieldsContainer ? outCustomFieldsContainer.querySelectorAll('div') : [];
             customDivs.forEach(div => {
               datosQRClone += `\n${div.textContent}`;
@@ -521,8 +518,16 @@ if (guardarBtn) {
             if (outReferenciaContenedor.style.display !== 'none' && outReferencia.textContent) datosQRClone += `\nReferencia: ${outReferencia.textContent}`;
             if (currentFormTipo === 'vip_general' && outTipoEntrada && outTipoEntrada.textContent) datosQRClone += `\nTipo de Entrada: ${outTipoEntrada.textContent}`;
 
-            QRCode.toCanvas(clonedCanvasEl, datosQRClone, { width: 70, height: 70, margin: 1 });
+            // RENDERIZADO EN ALTA RESOLUCIÓN DEL QR EN EL CLON
+            QRCode.toCanvas(clonedCanvasEl, datosQRClone, {
+              width: 280,
+              height: 280,
+              margin: 1,
+              errorCorrectionLevel: 'M'
+            });
           }
+
+          // CORRECCIÓN EXACTA Y DEFINITIVA DEL TEXTO A "Código: XXX"
           const clonedQrLabel = clonedElement.querySelector('.qr-code-label');
           if (clonedQrLabel) {
             clonedQrLabel.textContent = "Código: " + outCodigo.textContent;
