@@ -127,8 +127,9 @@ function generarCodigoFormulario() {
   return 'FORM' + Math.random().toString(36).substr(2, 5).toUpperCase();
 }
 
-// Renderizar formularios en la tabla
+// Renderizar formularios en la tabla (con enlaces limpios adaptables tanto para PC como para Móvil)
 function renderFormularios() {
+  if (!formulariosTableBody) return;
   formulariosTableBody.innerHTML = '';
   formulariosCache.forEach(f => {
     const tr = document.createElement('tr');
@@ -138,9 +139,9 @@ function renderFormularios() {
       <td>${f.tipo_formulario === 'vip_general' ? 'VIP / General' : 'Normal'}</td>
       <td><img src="${f.imagenFondoUrl}" alt="Fondo" class="thumb" /></td>
       <td>
-        <a href="form.html?id=${f.codigo}" target="_blank">Formulario Público</a> |
-        <a href="respuestas.html?id=${f.codigo}" target="_blank">Lista de Datos</a> |
-        <a href="referencia.html?id_formulario=${f.codigo}" target="_blank">Formulario de Referencia</a> |
+        <a href="form.html?id=${f.codigo}" target="_blank" style="text-decoration:none; color:#007bff; font-weight:bold; margin-right: 8px;">Formulario Público</a>
+        <a href="respuestas.html?id=${f.codigo}" target="_blank" style="text-decoration:none; color:#007bff; font-weight:bold; margin-right: 8px;">Lista de Datos</a>
+        <a href="referencia.html?id_formulario=${f.codigo}" target="_blank" style="text-decoration:none; color:#007bff; font-weight:bold; margin-right: 8px;">Formulario de Referencia</a>
         <button class="delete-btn" onclick="borrarFormulario('${f.codigo}', '${f.db_id}')">Borrar</button>
       </td>
     `;
