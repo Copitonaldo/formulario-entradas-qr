@@ -1,19 +1,20 @@
 // Importar Supabase
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.4/+esm";
 
-// Configuración de Supabase (Tus credenciales exactas)
 const SUPABASE_URL = 'https://wiyejeeiehwfkdcbpomp.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpeWVqZWVpZWh3ZmtkY2Jwb21wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NjQwOTYsImV4cCI6MjA2NzE0MDA5Nn0.yDq4eOHujKH2nmg-F-DVnqCHGwdfEmf4Z968KXl1SDc';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// DOM Elements
 const formPadreNombreElem = document.getElementById('formPadreNombre');
 const formPadreCodigoElem = document.getElementById('formPadreCodigo');
+const formPadreTipoElem = document.getElementById('formPadreTipo');
 const crearReferenciaForm = document.getElementById('crearReferenciaForm');
 const codigoReferenciaInput = document.getElementById('codigoReferencia');
 const usosReferenciaInput = document.getElementById('usosReferencia');
-const tipoEntradaInput = document.getElementById('tipoEntrada'); // NUEVO
+const tipoEntradaInput = document.getElementById('tipoEntrada');
+const tipoEntradaContainer = document.getElementById('tipoEntradaContainer');
+const thTipoEntrada = document.getElementById('thTipoEntrada');
 const referenciasTableBody = document.querySelector('#referenciasTable tbody');
 const noReferenciasMsg = document.getElementById('noReferencias');
 const errorMensajeElem = document.getElementById('errorMensaje');
@@ -21,8 +22,8 @@ const exitoMensajeElem = document.getElementById('exitoMensaje');
 
 let currentFormPadreCodigo = null;
 let currentFormPadreDbId = null;
+let currentFormTipo = 'normal';
 
-// --- Inicialización ---
 document.addEventListener('DOMContentLoaded', async () => {
   const urlParams = new URLSearchParams(window.location.search);
   currentFormPadreCodigo = urlParams.get('id_formulario');
@@ -46,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function cargarInformacionFormularioPadre() {
   const { data: formData, error } = await supabase
     .from('formularios')
-    .select('id, nombre')
+    .select('id, nombre, tipo_formulario')
     .eq('codigo_form', currentFormPadreCodigo)
     .single();
 
@@ -59,7 +60,21 @@ async function cargarInformacionFormularioPadre() {
   }
 
   currentFormPadreDbId = formData.id;
+  currentFormTipo = formData.tipo_formulario || 'normal';
+  
   if (formPadreNombreElem) formPadreNombreElem.textContent = formData.nombre || 'Sin nombre';
+  if (formPadreTipoElem) formPadreTipoElem.textContent = currentFormTipo === 'vip_general' ? 'VIP / General' : 'Normal';
+
+  // Mostrar u ocultar el campo de tipo de entrada según corresponda
+  if (currentFormTipo === 'vip_general') {
+    if (tipoEntradaContainer) tipoEntradaContainer.style.display = 'block';
+    if (tipoEntradaInput) tipoEntradaInput.required = true;
+    if (thTipoEntrada) thTipoEntrada.style.display = '';
+  } else {
+    if (tipoEntradaContainer) tipoEntradaContainer.style.display = 'none';
+    if (tipoEntradaInput) tipoEntradaInput.required = false;
+    if (thTipoEntrada) thTipoEntrada.style.display = 'none';
+  }
 }
 
 // --- Crear Referencia ---
@@ -68,13 +83,22 @@ crearReferenciaForm.addEventListener('submit', async (event) => {
   ocultarMensajes();
 
   if (!currentFormPadreDbId) {
-    mostrarError("Error: No se ha identificado el formulario padre. No se puede crear la referencia.");
+    mostrarError("Error: No se ha identificado el formulario padre.");
     return;
   }
 
   const codigoReferencia = codigoReferenciaInput.value.trim();
   const usosReferencia = parseInt(usosReferenciaInput.value.trim());
-  const tipoEntrada = tipoEntradaInput.value.trim(); // NUEVO
+  
+  // Si es VIP/General toma el valor del selector, si es normal asigna "Normal" o "N/A"
+  let tipoEntrada = 'Normal';
+  if (currentFormTipo === 'vip_general') {
+    tipoEntrada = tipoEntradaInput.value.trim();
+    if (!['VIP', 'General'].includes(tipoEntrada)) {
+      mostrarError('Debe seleccionar un tipo de entrada válido (VIP o General).');
+      return;
+    }
+  }
 
   if (!/^\d{4}$/.test(codigoReferencia)) {
     mostrarError('El código de referencia debe ser un número de 4 dígitos.');
@@ -84,12 +108,7 @@ crearReferenciaForm.addEventListener('submit', async (event) => {
     mostrarError('La cantidad de usos debe ser un número mayor o igual a 1.');
     return;
   }
-  if (!['VIP', 'General'].includes(tipoEntrada)) {
-    mostrarError('Debe seleccionar un tipo de entrada válido (VIP o General).');
-    return;
-  }
 
-  // Verificar si la referencia ya existe para este formulario
   const { data: existingRef, error: checkError } = await supabase
     .from('referencias_usos')
     .select('id')
@@ -98,7 +117,6 @@ crearReferenciaForm.addEventListener('submit', async (event) => {
     .maybeSingle();
 
   if (checkError) {
-    console.error("Error verificando referencia existente:", checkError);
     mostrarError(`Error al verificar la referencia: ${checkError.message}`);
     return;
   }
@@ -108,7 +126,6 @@ crearReferenciaForm.addEventListener('submit', async (event) => {
     return;
   }
 
-  // Insertar nueva referencia con tipo_entrada
   const { error: insertError } = await supabase
     .from('referencias_usos')
     .insert([
@@ -117,15 +134,14 @@ crearReferenciaForm.addEventListener('submit', async (event) => {
         codigo_referencia: codigoReferencia,
         usos_disponibles: usosReferencia,
         usos_iniciales: usosReferencia,
-        tipo_entrada: tipoEntrada // NUEVO
+        tipo_entrada: tipoEntrada
       }
     ]);
 
   if (insertError) {
-    console.error("Error al crear referencia:", insertError);
     mostrarError(`No se pudo crear la referencia: ${insertError.message}`);
   } else {
-    mostrarExito(`Referencia '${codigoReferencia}' (${tipoEntrada}) creada con ${usosReferencia} usos.`);
+    mostrarExito(`Referencia '${codigoReferencia}' creada con éxito.`);
     crearReferenciaForm.reset();
     await cargarReferenciasExistentes();
   }
@@ -142,10 +158,7 @@ async function cargarReferenciasExistentes() {
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error("Error cargando referencias existentes:", error);
     mostrarError(`Error al cargar las referencias: ${error.message}`);
-    referenciasTableBody.innerHTML = '<tr><td colspan="4">Error al cargar datos.</td></tr>';
-    noReferenciasMsg.style.display = 'none';
     return;
   }
 
@@ -154,9 +167,15 @@ async function cargarReferenciasExistentes() {
     noReferenciasMsg.style.display = 'none';
     data.forEach(ref => {
       const tr = document.createElement('tr');
+      
+      let htmlCeldaTipo = '';
+      if (currentFormTipo === 'vip_general') {
+        htmlCeldaTipo = `<td><strong>${ref.tipo_entrada || 'General'}</strong></td>`;
+      }
+
       tr.innerHTML = `
         <td>${ref.codigo_referencia}</td>
-        <td><strong>${ref.tipo_entrada || 'General'}</strong></td>
+        ${htmlCeldaTipo}
         <td>${ref.usos_disponibles} (de ${ref.usos_iniciales || ref.usos_disponibles})</td>
         <td>
           <button onclick="borrarReferencia('${ref.id}', '${ref.codigo_referencia}')">Borrar</button>
@@ -169,11 +188,8 @@ async function cargarReferenciasExistentes() {
   }
 }
 
-// --- Borrar Referencia ---
 window.borrarReferencia = async function(idReferencia, codigoRef) {
-  if (!confirm(`¿Seguro que quieres borrar la referencia "${codigoRef}"? Esta acción no se puede deshacer.`)) {
-    return;
-  }
+  if (!confirm(`¿Seguro que quieres borrar la referencia "${codigoRef}"?`)) return;
   ocultarMensajes();
 
   const { error } = await supabase
@@ -182,7 +198,6 @@ window.borrarReferencia = async function(idReferencia, codigoRef) {
     .eq('id', idReferencia);
 
   if (error) {
-    console.error("Error al borrar referencia:", error);
     mostrarError(`No se pudo borrar la referencia: ${error.message}`);
   } else {
     mostrarExito(`Referencia "${codigoRef}" borrada correctamente.`);
@@ -190,7 +205,6 @@ window.borrarReferencia = async function(idReferencia, codigoRef) {
   }
 }
 
-// --- Funciones de utilidad para mensajes ---
 function mostrarError(mensaje) {
   if (errorMensajeElem) {
     errorMensajeElem.textContent = mensaje;
