@@ -372,16 +372,7 @@ if (btnConfirmar) {
       outReferencia.textContent = insertData.referencia_usada;
       outReferenciaContenedor.style.display = 'block';
 
-      // MOSTRAR TIPO DE ENTRADA EN LA LISTA SI EL FORMULARIO ES VIP/GENERAL
-      if (currentFormTipo === 'vip_general' && outTipoEntradaContenedor && outTipoEntrada) {
-        outTipoEntrada.textContent = tipoEntradaRef;
-        outTipoEntradaContenedor.style.display = 'block';
-      } else if (outTipoEntradaContenedor) {
-        outTipoEntradaContenedor.style.display = 'none';
-      }
-
-      if (codigoQR) codigoQR.textContent = "Código: " + insertData.codigo_secuencial;
-
+      // MOSTRAR CAMPOS PERSONALIZADOS EN LA PREVISUALIZACIÓN WEB
       if (outCustomFieldsContainer) {
         outCustomFieldsContainer.innerHTML = '';
         const savedCustomValues = insertData.parametros_personalizados || {};
@@ -391,6 +382,16 @@ if (btnConfirmar) {
           outCustomFieldsContainer.appendChild(div);
         });
       }
+
+      // MOSTRAR TIPO DE ENTRADA EN LA PREVISUALIZACIÓN WEB SI EL FORMULARIO ES VIP/GENERAL
+      if (currentFormTipo === 'vip_general' && outTipoEntradaContenedor && outTipoEntrada) {
+        outTipoEntrada.textContent = tipoEntradaRef;
+        outTipoEntradaContenedor.style.display = 'block';
+      } else if (outTipoEntradaContenedor) {
+        outTipoEntradaContenedor.style.display = 'none';
+      }
+
+      if (codigoQR) codigoQR.textContent = "Código: " + insertData.codigo_secuencial;
 
       // ESTILO VIP EN LA VISTA PREVIA
       const ticketWrap = document.querySelector('#entradaGenerada .ticket-img-wrap');
@@ -404,8 +405,15 @@ if (btnConfirmar) {
 
       const qrCanvasElement = document.getElementById('qrCanvas');
       
-      // QR DATOS
-      let datosQR = `${formDisplayName}\nNombre: ${insertData.nombre_completo}\nCédula: ${insertData.cedula}\nEdad: ${insertData.edad} años\nCódigo: ${insertData.codigo_secuencial}`;
+      // CONSTRUCCIÓN DEL QR INCLUYENDO CAMPOS PERSONALIZADOS Y TIPO DE ENTRADA
+      let datosQR = `${formDisplayName}\nNombre: ${insertData.nombre_completo}\nCédula: ${formatCedula(insertData.cedula)}\nEdad: ${insertData.edad} años`;
+      
+      const savedCustomValues = insertData.parametros_personalizados || {};
+      Object.entries(savedCustomValues).forEach(([key, val]) => {
+        datosQR += `\n${key}: ${val}`;
+      });
+
+      datosQR += `\nCódigo: ${insertData.codigo_secuencial}`;
       if (insertData.referencia_usada) datosQR += `\nReferencia: ${insertData.referencia_usada}`;
       if (currentFormTipo === 'vip_general') datosQR += `\nTipo de Entrada: ${tipoEntradaRef}`;
 
@@ -501,7 +509,15 @@ if (guardarBtn) {
           if (clonedCanvasEl) {
             const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
             
-            let datosQRClone = `${formDisplayName}\nNombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}`;
+            let datosQRClone = `${formDisplayName}\nNombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}`;
+            
+            // INCLUIR CAMPOS PERSONALIZADOS EN EL QR DEL CLON
+            const customDivs = outCustomFieldsContainer ? outCustomFieldsContainer.querySelectorAll('div') : [];
+            customDivs.forEach(div => {
+              datosQRClone += `\n${div.textContent}`;
+            });
+
+            datosQRClone += `\nCódigo: ${outCodigo.textContent}`;
             if (outReferenciaContenedor.style.display !== 'none' && outReferencia.textContent) datosQRClone += `\nReferencia: ${outReferencia.textContent}`;
             if (currentFormTipo === 'vip_general' && outTipoEntrada && outTipoEntrada.textContent) datosQRClone += `\nTipo de Entrada: ${outTipoEntrada.textContent}`;
 
