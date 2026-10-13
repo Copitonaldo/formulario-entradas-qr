@@ -14,7 +14,6 @@
   <div id="dashboard">Entradas totales: <span id="dashboardCount">0</span></div>
   <h2 id="formTitle">Cargando respuestas...</h2>
 
-  <!-- Contenedor de filtros avanzados -->
   <div class="filters-container">
     <input type="text" id="searchInput" placeholder="Buscar por nombre, cédula, edad, parámetros o referencia..." />
     <select id="filterReferencia" class="filter-select">
@@ -26,7 +25,6 @@
       <option value="nombre">Ordenar por Nombre (A-Z)</option>
       <option value="codigo_desc">Código: Mayor a Menor</option>
       <option value="codigo_asc">Código: Menor a Mayor</option>
-      <!-- Las opciones de VIP/General se gestionarán dinámicamente desde JS si el formulario es VIP/General -->
     </select>
   </div>
 
@@ -35,15 +33,13 @@
     <button id="excelBtn" style="display:none;">Descargar Excel</button>
   </div>
 
-  <div style="overflow-x: auto;">
-    <table id="respuestasTable" style="width:100%; border-collapse: collapse;">
+  <div class="table-responsive">
+    <table id="respuestasTable">
       <thead>
         <tr id="tableHeaderRow">
-          <!-- Los encabezados se cargan dinámicamente -->
         </tr>
       </thead>
       <tbody id="tableBody">
-        <!-- Respuestas aquí -->
       </tbody>
     </table>
   </div>
@@ -52,7 +48,6 @@
   <p id="noDataMsg" style="display:none; font-weight: bold; margin-top: 20px;">No hay respuestas para este formulario.</p>
 </main>
 
-<!-- SheetJS para exportar a Excel -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script type="module" src="respuestas.js"></script>
 </body>
