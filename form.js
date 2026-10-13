@@ -372,6 +372,7 @@ if (btnConfirmar) {
       outReferencia.textContent = insertData.referencia_usada;
       outReferenciaContenedor.style.display = 'block';
 
+      // MOSTRAR CAMPOS PERSONALIZADOS EN PANTALLA
       if (outCustomFieldsContainer) {
         outCustomFieldsContainer.innerHTML = '';
         const savedCustomValues = insertData.parametros_personalizados || {};
@@ -402,16 +403,15 @@ if (btnConfirmar) {
 
       const qrCanvasElement = document.getElementById('qrCanvas');
       
-      let datosQR = `${formDisplayName}\nNombre: ${insertData.nombre_completo}\nCédula: ${formatCedula(insertData.cedula)}\nEdad: ${insertData.edad} años`;
+      // QR LIMPIO Y LIGERO (Igual que el 007 para que escanee a la primera)
+      let datosQR = `${formDisplayName}\nNombre: ${insertData.nombre_completo}\nCédula: ${formatCedula(insertData.cedula)}\nCódigo: ${insertData.codigo_secuencial}`;
       
       const savedCustomValues = insertData.parametros_personalizados || {};
       Object.entries(savedCustomValues).forEach(([key, val]) => {
         datosQR += `\n${key}: ${val}`;
       });
 
-      datosQR += `\nCódigo: ${insertData.codigo_secuencial}`;
-      if (insertData.referencia_usada) datosQR += `\nReferencia: ${insertData.referencia_usada}`;
-      if (currentFormTipo === 'vip_general') datosQR += `\nTipo de Entrada: ${tipoEntradaRef}`;
+      if (currentFormTipo === 'vip_general') datosQR += `\nTipo: ${tipoEntradaRef}`;
 
       if (qrCanvasElement) {
         QRCode.toCanvas(qrCanvasElement, datosQR, {
@@ -505,16 +505,25 @@ if (guardarBtn) {
           if (clonedCanvasEl) {
             const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
             
-            let datosQRClone = `${formDisplayName}\nNombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}`;
+            let datosQRClone = `${formDisplayName}\nNombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nCódigo: ${outCodigo.textContent}`;
             
+            // EXTRACCIÓN LIMPIA DE LOS VALORES PERSONALIZADOS PARA EL QR DEL CLON
             const customDivs = outCustomFieldsContainer ? outCustomFieldsContainer.querySelectorAll('div') : [];
             customDivs.forEach(div => {
-              datosQRClone += `\n${div.textContent}`;
+              const text = div.textContent || '';
+              if (text.includes(':')) {
+                const parts = text.split(':');
+                const key = parts[0].trim();
+                const val = parts.slice(1).join(':').trim();
+                datosQRClone += `\n${key}: ${val}`;
+              } else if (text.trim()) {
+                datosQRClone += `\n${text.trim()}`;
+              }
             });
 
-            datosQRClone += `\nCódigo: ${outCodigo.textContent}`;
-            if (outReferenciaContenedor.style.display !== 'none' && outReferencia.textContent) datosQRClone += `\nReferencia: ${outReferencia.textContent}`;
-            if (currentFormTipo === 'vip_general' && outTipoEntrada && outTipoEntrada.textContent) datosQRClone += `\nTipo de Entrada: ${outTipoEntrada.textContent}`;
+            if (currentFormTipo === 'vip_general' && outTipoEntrada && outTipoEntrada.textContent) {
+              datosQRClone += `\nTipo: ${outTipoEntrada.textContent}`;
+            }
 
             QRCode.toCanvas(clonedCanvasEl, datosQRClone, { width: 70, height: 70, margin: 1 });
           }
