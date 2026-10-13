@@ -3,64 +3,54 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gestionar Referencias</title>
-  <link rel="stylesheet" href="referencia.css" />
+  <title>Lista de Respuestas</title>
+  <link rel="stylesheet" href="respuestas.css" />
 </head>
 <body>
+<header>
+  <h1>Lista de Respuestas</h1>
+</header>
+<main>
+  <div id="dashboard">Entradas totales: <span id="dashboardCount">0</span></div>
+  <h2 id="formTitle">Cargando respuestas...</h2>
 
-  <header>
-    <h1>Gestionar Referencias</h1>
-  </header>
+  <!-- Contenedor de filtros avanzados -->
+  <div class="filters-container">
+    <input type="text" id="searchInput" placeholder="Buscar por nombre, cédula, edad, parámetros o referencia..." />
+    <select id="filterReferencia" class="filter-select">
+      <option value="">Todas las referencias</option>
+    </select>
+    <select id="filterOrden" class="filter-select">
+      <option value="recientes">Más recientes primero</option>
+      <option value="antiguos">Más antiguos primero</option>
+      <option value="nombre">Ordenar por Nombre (A-Z)</option>
+    </select>
+  </div>
 
-  <main>
-    <div id="formInfo">
-      <p><strong>Formulario Padre:</strong> <span id="formPadreNombre">-</span></p>
-      <p><strong>Código del Formulario Padre:</strong> <span id="formPadreCodigo">-</span></p>
-    </div>
+  <div class="btn-action-group">
+    <button id="printBtn" style="display:none;">Imprimir</button>
+    <button id="excelBtn" style="display:none;">Descargar Excel</button>
+  </div>
 
-    <h2>Crear Nueva Referencia</h2>
-    <form id="crearReferenciaForm">
-      <div>
-        <label for="codigoReferencia">Código de Referencia (4 dígitos):</label>
-        <input type="text" id="codigoReferencia" name="codigoReferencia" required maxlength="4" pattern="\d{4}" title="Debe ser un número de 4 dígitos.">
-      </div>
-      <div>
-        <label for="usosReferencia">¿Cuántas veces se puede usar?</label>
-        <input type="number" id="usosReferencia" name="usosReferencia" required min="1">
-      </div>
-
-      <!-- Contenedor condicional para Tipo de Entrada -->
-      <div id="tipoEntradaContainer" style="display: none;">
-        <label for="tipoEntrada">Tipo de Entrada:</label>
-        <select id="tipoEntrada" name="tipoEntrada" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; background-color: white;">
-          <option value="">Selecciona...</option>
-          <option value="VIP">VIP</option>
-          <option value="General">General</option>
-        </select>
-      </div>
-
-      <button type="submit">Crear Referencia</button>
-    </form>
-    <div id="exitoMensaje"></div>
-    <div id="errorMensaje"></div>
-
-    <h2>Referencias Existentes</h2>
-    <table id="referenciasTable">
+  <div style="overflow-x: auto;">
+    <table id="respuestasTable" style="width:100%; border-collapse: collapse;">
       <thead>
-        <tr>
-          <th>Código Referencia</th>
-          <th id="thTipoEntrada" style="display: none;">Tipo de Entrada</th>
-          <th>Usos Disponibles</th>
-          <th>Acciones</th>
+        <tr id="tableHeaderRow">
+          <!-- Los encabezados se cargan dinámicamente -->
         </tr>
       </thead>
-      <tbody>
-        <!-- Las filas se agregarán aquí por JS -->
+      <tbody id="tableBody">
+        <!-- Respuestas aquí -->
       </tbody>
     </table>
-    <p id="noReferencias" style="display:none;">No hay referencias creadas para este formulario.</p>
-  </main>
+  </div>
+  
+  <div id="pagination" style="margin-top:16px; display:flex; justify-content:center;"></div>
+  <p id="noDataMsg" style="display:none; font-weight: bold; margin-top: 20px;">No hay respuestas para este formulario.</p>
+</main>
 
-  <script type="module" src="referencia.js"></script>
+<!-- SheetJS para exportar a Excel -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script type="module" src="respuestas.js"></script>
 </body>
 </html>
