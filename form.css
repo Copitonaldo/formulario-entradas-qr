@@ -151,7 +151,7 @@ form#formData button:hover {
 .qr-absolute {
   position: absolute;
   top: 55%;
-  left: 90px; /* <--- Movido más a la izquierda para que quede perfecto */
+  left: 18%; /* Posición porcentual perfecta y simétrica para todos los dispositivos */
   transform: translate(-50%, -50%);
   background: rgba(255, 255, 255, 0.95);
   padding: 6px;
@@ -183,7 +183,7 @@ form#formData button:hover {
 }
 .datos b {
   display: inline-block;
-  width: 115px; /* <--- Ampliado para evitar que "Referencia" se amontone */
+  width: 115px; /* Ancho suficiente para evitar que "Referencia" se amontone[cite: 19] */
   font-weight: bold;
 }
 .datos div {
@@ -227,7 +227,7 @@ form#formData button:hover {
     padding-right: 20px;
   }
   .qr-absolute {
-    left: 80px; /* <--- Ajuste proporcional para móviles y tablets */
+    left: 18%;
   }
   .datos b {
     width: 115px;
@@ -236,7 +236,7 @@ form#formData button:hover {
 
 @media (max-width: 480px) {
   .qr-absolute {
-    left: 75px; /* <--- Ajuste exacto para pantallas pequeñas de Android/iPhone */
+    left: 18%;
   }
   .datos b {
     width: 115px;
