@@ -159,11 +159,11 @@ function ajustarOpcionesFiltroOrden() {
   if (!filterOrden) return;
 
   filterOrden.innerHTML = `
-    <option value="recientes">Más recientes primero</option>
-    <option value="antiguos">Más antiguos primero</option>
-    <option value="nombre">Ordenar por Nombre (A-Z)</option>
-    <option value="codigo_desc">Código: Mayor a Menor</option>
-    <option value="codigo_asc">Código: Menor a Mayor</option>
+    <option value="recientes">Más recientes primero[cite: 24]</option>
+    <option value="antiguos">Más antiguos primero[cite: 24]</option>
+    <option value="nombre">Ordenar por Nombre (A-Z)[cite: 24]</option>
+    <option value="codigo_desc">Código: Mayor a Menor[cite: 24]</option>
+    <option value="codigo_asc">Código: Menor a Mayor[cite: 24]</option>
   `;
 
   if (currentFormTipo === 'vip_general') {
@@ -202,7 +202,7 @@ function poblarFiltroReferencias() {
   if (!filterReferencia) return;
   const referenciasUnicas = [...new Set(todasLasRespuestas.map(r => r.referencia_usada).filter(Boolean))];
   
-  filterReferencia.innerHTML = '<option value="">Todas las referencias</option>';
+  filterReferencia.innerHTML = '<option value="">Todas las referencias[cite: 14, 23]</option>';
   referenciasUnicas.forEach(ref => {
     const opt = document.createElement('option');
     opt.value = ref;
@@ -314,6 +314,15 @@ function renderTableAndPagination() {
         <button class="action-btn delete-btn" data-id="${r.id_db || index}" disabled>Borrar</button>
       </td>
     `;
+
+    // Asignación automática de etiquetas móviles basadas en el contenido real de la tabla
+    const etiquetasColumnas = ['Código', 'Nombre', 'Cédula', 'Edad', ...parametrosDinamicos, 'Referencia'];
+    if (currentFormTipo === 'vip_general') etiquetasColumnas.push('Tipo de Entrada');
+    etiquetasColumnas.push('Acciones');
+    Array.from(tr.cells).forEach((celda, i) => {
+      celda.dataset.label = etiquetasColumnas[i] || '';
+    });
+
     tableBody.appendChild(tr);
   });
 
@@ -417,7 +426,6 @@ if (excelBtn) {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Respuestas');
     
-    // Nombre del archivo limpio con espacio: Respuestas [Nombre].xlsx
     const nombreArchivoLimpio = `Respuestas ${currentFormNombreReal.replace(/[/\\?%*:|"<>]/g, '')}.xlsx`;
     XLSX.writeFile(wb, nombreArchivoLimpio);
   };
