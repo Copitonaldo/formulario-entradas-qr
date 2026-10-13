@@ -30,7 +30,6 @@
         <input type="number" id="usosReferencia" name="usosReferencia" required min="1">
       </div>
       
-      <!-- Contenedor del Tipo de Entrada que se ocultará si el formulario es Normal -->
       <div id="tipoEntradaContainer" style="display: none;">
         <label for="tipoEntrada">Tipo de Entrada:</label>
         <select id="tipoEntrada" name="tipoEntrada" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; background-color: white;">
@@ -46,19 +45,20 @@
     <div id="errorMensaje"></div>
 
     <h2>Referencias Existentes</h2>
-    <table id="referenciasTable">
-      <thead>
-        <tr>
-          <th>Código Referencia</th>
-          <th id="thTipoEntrada" style="display: none;">Tipo de Entrada</th> <!-- Dinámico -->
-          <th>Usos Disponibles</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Las filas se agregarán aquí por JS -->
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table id="referenciasTable">
+        <thead>
+          <tr>
+            <th>Código Referencia</th>
+            <th id="thTipoEntrada" style="display: none;">Tipo de Entrada</th>
+            <th>Usos Disponibles</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
     <p id="noReferencias" style="display:none;">No hay referencias creadas para este formulario.</p>
   </main>
 
