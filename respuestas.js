@@ -7,11 +7,12 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const urlParams = new URLSearchParams(window.location.search);
-const formId = urlParams.get('id');
+const formId = urlParams.get('id'); // Este es el 'codigo_form' en Supabase
 const formTitleElement = document.getElementById('formTitle');
 const dashboardCount = document.getElementById('dashboardCount');
 const respuestasTable = document.getElementById('respuestasTable');
-const respuestasTableBody = document.querySelector('#respuestasTable tbody');
+const tableHeaderRow = document.getElementById('tableHeaderRow');
+const tableBody = document.getElementById('tableBody');
 const searchInput = document.getElementById('searchInput');
 const filterReferencia = document.getElementById('filterReferencia');
 const filterOrden = document.getElementById('filterOrden');
@@ -20,13 +21,13 @@ const excelBtn = document.getElementById('excelBtn');
 const printBtn = document.getElementById('printBtn');
 const noDataMsg = document.getElementById('noDataMsg');
 
-let todasLasRespuestas = [];
-let filteredRespuestas = [];
+let todasLasRespuestas = []; 
+let filteredRespuestas = []; 
 let currentPage = 1;
 const PAGE_SIZE = 50;
-let currentFormDbId = null;
-let nombreFormularioActual = "Formulario"; 
-let parametrosPersonalizados = []; // Variable para almacenar los parámetros dinámicos del formulario
+let currentFormDbId = null; 
+let currentFormTipo = 'normal'; // Detecta si es 'normal' o 'vip_general'
+let parametrosDinamicos = [];
 
 if (!formId || formId.trim() === "") {
   if (formTitleElement) formTitleElement.textContent = 'ID de Formulario no especificado';
@@ -34,15 +35,28 @@ if (!formId || formId.trim() === "") {
     noDataMsg.textContent = 'Error: No se ha proporcionado un ID de formulario en la URL.';
     noDataMsg.style.display = 'block';
   }
+  if (searchInput) searchInput.style.display = 'none';
+  if (filterReferencia) filterReferencia.style.display = 'none';
+  if (filterOrden) filterOrden.style.display = 'none';
+  if (respuestasTable) respuestasTable.style.display = 'none';
+  if (paginationDiv) paginationDiv.style.display = 'none';
+  if (printBtn) printBtn.style.display = 'none';
+  if (excelBtn) excelBtn.style.display = 'none';
+  if (dashboardCount) dashboardCount.parentElement.style.display = 'none';
 } else {
   if (formTitleElement) formTitleElement.textContent = `Respuestas del Formulario: ${formId}`;
-  await cargarRespuestas();
+  if (noDataMsg) {
+    noDataMsg.textContent = 'Cargando respuestas...'; 
+    noDataMsg.style.display = 'block';
+  }
+  await cargarRespuestas(); 
 }
 
 async function cargarRespuestas() {
+  // 1. Obtener información del formulario, su tipo y parámetros personalizados
   const { data: formInfo, error: formInfoError } = await supabase
     .from('formularios')
-    .select('id, nombre, parametros_personalizados')
+    .select('id, nombre, tipo_formulario, parametros_personalizados') 
     .eq('codigo_form', formId)
     .single();
 
@@ -52,43 +66,66 @@ async function cargarRespuestas() {
         noDataMsg.textContent = `Error: No se pudo encontrar el formulario con código ${formId}.`;
         noDataMsg.style.display = 'block';
     }
+    if (respuestasTable) respuestasTable.style.display = 'none';
     return;
   }
 
   currentFormDbId = formInfo.id;
-  nombreFormularioActual = formInfo.nombre || formId; 
-  parametrosPersonalizados = Array.isArray(formInfo.parametros_personalizados) ? formInfo.parametros_personalizados : [];
+  currentFormTipo = formInfo.tipo_formulario || 'normal';
+  parametrosDinamicos = Array.isArray(formInfo.parametros_personalizados) ? formInfo.parametros_personalizados : [];
   
-  if (formTitleElement) formTitleElement.textContent = `Respuestas del Formulario: ${nombreFormularioActual}`;
+  if (formTitleElement) formTitleElement.textContent = `Respuestas del Formulario: ${formInfo.nombre || formId}`;
 
-  // Construir los encabezados de la tabla dinámicamente incluyendo los parámetros personalizados
-  construirEncabezadosTabla();
-
-  const { data, error } = await supabase
+  // 2. Cargar respuestas del formulario
+  const { data: respuestasData, error: respuestasError } = await supabase
     .from('respuestas')
     .select('id, codigo_secuencial, nombre_completo, cedula, edad, fecha_registro, referencia_usada, parametros_personalizados')
     .eq('formulario_id', currentFormDbId)
-    .order('fecha_registro', { ascending: false });
+    .order('fecha_registro', { ascending: false }); 
 
-  if (error) {
+  if (respuestasError) {
     if (noDataMsg) {
         noDataMsg.textContent = "Ocurrió un error al cargar las respuestas.";
         noDataMsg.style.display = 'block';
     }
     todasLasRespuestas = [];
   } else {
-    todasLasRespuestas = data.map(r => ({
-        id_db: r.id,
+    // Si el formulario es VIP/General, vinculamos el tipo de entrada según la referencia usada
+    let referenciasMap = {};
+    if (currentFormTipo === 'vip_general') {
+      const { data: refsData } = await supabase
+        .from('referencias_usos')
+        .select('codigo_referencia, tipo_entrada')
+        .eq('formulario_id', currentFormDbId);
+      
+      if (refsData) {
+        refsData.forEach(ref => {
+          referenciasMap[ref.codigo_referencia] = ref.tipo_entrada || 'General';
+        });
+      }
+    }
+
+    todasLasRespuestas = respuestasData.map(r => {
+      let tipoEntradaFinal = 'N/A';
+      if (currentFormTipo === 'vip_general') {
+        tipoEntradaFinal = referenciasMap[r.referencia_usada] || 'General';
+      }
+
+      return {
+        id_db: r.id, 
         codigo: r.codigo_secuencial,
         nombre: r.nombre_completo,
         cedula: r.cedula,
         edad: r.edad,
         fecha_registro: r.fecha_registro,
         referencia_usada: r.referencia_usada || null,
+        tipo_entrada: tipoEntradaFinal,
         parametros_personalizados: r.parametros_personalizados || {}
-    }));
+      };
+    });
   }
 
+  construirEncabezadosTabla();
   poblarFiltroReferencias();
 
   if (todasLasRespuestas.length > 0) {
@@ -105,14 +142,18 @@ async function cargarRespuestas() {
         noDataMsg.style.display = 'block';
     }
     if (respuestasTable) respuestasTable.style.display = 'none';
+    if (searchInput) searchInput.style.display = 'none';
+    if (filterReferencia) filterReferencia.style.display = 'none';
+    if (filterOrden) filterOrden.style.display = 'none';
+    if (printBtn) printBtn.style.display = 'none';
+    if (excelBtn) excelBtn.style.display = 'none';
   }
 
   aplicarFiltrosYOrden();
 }
 
 function construirEncabezadosTabla() {
-  const theadRow = document.querySelector('#respuestasTable thead tr');
-  if (!theadRow) return;
+  if (!tableHeaderRow) return;
 
   let html = `
     <th>Código</th>
@@ -121,17 +162,20 @@ function construirEncabezadosTabla() {
     <th>Edad</th>
   `;
 
-  // Añadir una columna por cada parámetro personalizado configurado
-  parametrosPersonalizados.forEach(param => {
+  // Columnas dinámicas de parámetros personalizados
+  parametrosDinamicos.forEach(param => {
     html += `<th>${escapeHtml(param)}</th>`;
   });
 
-  html += `
-    <th>Referencia</th>
-    <th>Acciones</th>
-  `;
+  html += `<th>Referencia</th>`;
 
-  theadRow.innerHTML = html;
+  // Condicional: Solo muestra la columna "Tipo de Entrada" si el formulario es VIP/General
+  if (currentFormTipo === 'vip_general') {
+    html += `<th>Tipo de Entrada</th>`;
+  }
+
+  html += `<th>Acciones</th>`;
+  tableHeaderRow.innerHTML = html;
 }
 
 function poblarFiltroReferencias() {
@@ -140,53 +184,11 @@ function poblarFiltroReferencias() {
   
   filterReferencia.innerHTML = '<option value="">Todas las referencias</option>';
   referenciasUnicas.forEach(ref => {
-    const option = document.createElement('option');
-    option.value = ref;
-    option.textContent = `Referencia: ${ref}`;
-    filterReferencia.appendChild(option);
+    const opt = document.createElement('option');
+    opt.value = ref;
+    opt.textContent = ref;
+    filterReferencia.appendChild(opt);
   });
-}
-
-function aplicarFiltrosYOrden() {
-  const term = searchInput ? searchInput.value.toLowerCase() : '';
-  const refSelected = filterReferencia ? filterReferencia.value : '';
-  const ordenSelected = filterOrden ? filterOrden.value : 'recientes';
-
-  filteredRespuestas = todasLasRespuestas.filter(r => {
-    // Buscar también dentro de los valores de los parámetros personalizados
-    let matchCustom = false;
-    const customVals = r.parametros_personalizados || {};
-    Object.values(customVals).forEach(val => {
-      if (val && String(val).toLowerCase().includes(term)) {
-        matchCustom = true;
-      }
-    });
-
-    const matchTexto = 
-      (r.nombre && r.nombre.toLowerCase().includes(term)) ||
-      (r.cedula && formatCedula(r.cedula).toLowerCase().includes(term)) ||
-      (r.edad && r.edad.toString().includes(term)) ||
-      (r.codigo && r.codigo.toLowerCase().includes(term)) ||
-      matchCustom;
-    
-    const matchRef = refSelected === '' || r.referencia_usada === refSelected;
-
-    return matchTexto && matchRef;
-  });
-
-  filteredRespuestas.sort((a, b) => {
-    if (ordenSelected === 'recientes') {
-      return new Date(b.fecha_registro) - new Date(a.fecha_registro);
-    } else if (ordenSelected === 'antiguos') {
-      return new Date(a.fecha_registro) - new Date(b.fecha_registro);
-    } else if (ordenSelected === 'nombre') {
-      return a.nombre.localeCompare(b.nombre);
-    }
-    return 0;
-  });
-
-  currentPage = 1;
-  renderTableAndPagination();
 }
 
 function formatCedula(cedula) {
@@ -201,46 +203,93 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-function renderTableAndPagination() {
-  if (!respuestasTableBody) return;
+function aplicarFiltrosYOrden() {
+  const term = searchInput ? searchInput.value.toLowerCase() : '';
+  const refSeleccionada = filterReferencia ? filterReferencia.value : '';
+  const ordenSeleccionado = filterOrden ? filterOrden.value : 'recientes';
 
+  // Filtrado
+  filteredRespuestas = todasLasRespuestas.filter(r => {
+    let cumpleTexto = (
+      (r.nombre && r.nombre.toLowerCase().includes(term)) ||
+      (r.cedula && formatCedula(r.cedula).toLowerCase().includes(term)) ||
+      (r.edad && r.edad.toString().includes(term)) ||
+      (r.codigo && r.codigo.toLowerCase().includes(term)) ||
+      (r.referencia_usada && r.referencia_usada.toLowerCase().includes(term)) ||
+      (r.tipo_entrada && r.tipo_entrada.toLowerCase().includes(term)) ||
+      Object.values(r.parametros_personalizados).some(val => String(val).toLowerCase().includes(term))
+    );
+
+    let cumpleRef = refSeleccionada === '' || r.referencia_usada === refSeleccionada;
+
+    return cumpleTexto && cumpleRef;
+  });
+
+  // Ordenamiento
+  filteredRespuestas.sort((a, b) => {
+    if (ordenSeleccionado === 'recientes') {
+      return new Date(b.fecha_registro) - new Date(a.fecha_registro);
+    } else if (ordenSeleccionado === 'antiguos') {
+      return new Date(a.fecha_registro) - new Date(b.fecha_registro);
+    } else if (ordenSeleccionado === 'nombre') {
+      return (a.nombre || '').localeCompare(b.nombre || '');
+    }
+    return 0;
+  });
+
+  currentPage = 1;
+  renderTableAndPagination();
+}
+
+function renderTableAndPagination() {
+  if (!tableBody) return;
   const start = (currentPage - 1) * PAGE_SIZE;
   const end = start + PAGE_SIZE;
   const dataToShow = filteredRespuestas.slice(start, end);
-
-  respuestasTableBody.innerHTML = '';
+  
+  tableBody.innerHTML = '';
+  
+  if (dataToShow.length === 0) {
+    if (noDataMsg) {
+      noDataMsg.textContent = 'No hay resultados para la búsqueda o filtro actual.';
+      noDataMsg.style.display = 'block';
+    }
+  } else {
+    if (noDataMsg) noDataMsg.style.display = 'none';
+  }
 
   dataToShow.forEach((r, index) => {
     const tr = document.createElement('tr');
     
-    let rowHtml = `
+    let htmlCeldasDinamicas = '';
+    parametrosDinamicos.forEach(param => {
+      const valorParam = r.parametros_personalizados[param] || '-';
+      htmlCeldasDinamicas += `<td>${escapeHtml(valorParam)}</td>`;
+    });
+
+    let htmlCeldaTipo = '';
+    if (currentFormTipo === 'vip_general') {
+      htmlCeldaTipo = `<td><strong>${escapeHtml(r.tipo_entrada)}</strong></td>`;
+    }
+
+    tr.innerHTML = `
       <td>${escapeHtml(r.codigo)}</td>
       <td>${escapeHtml(r.nombre)}</td>
       <td>${escapeHtml(formatCedula(r.cedula))}</td>
       <td>${escapeHtml(r.edad)}</td>
-    `;
-
-    // Renderizar los valores correspondientes a los parámetros personalizados
-    const customVals = r.parametros_personalizados || {};
-    parametrosPersonalizados.forEach(param => {
-      const valorParam = customVals[param] !== undefined ? customVals[param] : '-';
-      rowHtml += `<td>${escapeHtml(valorParam)}</td>`;
-    });
-
-    rowHtml += `
+      ${htmlCeldasDinamicas}
       <td>${escapeHtml(r.referencia_usada || '-')}</td>
+      ${htmlCeldaTipo}
       <td>
         <button class="action-btn edit-btn" data-id="${r.id_db || index}" disabled>Editar</button>
         <button class="action-btn delete-btn" data-id="${r.id_db || index}" disabled>Borrar</button>
       </td>
     `;
-
-    tr.innerHTML = rowHtml;
-    respuestasTableBody.appendChild(tr);
+    tableBody.appendChild(tr);
   });
 
   if (dashboardCount) dashboardCount.textContent = filteredRespuestas.length;
-
+  
   if (paginationDiv) {
     paginationDiv.innerHTML = '';
     const totalPages = Math.ceil(filteredRespuestas.length / PAGE_SIZE);
@@ -266,30 +315,39 @@ if (filterOrden) filterOrden.addEventListener('change', aplicarFiltrosYOrden);
 if (printBtn) {
   printBtn.onclick = function () {
     if (!formId || filteredRespuestas.length === 0) return;
+    const dataToPrint = filteredRespuestas; 
+    
     let html = `<html><head><title>Imprimir Respuestas</title><style>
       body { font-family: Arial; margin: 20px; }
       table { border-collapse: collapse; width: 100%; }
       th, td { border: 1px solid #333; padding: 8px; text-align: center; }
       th { background: #007bff; color: white; }
-    </style></head><body><h2>${escapeHtml(formTitleElement.textContent)}</h2><table><thead><tr><th>Código</th><th>Nombre</th><th>Cédula</th><th>Edad</th>`;
+    </style></head><body><h2>${formTitleElement.textContent}</h2><table><thead><tr><th>Código</th><th>Nombre</th><th>Cédula</th><th>Edad</th>`;
     
-    parametrosPersonalizados.forEach(param => {
+    parametrosDinamicos.forEach(param => {
       html += `<th>${escapeHtml(param)}</th>`;
     });
 
-    html += `<th>Referencia</th></tr></thead><tbody>`;
+    html += `<th>Referencia</th>`;
+    if (currentFormTipo === 'vip_general') {
+      html += `<th>Tipo de Entrada</th>`;
+    }
+    html += `</tr></thead><tbody>`;
 
-    filteredRespuestas.forEach(r => {
+    dataToPrint.forEach(r => {
       html += `<tr><td>${escapeHtml(r.codigo)}</td><td>${escapeHtml(r.nombre)}</td><td>${escapeHtml(formatCedula(r.cedula))}</td><td>${escapeHtml(r.edad)}</td>`;
       
-      const customVals = r.parametros_personalizados || {};
-      parametrosPersonalizados.forEach(param => {
-        html += `<td>${escapeHtml(customVals[param] !== undefined ? customVals[param] : '-')}</td>`;
+      parametrosDinamicos.forEach(param => {
+        html += `<td>${escapeHtml(r.parametros_personalizados[param] || '-')}</td>`;
       });
 
-      html += `<td>${escapeHtml(r.referencia_usada || '-')}</td></tr>`;
+      html += `<td>${escapeHtml(r.referencia_usada || '-')}</td>`;
+      if (currentFormTipo === 'vip_general') {
+        html += `<td>${escapeHtml(r.tipo_entrada)}</td>`;
+      }
+      html += `</tr>`;
     });
-
+    
     html += '</tbody></table></body></html>';
     const win = window.open('', '', 'width=900,height=700');
     win.document.write(html);
@@ -301,8 +359,12 @@ if (printBtn) {
 if (excelBtn) {
   excelBtn.onclick = function () {
     if (!formId || filteredRespuestas.length === 0) return;
+    if (!window.XLSX) {
+      alert("Error: La librería XLSX no está cargada.");
+      return;
+    }
+    
     const dataToExport = filteredRespuestas.map(r => {
-      const customVals = r.parametros_personalizados || {};
       let obj = {
         'Código': r.codigo,
         'Nombre': r.nombre,
@@ -310,18 +372,21 @@ if (excelBtn) {
         'Edad': r.edad,
       };
 
-      parametrosPersonalizados.forEach(param => {
-        obj[param] = customVals[param] !== undefined ? customVals[param] : '';
+      parametrosDinamicos.forEach(param => {
+        obj[param] = r.parametros_personalizados[param] || '';
       });
 
       obj['Referencia'] = r.referencia_usada || '';
+
+      if (currentFormTipo === 'vip_general') {
+        obj['Tipo de Entrada'] = r.tipo_entrada;
+      }
       return obj;
     });
 
     const ws = XLSX.utils.json_to_sheet(dataToExport);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Respuestas');
-    const nombreLimpio = nombreFormularioActual.replace(/[^a-zA-Z0-9_\- ]/g, "").trim();
-    XLSX.writeFile(wb, `Respuestas_${nombreLimpio}.xlsx`);
+    XLSX.writeFile(wb, `Respuestas_${formId}.xlsx`);
   };
 }
