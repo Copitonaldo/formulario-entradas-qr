@@ -54,7 +54,6 @@ main {
   text-align: left;
 }
 
-/* Login */
 #loginSection {
   max-width: 400px;
   margin: 0 auto;
@@ -115,7 +114,6 @@ main {
   display: none;
 }
 
-/* Panel admin */
 #adminPanel h2 {
   margin-bottom: 24px;
   font-weight: bold;
@@ -171,7 +169,6 @@ form#createForm button:hover {
   background-color: #0056b3;
 }
 
-/* NUEVO: Contenedor responsivo para tablas en index */
 .table-responsive {
   width: 100%;
   overflow-x: auto;
@@ -183,7 +180,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-family: Arial, sans-serif;
-  min-width: 600px; /* Asegura que no se apriete demasiado en móviles */
+  min-width: 600px;
 }
 
 thead {
@@ -196,7 +193,7 @@ th, td {
   padding: 12px 15px;
   text-align: center;
   border: 1px solid #ddd;
-  white-space: nowrap; /* Evita saltos de línea extraños en celdas de acciones */
+  white-space: nowrap;
 }
 
 tbody tr:hover {
