@@ -372,7 +372,6 @@ if (btnConfirmar) {
       outReferencia.textContent = insertData.referencia_usada;
       outReferenciaContenedor.style.display = 'block';
 
-      // MOSTRAR CAMPOS PERSONALIZADOS EN PANTALLA
       if (outCustomFieldsContainer) {
         outCustomFieldsContainer.innerHTML = '';
         const savedCustomValues = insertData.parametros_personalizados || {};
@@ -403,7 +402,7 @@ if (btnConfirmar) {
 
       const qrCanvasElement = document.getElementById('qrCanvas');
       
-      // QR LIMPIO Y LIGERO (Igual que el 007 para que escanee a la primera)
+      // QR OPTIMIZADO CON BAJA DENSIDAD (errorCorrectionLevel: 'L') PARA LECTURA INSTANTÁNEA
       let datosQR = `${formDisplayName}\nNombre: ${insertData.nombre_completo}\nCédula: ${formatCedula(insertData.cedula)}\nCódigo: ${insertData.codigo_secuencial}`;
       
       const savedCustomValues = insertData.parametros_personalizados || {};
@@ -417,7 +416,8 @@ if (btnConfirmar) {
         QRCode.toCanvas(qrCanvasElement, datosQR, {
           width: parseInt(qrCanvasElement.style.width) || 70,
           height: parseInt(qrCanvasElement.style.height) || 70,
-          margin: 1
+          margin: 1,
+          errorCorrectionLevel: 'L'
         });
       }
 
@@ -507,7 +507,6 @@ if (guardarBtn) {
             
             let datosQRClone = `${formDisplayName}\nNombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nCódigo: ${outCodigo.textContent}`;
             
-            // EXTRACCIÓN LIMPIA DE LOS VALORES PERSONALIZADOS PARA EL QR DEL CLON
             const customDivs = outCustomFieldsContainer ? outCustomFieldsContainer.querySelectorAll('div') : [];
             customDivs.forEach(div => {
               const text = div.textContent || '';
@@ -525,7 +524,12 @@ if (guardarBtn) {
               datosQRClone += `\nTipo: ${outTipoEntrada.textContent}`;
             }
 
-            QRCode.toCanvas(clonedCanvasEl, datosQRClone, { width: 70, height: 70, margin: 1 });
+            QRCode.toCanvas(clonedCanvasEl, datosQRClone, {
+              width: 70,
+              height: 70,
+              margin: 1,
+              errorCorrectionLevel: 'L'
+            });
           }
           const clonedQrLabel = clonedElement.querySelector('.qr-code-label');
           if (clonedQrLabel) {
