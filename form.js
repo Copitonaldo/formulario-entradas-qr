@@ -372,7 +372,7 @@ if (btnConfirmar) {
       outReferencia.textContent = insertData.referencia_usada;
       outReferenciaContenedor.style.display = 'block';
 
-      // --- MOSTRAR TIPO DE ENTRADA EN PANTALLA SI EL FORMULARIO ES VIP/GENERAL ---
+      // MOSTRAR TIPO DE ENTRADA EN LA LISTA SI EL FORMULARIO ES VIP/GENERAL
       if (currentFormTipo === 'vip_general' && outTipoEntradaContenedor && outTipoEntrada) {
         outTipoEntrada.textContent = tipoEntradaRef;
         outTipoEntradaContenedor.style.display = 'block';
@@ -392,7 +392,7 @@ if (btnConfirmar) {
         });
       }
 
-      // --- APLICAR ESTILO VIP DINÁMICO EN LA VISTA PREVIA ---
+      // ESTILO VIP EN LA VISTA PREVIA
       const ticketWrap = document.querySelector('#entradaGenerada .ticket-img-wrap');
       if (ticketWrap) {
         if (currentFormTipo === 'vip_general' && tipoEntradaRef.toUpperCase() === 'VIP') {
@@ -404,7 +404,7 @@ if (btnConfirmar) {
 
       const qrCanvasElement = document.getElementById('qrCanvas');
       
-      // CONSTRUCCIÓN DEL QR CON TILDES ORIGINALES E INCLUYENDO EL TIPO SI ES VIP/GENERAL
+      // QR DATOS
       let datosQR = `${formDisplayName}\nNombre: ${insertData.nombre_completo}\nCédula: ${insertData.cedula}\nEdad: ${insertData.edad} años\nCódigo: ${insertData.codigo_secuencial}`;
       if (insertData.referencia_usada) datosQR += `\nReferencia: ${insertData.referencia_usada}`;
       if (currentFormTipo === 'vip_general') datosQR += `\nTipo de Entrada: ${tipoEntradaRef}`;
@@ -501,7 +501,6 @@ if (guardarBtn) {
           if (clonedCanvasEl) {
             const formDisplayName = (formTitleElement.textContent || "Evento").replace("Formulario: ", "").trim();
             
-            // DATOS DEL QR DEL CLON CON SUS TILDES Y TIPO DE ENTRADA INCLUIDO
             let datosQRClone = `${formDisplayName}\nNombre: ${outNombre.textContent}\nCédula: ${outCedula.textContent}\nEdad: ${outEdad.textContent}\nCódigo: ${outCodigo.textContent}`;
             if (outReferenciaContenedor.style.display !== 'none' && outReferencia.textContent) datosQRClone += `\nReferencia: ${outReferencia.textContent}`;
             if (currentFormTipo === 'vip_general' && outTipoEntrada && outTipoEntrada.textContent) datosQRClone += `\nTipo de Entrada: ${outTipoEntrada.textContent}`;
