@@ -7,7 +7,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const urlParams = new URLSearchParams(window.location.search);
-const formId = urlParams.get('id'); // Este es el 'codigo_form' en Supabase
+const formId = urlParams.get('id'); // Este es el 'codigo_form' en la URL (?id=...)
 const formTitleElement = document.getElementById('formTitle');
 const dashboardCount = document.getElementById('dashboardCount');
 const respuestasTable = document.getElementById('respuestasTable');
@@ -162,14 +162,13 @@ function construirEncabezadosTabla() {
     <th>Edad</th>
   `;
 
-  // Columnas dinámicas de parámetros personalizados
   parametrosDinamicos.forEach(param => {
     html += `<th>${escapeHtml(param)}</th>`;
   });
 
   html += `<th>Referencia</th>`;
 
-  // Condicional: Solo muestra la columna "Tipo de Entrada" si el formulario es VIP/General
+  // Muestra la columna "Tipo de Entrada" únicamente si el formulario es VIP/General
   if (currentFormTipo === 'vip_general') {
     html += `<th>Tipo de Entrada</th>`;
   }
@@ -208,7 +207,6 @@ function aplicarFiltrosYOrden() {
   const refSeleccionada = filterReferencia ? filterReferencia.value : '';
   const ordenSeleccionado = filterOrden ? filterOrden.value : 'recientes';
 
-  // Filtrado
   filteredRespuestas = todasLasRespuestas.filter(r => {
     let cumpleTexto = (
       (r.nombre && r.nombre.toLowerCase().includes(term)) ||
@@ -225,7 +223,6 @@ function aplicarFiltrosYOrden() {
     return cumpleTexto && cumpleRef;
   });
 
-  // Ordenamiento
   filteredRespuestas.sort((a, b) => {
     if (ordenSeleccionado === 'recientes') {
       return new Date(b.fecha_registro) - new Date(a.fecha_registro);
