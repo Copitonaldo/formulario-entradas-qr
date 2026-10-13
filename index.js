@@ -1,7 +1,7 @@
 // Importar Supabase
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.4/+esm";
 
-// Configuración de Supabase (Tus credenciales originales exactas)
+// Configuración de Supabase
 const SUPABASE_URL = 'https://wiyejeeiehwfkdcbpomp.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpeWVqZWVpZWh3ZmtkY2Jwb21wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NjQwOTYsImV4cCI6MjA2NzE0MDA5Nn0.yDq4eOHujKH2nmg-F-DVnqCHGwdfEmf4Z968KXl1SDc';
 
@@ -20,7 +20,7 @@ const loginError = document.getElementById('loginError');
 const logoutBtn = document.getElementById('logoutBtn');
 const createForm = document.getElementById('createForm');
 const formNameInput = document.getElementById('formName');
-const formTypeInput = document.getElementById('formType'); // NUEVO
+const formTypeInput = document.getElementById('formType'); // Selector de tipo de formulario
 const minAgeInput = document.getElementById('minAge');
 const maxAgeInput = document.getElementById('maxAge');
 const formBgInput = document.getElementById('formBgInput');
@@ -97,7 +97,7 @@ function renderCustomParams() {
   });
 }
 
-// Función principal: Cargar formularios (agregando selección del campo tipo_formulario o modo)
+// Función principal: Cargar formularios
 async function cargarFormularios() {
   const { data, error } = await supabase
     .from('formularios')
@@ -153,7 +153,7 @@ createForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const nombre = formNameInput.value.trim();
-  const tipoFormulario = formTypeInput.value;
+  const tipoFormulario = formTypeInput ? formTypeInput.value : 'normal';
   if (!nombre) return alert('Ingrese un nombre para el formulario');
 
   let minAge = null;
