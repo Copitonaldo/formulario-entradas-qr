@@ -20,16 +20,13 @@
     <label>Edad:
       <input type="number" id="edad" required min="0" />
     </label>
-
     <div id="customFieldsContainer"></div>
-
     <label>Referencia:
       <input type="text" id="referencia" required autocomplete="off" maxlength="4" pattern="[0-9]{4}" />
     </label>
     <button type="submit">Generar QR</button>
   </form>
   <div id="errorMsg" style="color: #dc3545; font-weight: bold; margin-bottom: 16px; display: none;"></div>
-  
   <div id="confirmacionDatos" style="display:none; background: white; padding: 30px 40px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 350px; box-sizing: border-box; margin-top: 20px;">
     <h3>¿Sus datos son correctos?</h3>
     <div>
@@ -44,7 +41,6 @@
       <button id="btnCorregir" style="background-color: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">No</button>
     </div>
   </div>
-
   <div id="entradaGenerada" style="display:none;">
     <h3>Su entrada ha sido generada</h3>
     <div class="ticket-img-wrap">
@@ -61,7 +57,6 @@
       <div id="outCustomFieldsContainer"></div>
       <div><b>CÓDIGO:</b> <span id="outCodigo"></span></div>
       <div id="outReferenciaContenedor" style="display:none;"><b>Referencia:</b> <span id="outReferencia"></span></div>
-      <!-- LÍNEA AÑADIDA: Muestra el tipo de entrada si el formulario es General/VIP -->
       <div id="outTipoEntradaContenedor" style="display:none;"><b>Entrada:</b> <span id="outTipoEntrada"></span></div>
     </div>
     <button id="guardarBtn">Guardar entrada</button>
